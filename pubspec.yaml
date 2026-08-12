@@ -1,10 +1,11 @@
 name: arqami
 description: "أرقامي — تطبيق تعليمي لتعلم الأرقام للأطفال الناطقين بالعربية (4-6 سنوات)"
-publish_to: 'none'
+publish_to: "none"
+
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -13,25 +14,23 @@ dependencies:
   # واجهة Material 3
   cupertino_icons: ^1.0.8
 
-  # التتبع بالإصبع (TraceWidget) — التقاط نقاط اللمس
+  # التتبع بالإصبع (TraceWidget)
   signature: ^5.5.0
 
-  # حفظ التقدم محلياً (ProgressTracker + UnitProgress)
+  # حفظ التقدم محلياً
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
-  # نطق الأرقام والعبارات حياً بالعربية (Text-to-Speech) — بلا أي
-  # ملف صوتي خارجي. النقرات السريعة تُشغَّل عبر SystemSound المدمجة
-  # فـ Flutter (flutter/services)، فما محتجناش audioplayers حالياً.
+  # نطق الأرقام والعبارات بالعربية عبر Text-to-Speech
   flutter_tts: ^4.2.0
 
-  # AdMob — نفس نمط وقتي (COPPA / child-directed treatment مفروضة
-  # عبر AdService.init())
+  # AdMob
   google_mobile_ads: ^5.2.0
 
-  # مشاركة شهادة الإنجاز كصورة (CertificateScreen) عبر أي تطبيق
-  # (واتساب، إلخ) — بلا حاجة لحساب أو إنترنت
-  share_plus: ^10.1.3
+  # مشاركة شهادة الإنجاز
+  share_plus: ^12.0.1
+
+  # مسارات الملفات المؤقتة
   path_provider: ^2.1.5
 
 dev_dependencies:
@@ -40,20 +39,17 @@ dev_dependencies:
 
   flutter_lints: ^4.0.0
 
-  # لازمين فقط إذا بغيتي تولّد unit_progress.g.dart تلقائياً
-  # عوض النسخة المكتوبة يدوياً المرفقة فالمشروع
+  # Hive code generation
   hive_generator: ^2.0.1
   build_runner: ^2.4.13
 
 flutter:
   uses-material-design: true
 
-  # لا يوجد assets مطلوبة حالياً — كل الأصوات (TTS/SystemSound) وكل
-  # الرسومات (CustomPainter/أيقونات Material) مدمجة فالكود بلا ملفات
-  # خارجية. إذا زدتي لاحقاً صوراً أو أصوات مسجّلة احترافية، فعّل قسم
-  # assets هنا وأشر لمجلداتها.
-
-  # فعّل هاد القسم إذا زدتي خط عربي مخصص (مثلاً Cairo أو نفس خط وقتي)
+  # لا توجد assets خارجية حالياً.
+  #
+  # إذا أضفت لاحقاً خط Cairo:
+  #
   # fonts:
   #   - family: Cairo
   #     fonts:
