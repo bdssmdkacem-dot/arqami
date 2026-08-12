@@ -144,7 +144,7 @@ class SceneExploreWidgetState extends State<SceneExploreWidget> {
             margin: const EdgeInsets.only(bottom: 16),
             height: 30,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+             color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -254,8 +254,8 @@ class _DigitBubble extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: isHighlighted
-            ? AppColors.completed.withOpacity(0.15)
-            : backgroundColor,
+    ? AppColors.completed.withValues(alpha: 0.15)
+    : backgroundColor,
         shape: rounded ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: rounded ? null : BorderRadius.circular(6),
         border: Border.all(color: borderColor, width: 2.5),
