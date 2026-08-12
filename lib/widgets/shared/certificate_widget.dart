@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
 /// شهادة إنجاز مرسومة بالكامل بـ CustomPainter — بلا أي صورة خارجية،
-/// وبلا أي حقل اسم أو بيانات شخصية (توافقاً مع سياسة الخصوصية:
-/// أرقامي ما كيجمعش أي بيانات عن الطفل).
+/// وبلا أي حقل اسم أو بيانات شخصية.
 ///
-/// تُستخدم داخل RepaintBoundary فـ CertificateScreen باش تُلتقط
-/// كصورة للمشاركة.
+/// تُستخدم داخل RepaintBoundary في CertificateScreen
+/// لكي تُلتقط كصورة للمشاركة.
 class CertificateWidget extends StatelessWidget {
   final int completedUnits;
   final int totalUnits;
@@ -26,9 +25,20 @@ class CertificateWidget extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'ماي', 'يونيو',
-      'يوليوز', 'غشت', 'شتنبر', 'أكتوبر', 'نونبر', 'دجنبر',
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'ماي',
+      'يونيو',
+      'يوليوز',
+      'غشت',
+      'شتنبر',
+      'أكتوبر',
+      'نونبر',
+      'دجنبر',
     ];
+
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
@@ -41,7 +51,7 @@ class CertificateWidget extends StatelessWidget {
           color: Colors.white,
         ),
         child: CustomPaint(
-          painter: _ZelligeBorderPainter(),
+          painter: const _ZelligeBorderPainter(),
           child: Padding(
             padding: const EdgeInsets.all(28),
             child: Column(
@@ -71,9 +81,9 @@ class CertificateWidget extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text(
+                const Text(
                   'أحسنت يا بطل! 🎉',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -81,7 +91,8 @@ class CertificateWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'أكملت $completedUnits من $totalUnits وحدة تعليمية\nوتعلّمت الأرقام من 0 إلى 10',
+                  'أكملت $completedUnits من $totalUnits وحدة تعليمية\n'
+                  'وتعلّمت الأرقام من 0 إلى 10',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 15,
@@ -93,9 +104,9 @@ class CertificateWidget extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(
-                    maxStars > 15 ? 15 : maxStars, // سقف بصري معقول
-                    (i) => Icon(
-                      i < totalStars
+                    maxStars > 15 ? 15 : maxStars,
+                    (index) => Icon(
+                      index < totalStars
                           ? Icons.star_rounded
                           : Icons.star_border_rounded,
                       color: AppColors.gold,
@@ -126,48 +137,70 @@ class CertificateWidget extends StatelessWidget {
   }
 }
 
-/// يرسم إطاراً زخرفياً مستوحى من الزليج المغربي — أشكال معينية
-/// متكررة بألوان متناوبة حول حدود الشهادة، بلا أي صورة أو أصل خارجي
+/// يرسم إطاراً زخرفياً مستوحى من الزليج المغربي.
+/// الأشكال المعينية مرسومة مباشرة بواسطة Canvas، بلا صور خارجية.
 class _ZelligeBorderPainter extends CustomPainter {
   static const double _borderThickness = 20;
   static const double _tileSize = 24;
 
+  const _ZelligeBorderPainter();
+
   @override
   void paint(Canvas canvas, Size size) {
-    // خط حدودي خارجي وداخلي
+    // خط حدودي خارجي.
     final outerBorderPaint = Paint()
       ..color = AppColors.teal
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
+
+    // خط حدودي داخلي.
     final innerBorderPaint = Paint()
       ..color = AppColors.gold
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
-    final outerRect = Rect.fromLTWH(6, 6, size.width - 12, size.height - 12);
+    final outerRect = Rect.fromLTWH(
+      6,
+      6,
+      size.width - 12,
+      size.height - 12,
+    );
+
     final innerRect = Rect.fromLTWH(
       _borderThickness,
       _borderThickness,
-      size.width - _borderThickness * 2,
-      size.height - _borderThickness * 2,
+      size.width - (_borderThickness * 2),
+      size.height - (_borderThickness * 2),
     );
 
     canvas.drawRect(outerRect, outerBorderPaint);
     canvas.drawRect(innerRect, innerBorderPaint);
 
-    // أشكال معينية زخرفية على طول الحافة العلوية والسفلية
+    // أشكال معينية زخرفية على الحافة العلوية والسفلية.
     _drawDiamondRow(canvas, size, top: true);
     _drawDiamondRow(canvas, size, top: false);
   }
 
-  void _drawDiamondRow(Canvas canvas, Size size, {required bool top}) {
-    final y = top ? _borderThickness / 2 : size.height - _borderThickness / 2;
+  void _drawDiamondRow(
+    Canvas canvas,
+    Size size, {
+    required bool top,
+  }) {
+    final y = top
+        ? _borderThickness / 2
+        : size.height - (_borderThickness / 2);
+
     final count = (size.width / _tileSize).floor();
-    final startX = (size.width - count * _tileSize) / 2 + _tileSize / 2;
+
+    final startX =
+        (size.width - (count * _tileSize)) / 2 + (_tileSize / 2);
 
     for (int i = 0; i < count; i++) {
-      final x = startX + i * _tileSize;
-      final color = i.isEven ? AppColors.terracotta : AppColors.tealLight;
+      final x = startX + (i * _tileSize);
+
+      final color =
+          i.isEven ? AppColors.terracotta : AppColors.tealLight;
+
       final paint = Paint()..color = color;
 
       final path = Path()
@@ -176,10 +209,13 @@ class _ZelligeBorderPainter extends CustomPainter {
         ..lineTo(x, y + 6)
         ..lineTo(x - 6, y)
         ..close();
+
       canvas.drawPath(path, paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ZelligeBorderPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _ZelligeBorderPainter oldDelegate) {
+    return false;
+  }
 }
