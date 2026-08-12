@@ -2,22 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 
-/// نوع السؤال: أيهما أكثر، أو أيهما أقل
-enum ComparisonQuestion { more, fewer }
+/// نوع السؤال: أيهما أكثر، أو أيهما أقل.
+enum ComparisonQuestion {
+  more,
+  fewer,
+}
 
 /// مكون المقارنة البصرية — يعرض كومتين من عناصر مختلفة العدد،
 /// ويسأل الطفل "أيهما أكثر؟" أو "أيهما أقل؟" بدون أي رموز رياضية
 /// (< أو >)، فقط مقارنة بصرية مباشرة بالعد والمقارنة.
-///
-/// الاستخدام:
-/// ```dart
-/// ComparisonWidget(
-///   leftCount: 3,
-///   rightCount: 7,
-///   question: ComparisonQuestion.more,
-///   onComplete: () => print('أحسنت! اختار الكومة الأكثر'),
-/// )
-/// ```
 class ComparisonWidget extends StatefulWidget {
   final int leftCount;
   final int rightCount;
@@ -26,7 +19,7 @@ class ComparisonWidget extends StatefulWidget {
   final VoidCallback? onWrongAttempt;
   final IconData itemIcon;
 
-  ComparisonWidget({
+  const ComparisonWidget({
     super.key,
     required this.leftCount,
     required this.rightCount,
@@ -36,7 +29,7 @@ class ComparisonWidget extends StatefulWidget {
     this.itemIcon = Icons.circle,
   }) : assert(
           leftCount != rightCount,
-          'يجب أن تختلف الكوميتان لتفادي تعادل غير قابل للحل',
+          'يجب أن تختلف الكومتان لتفادي تعادل غير قابل للحل',
         );
 
   @override
@@ -52,39 +45,63 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
     if (widget.question == ComparisonQuestion.more) {
       return widget.leftCount > widget.rightCount;
     }
+
     return widget.leftCount < widget.rightCount;
   }
 
-  String get _questionLabel => widget.question == ComparisonQuestion.more
-      ? 'أيّ كومة فيها أكثر؟'
-      : 'أيّ كومة فيها أقل؟';
-
-  void _handleTap(bool tappedLeft) {
-    if (_completed) return;
-    final tappedIsCorrect = tappedLeft ? _leftIsCorrect : !_leftIsCorrect;
-
-    if (tappedIsCorrect) {
-      setState(() => _completed = true);
-      widget.onComplete();
-    } else {
-      widget.onWrongAttempt?.call();
-      setState(() {
-        _wrongLeft = tappedLeft;
-        _wrongRight = !tappedLeft;
-      });
-      Future.delayed(const Duration(milliseconds: 400), () {
-        if (mounted) {
-          setState(() {
-            _wrongLeft = false;
-            _wrongRight = false;
-          });
-        }
-      });
-    }
+  String get _questionLabel {
+    return widget.question == ComparisonQuestion.more
+        ? 'أيّ كومة فيها أكثر؟'
+        : 'أيّ كومة فيها أقل؟';
   }
 
-  /// يعيد المكون لحالته الأولية (مفيدة لو احتجنا "حاول من جديد" خارجياً)
+  void _handleTap(bool tappedLeft) {
+    if (_completed) {
+      return;
+    }
+
+    final tappedIsCorrect =
+        tappedLeft ? _leftIsCorrect : !_leftIsCorrect;
+
+    if (tappedIsCorrect) {
+      setState(() {
+        _completed = true;
+      });
+
+      widget.onComplete();
+      return;
+    }
+
+    widget.onWrongAttempt?.call();
+
+    setState(() {
+      _wrongLeft = tappedLeft;
+      _wrongRight = !tappedLeft;
+    });
+
+    Future.delayed(
+      const Duration(milliseconds: 400),
+      () {
+        if (!mounted) {
+          return;
+        }
+
+        setState(() {
+          _wrongLeft = false;
+          _wrongRight = false;
+        });
+      },
+    );
+  }
+
+  /// يعيد المكون لحالته الأولية.
+  ///
+  /// مفيدة عند الحاجة إلى إعادة السؤال من خارج المكون.
   void reset() {
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       _completed = false;
       _wrongLeft = false;
@@ -99,7 +116,10 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
       children: [
         Text(
           _questionLabel,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
@@ -112,7 +132,8 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
               icon: widget.itemIcon,
               color: AppColors.teal,
               isWrong: _wrongLeft,
-              isCorrectAndCompleted: _completed && _leftIsCorrect,
+              isCorrectAndCompleted:
+                  _completed && _leftIsCorrect,
               onTap: () => _handleTap(true),
             ),
             _GroupCard(
@@ -120,7 +141,8 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
               icon: widget.itemIcon,
               color: AppColors.terracotta,
               isWrong: _wrongRight,
-              isCorrectAndCompleted: _completed && !_leftIsCorrect,
+              isCorrectAndCompleted:
+                  _completed && !_leftIsCorrect,
               onTap: () => _handleTap(false),
             ),
           ],
@@ -149,23 +171,38 @@ class _GroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = isWrong
-        ? const Color(0xFFE57373)
-        : (isCorrectAndCompleted ? const Color(0xFF4CAF50) : Colors.white);
+    final Color borderColor;
+
+    if (isWrong) {
+      borderColor = const Color(0xFFE57373);
+    } else if (isCorrectAndCompleted) {
+      borderColor = const Color(0xFF4CAF50);
+    } else {
+      borderColor = Colors.white;
+    }
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: 140,
-        constraints: const BoxConstraints(minHeight: 140),
+        constraints: const BoxConstraints(
+          minHeight: 140,
+        ),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor, width: 3),
+          border: Border.all(
+            color: borderColor,
+            width: 3,
+          ),
           boxShadow: const [
-            BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
           ],
         ),
         alignment: Alignment.center,
@@ -175,7 +212,11 @@ class _GroupCard extends StatelessWidget {
           alignment: WrapAlignment.center,
           children: List.generate(
             count,
-            (_) => Icon(icon, size: 20, color: color),
+            (_) => Icon(
+              icon,
+              size: 20,
+              color: color,
+            ),
           ),
         ),
       ),
