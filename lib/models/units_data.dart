@@ -1,101 +1,41 @@
-import '../widgets/games/scene_explore_widget.dart' show SceneType;
 import 'unit_model.dart';
 
 /// المنهج الرئيسي لأرقامي: من تأسيس مفهوم العدد في عمر 3 سنوات
 /// إلى أساسيات الجبر والعمليات في عمر المراهقة.
-///
-/// ملاحظة: هذه الطبقة تصف المحتوى والتدرج. مكونات العرض الجديدة
-/// تُضاف تدريجيًا إلى UnitPlayerScreen، مع الحفاظ على الألعاب القديمة.
 class UnitsData {
   static final List<UnitModel> units = [
-    const UnitModel(
-      id: 'unit_01',
-      order: 1,
-      titleAr: 'الصفر والعدد 1',
-      ageRangeAr: '3–4 سنوات',
-      descriptionAr: 'فهم معنى لا شيء والتعرف على 0 و1 وكتابتهما.',
-      activities: [
-        LessonActivityConfig(
-          titleAr: 'ما هو الصفر؟',
-          explanationAr: 'الصفر يعني أنه لا يوجد شيء. والعدد 1 يعني شيئًا واحدًا.',
-          examplesAr: ['0 تفاحات', '1 تفاحة'],
-        ),
-        TraceActivityConfig(0),
-        TraceActivityConfig(1),
-        MatchingActivityConfig([
-          MatchPairSpec(id: '0', leftType: MatchContentType.number, leftValue: 0, rightType: MatchContentType.quantity, rightValue: 0),
-          MatchPairSpec(id: '1', leftType: MatchContentType.number, leftValue: 1, rightType: MatchContentType.quantity, rightValue: 1),
-        ]),
-      ],
-    ),
-    const UnitModel(
-      id: 'unit_02',
-      order: 2,
-      titleAr: 'العد 0–3',
-      ageRangeAr: '3–4 سنوات',
-      activities: [
-        LessonActivityConfig(titleAr: 'نعد معًا', explanationAr: 'نرتب الأعداد من الأصغر إلى الأكبر.', examplesAr: ['0، 1، 2، 3']),
-        TraceActivityConfig(2),
-        TraceActivityConfig(3),
-        DragCountActivityConfig(3),
-      ],
-    ),
-    const UnitModel(
-      id: 'unit_03',
-      order: 3,
-      titleAr: 'الأعداد 4 و5',
-      ageRangeAr: '3–5 سنوات',
-      activities: [TraceActivityConfig(4), TraceActivityConfig(5), DragCountActivityConfig(5)],
-    ),
-    const UnitModel(
-      id: 'unit_04',
-      order: 4,
-      titleAr: 'الأعداد 6 و7',
-      ageRangeAr: '4–5 سنوات',
-      activities: [TraceActivityConfig(6), TraceActivityConfig(7), DragCountActivityConfig(7)],
-    ),
-    const UnitModel(
-      id: 'unit_05',
-      order: 5,
-      titleAr: 'الأعداد 8 و9',
-      ageRangeAr: '4–5 سنوات',
-      activities: [TraceActivityConfig(8), TraceActivityConfig(9), DragCountActivityConfig(9)],
-    ),
-    const UnitModel(
-      id: 'unit_06',
-      order: 6,
-      titleAr: 'العدد 10 ومفهوم العشرة',
-      ageRangeAr: '4–6 سنوات',
-      activities: [
-        LessonActivityConfig(titleAr: 'ما هي العشرة؟', explanationAr: 'عندما نجمع عشرة أشياء نحصل على مجموعة من عشرة.', examplesAr: ['10 أصابع', '10 ألعاب']),
-        TraceActivityConfig(1),
-        TraceActivityConfig(0),
-        DragCountActivityConfig(10),
-      ],
-    ),
-    const UnitModel(
-      id: 'unit_07',
-      order: 7,
-      titleAr: 'مراجعة الأعداد 0–10',
-      ageRangeAr: '4–6 سنوات',
-      activities: [
-        MatchingActivityConfig([
-          for (final value in [0, 2, 4, 6, 8, 10])
-            MatchPairSpec(id: '$value', leftType: MatchContentType.number, leftValue: value, rightType: MatchContentType.quantity, rightValue: value),
-        ]),
-        ComparisonActivityConfig(leftCount: 3, rightCount: 7, question: ComparisonQuestionType.fewer),
-        ComparisonActivityConfig(leftCount: 9, rightCount: 5, question: ComparisonQuestionType.more),
-        AssessmentActivityConfig(
-          titleAr: 'اختبار الأعداد 0–10',
-          questions: [
-            ChoiceQuestion(questionAr: 'ما العدد الذي يأتي بعد 6؟', options: ['5', '7', '9'], correctIndex: 1),
-            ChoiceQuestion(questionAr: 'أي عدد أكبر؟', options: ['3', '8', '2'], correctIndex: 1),
-          ],
-        ),
-      ],
-    ),
+    const UnitModel(id: 'unit_01', order: 1, titleAr: 'الصفر والعدد 1', ageRangeAr: '3–4 سنوات', descriptionAr: 'فهم معنى لا شيء والتعرف على 0 و1 وكتابتهما.', activities: [
+      LessonActivityConfig(titleAr: 'ما هو الصفر؟', explanationAr: 'الصفر يعني أنه لا يوجد شيء. والعدد 1 يعني شيئًا واحدًا.', examplesAr: ['0 تفاحات', '1 تفاحة']),
+      TraceActivityConfig(0), TraceActivityConfig(1),
+      MatchingActivityConfig([
+        MatchPairSpec(id: '0', leftType: MatchContentType.number, leftValue: 0, rightType: MatchContentType.quantity, rightValue: 0),
+        MatchPairSpec(id: '1', leftType: MatchContentType.number, leftValue: 1, rightType: MatchContentType.quantity, rightValue: 1),
+      ]),
+    ]),
+    const UnitModel(id: 'unit_02', order: 2, titleAr: 'العد 0–3', ageRangeAr: '3–4 سنوات', activities: [
+      LessonActivityConfig(titleAr: 'نعد معًا', explanationAr: 'نرتب الأعداد من الأصغر إلى الأكبر.', examplesAr: ['0، 1، 2، 3']),
+      TraceActivityConfig(2), TraceActivityConfig(3), DragCountActivityConfig(3),
+    ]),
+    const UnitModel(id: 'unit_03', order: 3, titleAr: 'الأعداد 4 و5', ageRangeAr: '3–5 سنوات', activities: [TraceActivityConfig(4), TraceActivityConfig(5), DragCountActivityConfig(5)]),
+    const UnitModel(id: 'unit_04', order: 4, titleAr: 'الأعداد 6 و7', ageRangeAr: '4–5 سنوات', activities: [TraceActivityConfig(6), TraceActivityConfig(7), DragCountActivityConfig(7)]),
+    const UnitModel(id: 'unit_05', order: 5, titleAr: 'الأعداد 8 و9', ageRangeAr: '4–5 سنوات', activities: [TraceActivityConfig(8), TraceActivityConfig(9), DragCountActivityConfig(9)]),
+    const UnitModel(id: 'unit_06', order: 6, titleAr: 'العدد 10 ومفهوم العشرة', ageRangeAr: '4–6 سنوات', activities: [
+      LessonActivityConfig(titleAr: 'ما هي العشرة؟', explanationAr: 'عندما نجمع عشرة أشياء نحصل على مجموعة من عشرة.', examplesAr: ['10 أصابع', '10 ألعاب']),
+      TraceActivityConfig(1), TraceActivityConfig(0), DragCountActivityConfig(10),
+    ]),
+    UnitModel(id: 'unit_07', order: 7, titleAr: 'مراجعة الأعداد 0–10', ageRangeAr: '4–6 سنوات', activities: [
+      MatchingActivityConfig([
+        for (final value in [0, 2, 4, 6, 8, 10])
+          MatchPairSpec(id: '$value', leftType: MatchContentType.number, leftValue: value, rightType: MatchContentType.quantity, rightValue: value),
+      ]),
+      ComparisonActivityConfig(leftCount: 3, rightCount: 7, question: ComparisonQuestionType.fewer),
+      ComparisonActivityConfig(leftCount: 9, rightCount: 5, question: ComparisonQuestionType.more),
+      AssessmentActivityConfig(titleAr: 'اختبار الأعداد 0–10', questions: [
+        ChoiceQuestion(questionAr: 'ما العدد الذي يأتي بعد 6؟', options: ['5', '7', '9'], correctIndex: 1),
+        ChoiceQuestion(questionAr: 'أي عدد أكبر؟', options: ['3', '8', '2'], correctIndex: 1),
+      ]),
+    ]),
 
-    // العشرات حتى 100
     const UnitModel(id: 'unit_08', order: 8, titleAr: 'الآحاد والعشرات', ageRangeAr: '5–7 سنوات', activities: [LessonActivityConfig(titleAr: 'القيمة المكانية', explanationAr: 'كل عدد من خانتين يتكون من آحاد وعشرات.', examplesAr: ['24 = عشراتان و4 آحاد', '50 = 5 عشرات و0 آحاد'])]),
     const UnitModel(id: 'unit_09', order: 9, titleAr: 'الأعداد 11–20', ageRangeAr: '5–7 سنوات', activities: [LessonActivityConfig(titleAr: 'من 11 إلى 20', explanationAr: 'بعد عشرة نبدأ ببناء الأعداد الجديدة من عشرات وآحاد.', examplesAr: ['11 = 10 + 1', '20 = 2 عشرات'])]),
     const UnitModel(id: 'unit_10', order: 10, titleAr: 'الأعداد 21–50', ageRangeAr: '5–7 سنوات', activities: [LessonActivityConfig(titleAr: 'نبني الأعداد', explanationAr: 'نقرأ العدد ونفككه إلى عشرات وآحاد.', examplesAr: ['34 = 30 + 4', '47 = 40 + 7'])]),
@@ -105,21 +45,16 @@ class UnitsData {
       ChoiceQuestion(questionAr: 'ما العدد الذي يأتي بعد 79؟', options: ['78', '80', '89'], correctIndex: 1),
     ])]),
     const UnitModel(id: 'unit_13', order: 13, titleAr: 'مراجعة الأعداد حتى 100', ageRangeAr: '6–8 سنوات', activities: [ReviewActivityConfig(titleAr: 'مراجعة العشرات', questions: [ChoiceQuestion(questionAr: 'كم عشرة في 80؟', options: ['6', '8', '10'], correctIndex: 1)])]),
-
-    // المئات
     const UnitModel(id: 'unit_14', order: 14, titleAr: 'مفهوم المئات', ageRangeAr: '7–9 سنوات', activities: [LessonActivityConfig(titleAr: 'المئات', explanationAr: 'مئة وحدة تساوي عشرة عشرات.', examplesAr: ['100 = مئة', '200 = مئتان'])]),
     const UnitModel(id: 'unit_15', order: 15, titleAr: 'الأعداد حتى 500', ageRangeAr: '7–9 سنوات', activities: [LessonActivityConfig(titleAr: 'نبني المئات', explanationAr: 'نتعلم قراءة وكتابة الأعداد من 100 إلى 500.', examplesAr: ['125 = 100 + 20 + 5'])]),
     const UnitModel(id: 'unit_16', order: 16, titleAr: 'الأعداد حتى 999', ageRangeAr: '7–9 سنوات', activities: [LessonActivityConfig(titleAr: 'ثلاث خانات', explanationAr: 'كل عدد من ثلاث خانات يتكون من مئات وعشرات وآحاد.', examplesAr: ['348 = 300 + 40 + 8'])]),
     const UnitModel(id: 'unit_17', order: 17, titleAr: 'القيمة المكانية حتى 999', ageRangeAr: '7–10 سنوات', activities: [MultipleChoiceActivityConfig([ChoiceQuestion(questionAr: 'ما قيمة الرقم 4 في 542؟', options: ['4', '40', '400'], correctIndex: 1)])]),
     const UnitModel(id: 'unit_18', order: 18, titleAr: 'مراجعة المئات', ageRangeAr: '7–10 سنوات', activities: [ReviewActivityConfig(titleAr: 'مراجعة حتى 999', questions: [ChoiceQuestion(questionAr: 'أي عدد أكبر؟', options: ['409', '490', '904'], correctIndex: 2)])]),
-
-    // الآلاف
     const UnitModel(id: 'unit_19', order: 19, titleAr: 'مفهوم الألف', ageRangeAr: '8–11 سنة', activities: [LessonActivityConfig(titleAr: 'الألف', explanationAr: 'ألف وحدة تساوي عشرة مئات.', examplesAr: ['1,000 = ألف', '2,000 = ألفان'])]),
     const UnitModel(id: 'unit_20', order: 20, titleAr: 'الأعداد حتى 9,999', ageRangeAr: '8–11 سنة', activities: [LessonActivityConfig(titleAr: 'الآلاف والمئات والعشرات والآحاد', explanationAr: 'نتعلم القيمة المكانية حتى أربع خانات.', examplesAr: ['4,582 = 4,000 + 500 + 80 + 2'])]),
     const UnitModel(id: 'unit_21', order: 21, titleAr: 'مقارنة وترتيب الآلاف', ageRangeAr: '8–11 سنة', activities: [MultipleChoiceActivityConfig([ChoiceQuestion(questionAr: 'أي عدد أصغر؟', options: ['2,901', '2,190', '2,910'], correctIndex: 1)])]),
     const UnitModel(id: 'unit_22', order: 22, titleAr: 'مراجعة الآلاف', ageRangeAr: '8–11 سنة', activities: [ReviewActivityConfig(titleAr: 'مراجعة حتى 9,999', questions: [ChoiceQuestion(questionAr: 'ما قيمة 7 في 7,245؟', options: ['7', '70', '7,000'], correctIndex: 2)])]),
 
-    // الجمع والطرح
     const UnitModel(id: 'unit_23', order: 23, titleAr: 'الجمع: مفهومه', ageRangeAr: '7–10 سنوات', activities: [LessonActivityConfig(titleAr: 'الجمع', explanationAr: 'الجمع يعني ضم كميتين أو أكثر معًا.', examplesAr: ['3 + 2 = 5'])]),
     const UnitModel(id: 'unit_24', order: 24, titleAr: 'الجمع بدون حمل', ageRangeAr: '7–10 سنوات', activities: [ArithmeticActivityConfig(operation: '+', questions: [ArithmeticQuestion(questionAr: '23 + 14 = ؟', correctAnswer: 37), ArithmeticQuestion(questionAr: '120 + 230 = ؟', correctAnswer: 350)])]),
     const UnitModel(id: 'unit_25', order: 25, titleAr: 'الجمع مع الحمل', ageRangeAr: '8–10 سنوات', activities: [ArithmeticActivityConfig(operation: '+', questions: [ArithmeticQuestion(questionAr: '28 + 17 = ؟', correctAnswer: 45), ArithmeticQuestion(questionAr: '156 + 287 = ؟', correctAnswer: 443)])]),
@@ -127,8 +62,6 @@ class UnitsData {
     const UnitModel(id: 'unit_27', order: 27, titleAr: 'الطرح بدون استلاف', ageRangeAr: '7–10 سنوات', activities: [ArithmeticActivityConfig(operation: '-', questions: [ArithmeticQuestion(questionAr: '48 − 23 = ؟', correctAnswer: 25), ArithmeticQuestion(questionAr: '560 − 120 = ؟', correctAnswer: 440)])]),
     const UnitModel(id: 'unit_28', order: 28, titleAr: 'الطرح مع الاستلاف', ageRangeAr: '8–10 سنوات', activities: [ArithmeticActivityConfig(operation: '-', questions: [ArithmeticQuestion(questionAr: '52 − 28 = ؟', correctAnswer: 24), ArithmeticQuestion(questionAr: '403 − 178 = ؟', correctAnswer: 225)])]),
     const UnitModel(id: 'unit_29', order: 29, titleAr: 'مسائل الجمع والطرح', ageRangeAr: '8–11 سنة', activities: [WordProblemActivityConfig([ArithmeticQuestion(questionAr: 'مع سارة 12 تفاحة، أعطتها أمها 8. كم أصبحت لديها؟', correctAnswer: 20), ArithmeticQuestion(questionAr: 'كان مع أحمد 30 درهمًا وأنفق 12. كم بقي؟', correctAnswer: 18)])]),
-
-    // الضرب والقسمة
     const UnitModel(id: 'unit_30', order: 30, titleAr: 'الضرب كمجموع متكرر', ageRangeAr: '8–11 سنة', activities: [LessonActivityConfig(titleAr: 'معنى الضرب', explanationAr: 'الضرب هو جمع العدد نفسه عدة مرات.', examplesAr: ['3 × 4 = 4 + 4 + 4 = 12'])]),
     const UnitModel(id: 'unit_31', order: 31, titleAr: 'جداول الضرب 2 و5 و10', ageRangeAr: '8–11 سنة', activities: [ArithmeticActivityConfig(operation: '×', questions: [ArithmeticQuestion(questionAr: '7 × 2 = ؟', correctAnswer: 14), ArithmeticQuestion(questionAr: '6 × 5 = ؟', correctAnswer: 30), ArithmeticQuestion(questionAr: '8 × 10 = ؟', correctAnswer: 80)])]),
     const UnitModel(id: 'unit_32', order: 32, titleAr: 'جداول الضرب 3 و4 و6', ageRangeAr: '8–12 سنة', activities: [ArithmeticActivityConfig(operation: '×', questions: [ArithmeticQuestion(questionAr: '7 × 3 = ؟', correctAnswer: 21), ArithmeticQuestion(questionAr: '8 × 4 = ؟', correctAnswer: 32), ArithmeticQuestion(questionAr: '6 × 6 = ؟', correctAnswer: 36)])]),
@@ -138,8 +71,6 @@ class UnitsData {
     const UnitModel(id: 'unit_36', order: 36, titleAr: 'القسمة بدون باقي', ageRangeAr: '9–12 سنة', activities: [ArithmeticActivityConfig(operation: '÷', questions: [ArithmeticQuestion(questionAr: '20 ÷ 4 = ؟', correctAnswer: 5), ArithmeticQuestion(questionAr: '72 ÷ 8 = ؟', correctAnswer: 9)])]),
     const UnitModel(id: 'unit_37', order: 37, titleAr: 'القسمة مع الباقي', ageRangeAr: '10–12 سنة', activities: [LessonActivityConfig(titleAr: 'الباقي', explanationAr: 'أحيانًا لا يمكن توزيع الكمية بالتساوي، ويبقى جزء صغير.', examplesAr: ['14 ÷ 3 = 4 والباقي 2'])]),
     const UnitModel(id: 'unit_38', order: 38, titleAr: 'مسائل الضرب والقسمة', ageRangeAr: '10–12 سنة', activities: [WordProblemActivityConfig([ArithmeticQuestion(questionAr: 'لدى 6 صناديق، في كل صندوق 8 كرات. كم كرة؟', correctAnswer: 48), ArithmeticQuestion(questionAr: '48 كرة توزع على 6 أطفال. كم لكل طفل؟', correctAnswer: 8)])]),
-
-    // الكسور والعشري والنسب
     const UnitModel(id: 'unit_39', order: 39, titleAr: 'مفهوم الكسور', ageRangeAr: '10–13 سنة', activities: [LessonActivityConfig(titleAr: 'الكسر', explanationAr: 'الكسر يعبّر عن جزء من كل.', examplesAr: ['1/2 نصف', '1/4 ربع'])]),
     const UnitModel(id: 'unit_40', order: 40, titleAr: 'البسط والمقام', ageRangeAr: '10–13 سنة', activities: [LessonActivityConfig(titleAr: 'أجزاء الكسر', explanationAr: 'العدد العلوي هو البسط، والسفلي هو المقام.', examplesAr: ['في 3/5: البسط 3 والمقام 5'])]),
     const UnitModel(id: 'unit_41', order: 41, titleAr: 'مقارنة الكسور', ageRangeAr: '10–13 سنة', activities: [MultipleChoiceActivityConfig([ChoiceQuestion(questionAr: 'أي أكبر؟', options: ['1/2', '1/4', '1/8'], correctIndex: 0)])]),
@@ -148,8 +79,6 @@ class UnitsData {
     const UnitModel(id: 'unit_44', order: 44, titleAr: 'عمليات الأعداد العشرية', ageRangeAr: '11–14 سنة', activities: [ArithmeticActivityConfig(operation: '+', questions: [ArithmeticQuestion(questionAr: '1.5 + 2.5 = ؟', correctAnswer: 4)])]),
     const UnitModel(id: 'unit_45', order: 45, titleAr: 'النسبة المئوية', ageRangeAr: '12–15 سنة', activities: [LessonActivityConfig(titleAr: 'ما هي النسبة المئوية؟', explanationAr: 'النسبة المئوية تعبّر عن جزء من مئة.', examplesAr: ['50% = 50 من 100', '25% = ربع'])]),
     const UnitModel(id: 'unit_46', order: 46, titleAr: 'النسبة والتناسب', ageRangeAr: '12–15 سنة', activities: [LessonActivityConfig(titleAr: 'التناسب', explanationAr: 'نقارن بين كميتين مرتبطتين بنسبة ثابتة.', examplesAr: ['2:4 تساوي 1:2'])]),
-
-    // الجبر للمراهقين
     const UnitModel(id: 'unit_47', order: 47, titleAr: 'المتغيرات والتعبيرات الجبرية', ageRangeAr: '13–16 سنة', activities: [LessonActivityConfig(titleAr: 'المتغير', explanationAr: 'الحرف يمكن أن يمثل عددًا مجهولًا.', examplesAr: ['x + 3', '2x'])]),
     const UnitModel(id: 'unit_48', order: 48, titleAr: 'تبسيط التعبيرات', ageRangeAr: '13–16 سنة', activities: [MultipleChoiceActivityConfig([ChoiceQuestion(questionAr: 'ما تبسيط 2x + 3x؟', options: ['5x', '6x', '5'], correctIndex: 0)])]),
     const UnitModel(id: 'unit_49', order: 49, titleAr: 'المعادلات البسيطة', ageRangeAr: '13–16 سنة', activities: [LessonActivityConfig(titleAr: 'حل المعادلة', explanationAr: 'نبحث عن قيمة المتغير التي تجعل المعادلة صحيحة.', examplesAr: ['x + 3 = 7 إذن x = 4'])]),
