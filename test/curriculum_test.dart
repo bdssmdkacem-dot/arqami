@@ -16,11 +16,12 @@ void main() {
     }
   });
 
-  test('all digit paths 0-9 exist and contain points', () {
+  test('all digit paths 0-9 exist and contain valid points', () {
     for (var digit = 0; digit <= 9; digit++) {
       expect(NumberPathData.hasPath(digit), isTrue);
       final path = NumberPathData.getPath(digit);
       expect(path.points, isNotEmpty);
+      expect(path.strokeSegments, isNotEmpty);
 
       for (final point in path.points) {
         expect(point.x, inInclusiveRange(0.0, 1.0));
@@ -34,8 +35,14 @@ void main() {
     }
   });
 
-  test('multi-stroke paths declare their stroke breaks', () {
+  test('multi-stroke paths preserve the declared stroke order', () {
     final four = NumberPathData.getPath(4);
     expect(four.strokeBreaks, contains(3));
+    expect(four.strokeSegments, hasLength(2));
+    expect(four.strokeSegments[0], hasLength(3));
+    expect(four.strokeSegments[1], hasLength(2));
+
+    expect(four.strokeSegments[0].first.x, closeTo(0.60, 0.0001));
+    expect(four.strokeSegments[1].first.x, closeTo(0.60, 0.0001));
   });
 }
