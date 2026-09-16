@@ -19,7 +19,18 @@ void main() {
   test('all digit paths 0-9 exist and contain points', () {
     for (var digit = 0; digit <= 9; digit++) {
       expect(NumberPathData.hasPath(digit), isTrue);
-      expect(NumberPathData.getPath(digit).points, isNotEmpty);
+      final path = NumberPathData.getPath(digit);
+      expect(path.points, isNotEmpty);
+
+      for (final point in path.points) {
+        expect(point.x, inInclusiveRange(0.0, 1.0));
+        expect(point.y, inInclusiveRange(0.0, 1.0));
+      }
+
+      for (final breakIndex in path.strokeBreaks) {
+        expect(breakIndex, greaterThan(0));
+        expect(breakIndex, lessThan(path.points.length));
+      }
     }
   });
 
