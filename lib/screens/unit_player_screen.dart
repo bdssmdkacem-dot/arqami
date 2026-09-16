@@ -16,13 +16,8 @@ import '../widgets/games/trace_widget.dart';
 import '../widgets/shared/number_display.dart';
 import '../widgets/shared/quantity_row.dart';
 
-/// شاشة عامة تشغّل أي وحدة من الـ13، بالاعتماد فقط على بيانات
-/// [UnitModel.activities]. تتنقل تلقائياً بين الأنشطة، وتسجّل التقدم
-/// والأصوات، وتعرض شاشة "أحسنت" فالنهاية.
-///
-/// هاد التصميم كيخلينا ما نكتبوش 13 شاشة منفصلة — وحدة واحدة من الكود
-/// كتخدم كل المنهج، وزيادة وحدة جديدة فالمستقبل تتطلب غير إضافة بيانات
-/// فـ units_data.dart بلا ما تمس هاد الملف.
+/// شاشة عامة تشغّل أي وحدة من الـ13، بالاعتماد على بيانات
+/// [UnitModel.activities]. تتنقل تلقائياً بين الأنشطة وتسجّل التقدم.
 class UnitPlayerScreen extends StatefulWidget {
   final UnitModel unit;
   const UnitPlayerScreen({super.key, required this.unit});
@@ -55,7 +50,6 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   }
 
   Future<void> _completeUnit() async {
-    // تقدير بسيط للنجوم حسب عدد الأخطاء خلال الوحدة كاملة
     final stars = _wrongAttemptsInUnit == 0
         ? 3
         : (_wrongAttemptsInUnit <= 2 ? 2 : 1);
@@ -68,8 +62,6 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
 
     if (mounted) setState(() => _unitCompleted = true);
 
-    // إعلان بيني كل 3 وحدات فقط (ماشي بعد كل وحدة) — تفادياً لإزعاج
-    // الطفل/الأهل، وبمعاملة child-directed مفروضة من AdService
     if (widget.unit.order % 3 == 0) {
       await AdService.instance.maybeShowInterstitial();
     }
@@ -85,7 +77,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           child: Responsive.constrainedCenter(
             child: !widget.unit.isImplemented
                 ? _buildPendingView()
@@ -106,7 +98,8 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.construction_rounded, size: 56, color: Colors.orange),
+          const Icon(Icons.construction_rounded,
+              size: 56, color: AppColors.gold),
           const SizedBox(height: 16),
           const Text(
             'هاد الوحدة قيد الإنشاء',
@@ -116,7 +109,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
           Text(
             pending.reasonAr,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 15, color: Colors.black54),
+            style: const TextStyle(fontSize: 15, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 24),
           OutlinedButton(
@@ -130,79 +123,94 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
 
   Widget _buildCompletionView() {
     final progress = ProgressTracker.instance.getUnitProgress(widget.unit.id);
-    // نتحقق أن هاد الوحدة هي فعلاً آخر وحدة فالمنهج (ماشي بالضرورة
-    // unit_13 بالاسم — كتفادى لو تغيّر ترتيب الوحدات مستقبلاً)
     final isFinalUnit = widget.unit.order == UnitsData.units.length;
 
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('🌟 أحسنت! 🌟', style: TextStyle(fontSize: 32)),
-          const SizedBox(height: 12),
-          Row(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: List.generate(3, (i) {
-              final filled = i < progress.stars;
-              return Icon(
-                filled ? Icons.star_rounded : Icons.star_border_rounded,
-                color: AppColors.gold,
-                size: 40,
-              );
-            }),
-          ),
-          const SizedBox(height: 24),
-          if (isFinalUnit) ...[
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const CertificateScreen(),
-                    ),
+            children: [
+              const Icon(Icons.celebration_rounded,
+                  size: 64, color: AppColors.gold),
+              const SizedBox(height: 12),
+              const Text(
+                'أحسنت!',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'أكملت هذه الوحدة بنجاح',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(3, (i) {
+                  final filled = i < progress.stars;
+                  return Icon(
+                    filled ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: AppColors.gold,
+                    size: 40,
                   );
-                },
-                icon: const Icon(Icons.workspace_premium_rounded),
-                label: const Text('احصل على شهادتك 🎓'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                  foregroundColor: AppColors.textPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                }),
+              ),
+              const SizedBox(height: 24),
+              if (isFinalUnit) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const CertificateScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.workspace_premium_rounded),
+                    label: const Text('احصل على شهادتك'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('رجوع لخريطة الوحدات'),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-          ],
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('رجوع لخريطة الوحدات'),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildActivity(ActivityConfig config) {
-    if (config is TraceActivityConfig) {
-      return _ActivityScaffold(
-        instructionAr: 'تتبّع الرقم بإصبعك ابتداءً من النقطة الخضراء',
-        child: TraceWidget(
-          key: ValueKey('trace_${config.digit}_$_activityIndex'),
-          number: config.digit,
-          onComplete: () {
-            AudioService.instance.playCorrect();
-            AudioService.instance.playNumber(config.digit);
-            Future.delayed(
-              const Duration(milliseconds: 700),
-              _onActivityComplete,
-            );
-          },
-        ),
-      );
-    }
+    final totalActivities = widget.unit.activities.length;
+    final currentNumber = _activityIndex + 1;
+    final progressValue = currentNumber / totalActivities;
 
-    if (config is MatchingActivityConfig) {
+    Widget activity;
+
+    if (config is TraceActivityConfig) {
+      activity = TraceWidget(
+        key: ValueKey('trace_${config.digit}_$_activityIndex'),
+        number: config.digit,
+        onComplete: () {
+          AudioService.instance.playCorrect();
+          AudioService.instance.playNumber(config.digit);
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
+      );
+    } else if (config is MatchingActivityConfig) {
       final pairs = config.pairs
           .map(
             (spec) => MatchPair(
@@ -214,92 +222,73 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
           )
           .toList();
 
-      return _ActivityScaffold(
-        instructionAr: 'اسحب كل عنصر لنظيره المطابق',
-        child: MatchingWidget(
-          key: ValueKey('matching_$_activityIndex'),
-          pairs: pairs,
-          onCorrectMatch: (_) => AudioService.instance.playCorrect(),
-          onWrongAttempt: _onWrongAttempt,
-          onAllMatched: () {
-            Future.delayed(
-              const Duration(milliseconds: 700),
-              _onActivityComplete,
-            );
-          },
-        ),
+      activity = MatchingWidget(
+        key: ValueKey('matching_$_activityIndex'),
+        pairs: pairs,
+        onCorrectMatch: (_) => AudioService.instance.playCorrect(),
+        onWrongAttempt: _onWrongAttempt,
+        onAllMatched: () {
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
       );
-    }
-
-    if (config is ComparisonActivityConfig) {
-      return _ActivityScaffold(
-        instructionAr: 'انظر جيداً واختر الكومة الصحيحة',
-        child: ComparisonWidget(
-          key: ValueKey('comparison_$_activityIndex'),
-          leftCount: config.leftCount,
-          rightCount: config.rightCount,
-          question: config.question == ComparisonQuestionType.more
-              ? ComparisonQuestion.more
-              : ComparisonQuestion.fewer,
-          onWrongAttempt: _onWrongAttempt,
-          onComplete: () {
-            AudioService.instance.playCorrect();
-            Future.delayed(
-              const Duration(milliseconds: 700),
-              _onActivityComplete,
-            );
-          },
-        ),
+    } else if (config is ComparisonActivityConfig) {
+      activity = ComparisonWidget(
+        key: ValueKey('comparison_$_activityIndex'),
+        leftCount: config.leftCount,
+        rightCount: config.rightCount,
+        question: config.question == ComparisonQuestionType.more
+            ? ComparisonQuestion.more
+            : ComparisonQuestion.fewer,
+        onWrongAttempt: _onWrongAttempt,
+        onComplete: () {
+          AudioService.instance.playCorrect();
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
       );
-    }
-
-    if (config is SceneExploreActivityConfig) {
-      // ننطق الرقم المطلوب مرة واحدة فقط عند دخول النشاط (مو فكل
-      // rebuild سببو setState من محاولة خاطئة مثلاً)
+    } else if (config is SceneExploreActivityConfig) {
       if (_lastAnnouncedSceneIndex != _activityIndex) {
         _lastAnnouncedSceneIndex = _activityIndex;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           AudioService.instance.playNumber(config.targetDigit);
         });
       }
-      return _ActivityScaffold(
-        instructionAr: 'ابحث عن الرقم ${config.targetDigit} والمس عليه',
-        child: SceneExploreWidget(
-          key: ValueKey('scene_$_activityIndex'),
-          sceneType: config.sceneType,
-          targetDigit: config.targetDigit,
-          onWrongAttempt: _onWrongAttempt,
-          onComplete: () {
-            AudioService.instance.playCorrect();
-            Future.delayed(
-              const Duration(milliseconds: 700),
-              _onActivityComplete,
-            );
-          },
-        ),
+
+      activity = SceneExploreWidget(
+        key: ValueKey('scene_$_activityIndex'),
+        sceneType: config.sceneType,
+        targetDigit: config.targetDigit,
+        onWrongAttempt: _onWrongAttempt,
+        onComplete: () {
+          AudioService.instance.playCorrect();
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
       );
+    } else if (config is DragCountActivityConfig) {
+      activity = DragCountWidget(
+        key: ValueKey('dragcount_$_activityIndex'),
+        targetCount: config.targetCount,
+        onItemDropped: (count) => AudioService.instance.playNumber(count),
+        onWrongDigitSelected: _onWrongAttempt,
+        onComplete: () {
+          AudioService.instance.playCorrect();
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
+      );
+    } else {
+      return const SizedBox.shrink();
     }
 
-    if (config is DragCountActivityConfig) {
-      return _ActivityScaffold(
-        instructionAr: 'اسحب العناصر للسلة وعدّها',
-        child: DragCountWidget(
-          key: ValueKey('dragcount_$_activityIndex'),
-          targetCount: config.targetCount,
-          onItemDropped: (count) => AudioService.instance.playNumber(count),
-          onWrongDigitSelected: _onWrongAttempt,
-          onComplete: () {
-            AudioService.instance.playCorrect();
-            Future.delayed(
-              const Duration(milliseconds: 700),
-              _onActivityComplete,
-            );
-          },
+    return Column(
+      children: [
+        _ActivityProgress(
+          current: currentNumber,
+          total: totalActivities,
+          value: progressValue,
         ),
-      );
-    }
-
-    return const SizedBox.shrink();
+        const SizedBox(height: 14),
+        Expanded(child: activity),
+      ],
+    );
   }
 
   Widget _buildMatchContent(MatchContentType type, int value) {
@@ -312,24 +301,52 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   }
 }
 
-/// إطار موحّد لأي نشاط: تعليمة نصية أعلى + المكون التفاعلي يملأ الباقي
-class _ActivityScaffold extends StatelessWidget {
-  final String instructionAr;
-  final Widget child;
+class _ActivityProgress extends StatelessWidget {
+  final int current;
+  final int total;
+  final double value;
 
-  const _ActivityScaffold({required this.instructionAr, required this.child});
+  const _ActivityProgress({
+    required this.current,
+    required this.total,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          instructionAr,
-          style: const TextStyle(fontSize: 17),
-          textAlign: TextAlign.center,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'خطوة التعلّم',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            Text(
+              '$current من $total',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.teal,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 20),
-        Expanded(child: Center(child: child)),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 8,
+            backgroundColor: AppColors.teal.withValues(alpha: 0.12),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.teal),
+          ),
+        ),
       ],
     );
   }
