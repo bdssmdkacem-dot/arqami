@@ -27,7 +27,7 @@ class NumberPath {
   List<List<PathPoint>> get strokeSegments {
     if (points.isEmpty) return const [];
 
-    final breaks = <int>{0, ...strokeBreaks, points.length};toList()..sort();
+    final breaks = <int>{0, ...strokeBreaks, points.length}.toList()..sort();
     final segments = <List<PathPoint>>[];
 
     for (var i = 0; i < breaks.length - 1; i++) {
