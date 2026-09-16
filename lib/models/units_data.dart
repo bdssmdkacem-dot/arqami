@@ -211,7 +211,7 @@ class UnitsData {
     ]),
     UnitModel(id: 'unit_44', order: 44, titleAr: 'عمليات الأعداد العشرية', ageRangeAr: '11–14 سنة', descriptionAr: 'جمع وطرح الأعداد العشرية مع محاذاة الفاصلة.', activities: [
       LessonActivityConfig(titleAr: 'نجمع الأعداد العشرية', explanationAr: 'نرتب الفواصل تحت بعضها ثم نجري العملية كما في الأعداد الصحيحة.', examplesAr: ['1.5 + 2.5 = 4', '5.75 − 2.25 = 3.5']),
-      ArithmeticActivityConfig(operation: '+', questions: [ArithmeticQuestion(questionAr: '1.5 + 2.5 = ؟', correctAnswer: 4), ArithmeticQuestion(questionAr: '2.75 + 1.25 = ؟', correctAnswer: 4)]),
+      ArithmeticActivityConfig(operation: '+', questions: [ArithmeticQuestion(questionAr: '1.5 + 2.5 = ؟', correctAnswer: 4), ArithmeticQuestion(questionAr: '2.75 + 2.25 = ؟', correctAnswer: 5)]),
       AssessmentActivityConfig(titleAr: 'كوييز الوحدة 44', questions: [ChoiceQuestion(questionAr: '1.5 + 2.5 = ؟', options: ['3', '4', '5'], correctIndex: 1), ChoiceQuestion(questionAr: '5.75 − 2.25 = ؟', options: ['2.5', '3.5', '4.5'], correctIndex: 1)]),
     ]),
     UnitModel(id: 'unit_45', order: 45, titleAr: 'النسبة المئوية', ageRangeAr: '12–15 سنة', descriptionAr: 'فهم النسبة المئوية كجزء من مئة وحساب النسب البسيطة.', activities: [
