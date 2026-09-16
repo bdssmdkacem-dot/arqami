@@ -32,9 +32,9 @@ class UnitsData {
         MatchPairSpec(id: '8', leftType: MatchContentType.number, leftValue: 8, rightType: MatchContentType.quantity, rightValue: 8),
         MatchPairSpec(id: '10', leftType: MatchContentType.number, leftValue: 10, rightType: MatchContentType.quantity, rightValue: 10),
       ]),
-      const ComparisonActivityConfig(leftCount: 3, rightCount: 7, question: ComparisonQuestionType.fewer),
-      const ComparisonActivityConfig(leftCount: 9, rightCount: 5, question: ComparisonQuestionType.more),
-      const AssessmentActivityConfig(titleAr: 'اختبار الأعداد 0–10', questions: [
+      ComparisonActivityConfig(leftCount: 3, rightCount: 7, question: ComparisonQuestionType.fewer),
+      ComparisonActivityConfig(leftCount: 9, rightCount: 5, question: ComparisonQuestionType.more),
+      AssessmentActivityConfig(titleAr: 'اختبار الأعداد 0–10', questions: [
         ChoiceQuestion(questionAr: 'ما العدد الذي يأتي بعد 6؟', options: ['5', '7', '9'], correctIndex: 1),
         ChoiceQuestion(questionAr: 'أي عدد أكبر؟', options: ['3', '8', '2'], correctIndex: 1),
       ]),
