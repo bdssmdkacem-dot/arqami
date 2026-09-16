@@ -1,14 +1,9 @@
 import '../widgets/games/scene_explore_widget.dart' show SceneType;
 import 'unit_model.dart';
 
-/// قاعدة بيانات الـ13 وحدة (أرقامي، 4-6 سنوات).
-///
-/// ⚠️ الوحدتان 11 و12 معلّمتان كـ PendingActivityConfig لأنهما تحتاجان
-/// مكونات لم تُبنَ بعد:
-///   - وحدة 11 (أكبر/أصغر): تحتاج ComparisonWidget جديد
-///   - وحدة 12 (الأرقام حولي): تحتاج شاشة استكشاف مخصصة + أصول بصرية
-/// باقي الـ11 وحدة (1-10، 13) تستعمل المكونات الثلاثة الجاهزة فقط
-/// (Trace, Matching, DragCount) وهي قابلة للتشغيل الفعلي اليوم.
+/// قاعدة بيانات المنهج الكامل (13 وحدة) لأرقامي، للأطفال بعمر 4-6 سنوات.
+/// جميع الوحدات الحالية قابلة للتشغيل، مع تدرّج من التتبع والعد إلى
+/// المطابقة والمقارنة والاستكشاف ثم التقييم النهائي.
 class UnitsData {
   static final List<UnitModel> units = [
     const UnitModel(
@@ -122,7 +117,6 @@ class UnitsData {
       order: 11,
       titleAr: 'أكبر من، أصغر من',
       activities: [
-        // ثلاث محاولات متدرجة: فرق كبير، فرق متوسط، ثم سؤال "أقل" للتنويع
         ComparisonActivityConfig(
           leftCount: 2,
           rightCount: 7,
@@ -164,7 +158,6 @@ class UnitsData {
       order: 13,
       titleAr: 'التقييم النهائي',
       activities: [
-        // مزيج من الأنشطة الثلاثة كمراجعة شاملة قبل الشهادة
         const TraceActivityConfig(3),
         MatchingActivityConfig([
           for (final value in [2, 5, 9])
