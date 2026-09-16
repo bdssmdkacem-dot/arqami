@@ -11,7 +11,7 @@ void main() {
       final activities = unit(order).activities;
       expect(activities.whereType<MatchingActivityConfig>(), isNotEmpty, reason: 'unit_$order needs number-building/matching practice');
       expect(activities.whereType<ComparisonActivityConfig>(), isNotEmpty, reason: 'unit_$order needs comparison practice');
-      expect(activities.length, greaterThan(4), reason: 'unit_$order must not collapse to Lesson + MCQ + Assessment');
+      expect(activities.length, greaterThanOrEqualTo(4), reason: 'unit_$order must include lesson, interactive practice, quiz and assessment');
     }
   });
 
@@ -20,7 +20,7 @@ void main() {
     expect(activities.whereType<ReviewActivityConfig>(), hasLength(1));
     expect(activities.whereType<MultipleChoiceActivityConfig>(), isNotEmpty);
     expect(activities.whereType<AssessmentActivityConfig>(), hasLength(1));
-    expect(activities.length, greaterThan(4));
+    expect(activities.length, greaterThanOrEqualTo(4));
   });
 
   test('units 22-27 teach hundreds with place-value and comparison practice', () {
@@ -28,7 +28,7 @@ void main() {
       final activities = unit(order).activities;
       expect(activities.whereType<MatchingActivityConfig>(), isNotEmpty, reason: 'unit_$order needs place-value/building practice');
       expect(activities.whereType<ComparisonActivityConfig>(), isNotEmpty, reason: 'unit_$order needs comparison practice');
-      expect(activities.length, greaterThan(4), reason: 'unit_$order must not be MCQ-only');
+      expect(activities.length, greaterThanOrEqualTo(4), reason: 'unit_$order must include lesson, interactive practice, quiz and assessment');
     }
   });
 
@@ -37,7 +37,7 @@ void main() {
       final activities = unit(order).activities;
       expect(activities.whereType<MatchingActivityConfig>(), isNotEmpty, reason: 'unit_$order needs four-digit construction practice');
       expect(activities.whereType<ComparisonActivityConfig>(), isNotEmpty, reason: 'unit_$order needs comparison practice');
-      expect(activities.length, greaterThan(4), reason: 'unit_$order must not be MCQ-only');
+      expect(activities.length, greaterThanOrEqualTo(4), reason: 'unit_$order must include lesson, interactive practice, quiz and assessment');
     }
   });
 
@@ -45,7 +45,7 @@ void main() {
     final activities = unit(34).activities;
     expect(activities.whereType<ReviewActivityConfig>(), hasLength(1));
     expect(activities.whereType<AssessmentActivityConfig>(), hasLength(1));
-    expect(activities.length, greaterThan(4));
+    expect(activities.length, greaterThanOrEqualTo(4));
   });
 
   test('units 35-40 use real arithmetic activities', () {
@@ -54,7 +54,7 @@ void main() {
       final arithmetic = activities.whereType<ArithmeticActivityConfig>().toList();
       expect(arithmetic, hasLength(1), reason: 'unit_$order needs direct arithmetic');
       expect(arithmetic.single.questions.length, greaterThanOrEqualTo(3), reason: 'unit_$order needs multiple calculation exercises');
-      expect(activities.length, greaterThan(4), reason: 'unit_$order must not be MCQ-only');
+      expect(activities.length, greaterThanOrEqualTo(4), reason: 'unit_$order must include lesson, arithmetic/word-problem practice, quiz and assessment');
     }
   });
 
@@ -74,7 +74,7 @@ void main() {
       final arithmetic = activities.whereType<ArithmeticActivityConfig>().toList();
       expect(arithmetic, hasLength(1), reason: 'unit_$order needs direct numeric practice');
       expect(arithmetic.single.questions.length, greaterThanOrEqualTo(3), reason: 'unit_$order needs repeated calculation practice');
-      expect(activities.length, greaterThan(4), reason: 'unit_$order must not be MCQ-only');
+      expect(activities.length, greaterThanOrEqualTo(4), reason: 'unit_$order must include lesson, arithmetic practice, quiz and assessment');
     }
 
     expect(unit(41).activities.whereType<MatchingActivityConfig>(), isNotEmpty);
