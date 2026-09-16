@@ -12,7 +12,6 @@ class TraceActivityConfig extends ActivityConfig {
   const TraceActivityConfig(this.digit);
 }
 
-/// نوع محتوى عنصر المطابقة.
 enum MatchContentType { number, quantity }
 
 class MatchPairSpec {
@@ -55,7 +54,6 @@ class ComparisonActivityConfig extends ActivityConfig {
   });
 }
 
-/// نشاط استكشاف مشهد يومي.
 class SceneExploreActivityConfig extends ActivityConfig {
   final SceneType sceneType;
   final int targetDigit;
@@ -66,7 +64,6 @@ class SceneExploreActivityConfig extends ActivityConfig {
   });
 }
 
-/// درس نظري قصير، يظهر قبل التمارين المرتبطة به.
 class LessonActivityConfig extends ActivityConfig {
   final String titleAr;
   final String explanationAr;
@@ -79,7 +76,6 @@ class LessonActivityConfig extends ActivityConfig {
   });
 }
 
-/// سؤال اختيار من متعدد.
 class ChoiceQuestion {
   final String questionAr;
   final List<String> options;
@@ -100,17 +96,21 @@ class MultipleChoiceActivityConfig extends ActivityConfig {
   const MultipleChoiceActivityConfig(this.questions);
 }
 
-/// تمرين حسابي مباشر. العمليات المدعومة في المرحلة الحالية هي + - × ÷.
+/// تمرين حسابي مباشر.
+/// correctAnswer يدعم الأعداد الصحيحة والعشرية، بينما correctAnswerText
+/// يسمح بإجابات تعليمية مركبة مثل: "4 والباقي 2".
 class ArithmeticQuestion {
   final String questionAr;
-  final int correctAnswer;
+  final num? correctAnswer;
+  final String? correctAnswerText;
   final String? hintAr;
 
   const ArithmeticQuestion({
     required this.questionAr,
-    required this.correctAnswer,
+    this.correctAnswer,
+    this.correctAnswerText,
     this.hintAr,
-  });
+  }) : assert(correctAnswer != null || correctAnswerText != null);
 }
 
 class ArithmeticActivityConfig extends ActivityConfig {
@@ -123,14 +123,12 @@ class ArithmeticActivityConfig extends ActivityConfig {
   });
 }
 
-/// مسألة كلامية مرتبطة بمفهوم الوحدة.
 class WordProblemActivityConfig extends ActivityConfig {
   final List<ArithmeticQuestion> questions;
 
   const WordProblemActivityConfig(this.questions);
 }
 
-/// مراجعة مركزة في نهاية مجموعة دروس.
 class ReviewActivityConfig extends ActivityConfig {
   final String titleAr;
   final List<ChoiceQuestion> questions;
@@ -141,7 +139,6 @@ class ReviewActivityConfig extends ActivityConfig {
   });
 }
 
-/// تقييم قصير في نهاية المرحلة.
 class AssessmentActivityConfig extends ActivityConfig {
   final String titleAr;
   final List<ChoiceQuestion> questions;
