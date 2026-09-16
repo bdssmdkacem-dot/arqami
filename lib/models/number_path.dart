@@ -1,8 +1,6 @@
 import 'dart:ui';
 
-/// نقطة مرجعية على مسار الرقم، بإحداثيات نسبية (0.0 - 1.0)
-/// نستعمل إحداثيات نسبية بدل بكسلات مطلقة باش يتلاءم المسار
-/// مع أي حجم شاشة (هاتف صغير أو تابلت)
+/// نقطة مرجعية على مسار الرقم، بإحداثيات نسبية (0.0 - 1.0).
 class PathPoint {
   final double x;
   final double y;
@@ -11,13 +9,12 @@ class PathPoint {
   Offset toOffset(Size size) => Offset(x * size.width, y * size.height);
 }
 
-/// مسار رقم واحد: مجموعة نقاط مرجعية مرتبة من البداية للنهاية
+/// مسار رقم واحد: مجموعة نقاط مرجعية مرتبة من البداية للنهاية.
 class NumberPath {
   final int digit;
   final List<PathPoint> points;
 
-  /// مؤشرات النقاط التي تبدأ فيها "ضربة قلم" جديدة (مثلاً الرقم 4
-  /// يحتاج خطين منفصلين). الفهرس 0 لا يُذكر هنا لأنه البداية الطبيعية.
+  /// مؤشرات النقاط التي تبدأ فيها "ضربة قلم" جديدة.
   final List<int> strokeBreaks;
 
   const NumberPath({
@@ -26,8 +23,25 @@ class NumberPath {
     this.strokeBreaks = const [],
   });
 
-  /// يبني مسار الرسم الإرشادي (يُستخدم فقط لو احتجنا خط متصل
-  /// بدل نقاط منفصلة في الرسم)
+  /// يقسم المسار إلى ضربات مرتبة، وهو نفس الترتيب الذي يجب أن يتبعه الطفل.
+  List<List<PathPoint>> get strokeSegments {
+    if (points.isEmpty) return const [];
+
+    final breaks = <int>{0, ...strokeBreaks, points.length};toList()..sort();
+    final segments = <List<PathPoint>>[];
+
+    for (var i = 0; i < breaks.length - 1; i++) {
+      final start = breaks[i];
+      final end = breaks[i + 1];
+      if (start < end) {
+        segments.add(points.sublist(start, end));
+      }
+    }
+
+    return segments;
+  }
+
+  /// يبني مسار الرسم الإرشادي مع احترام فواصل الضربات.
   Path buildGuidePath(Size size) {
     final path = Path();
     if (points.isEmpty) return path;
@@ -47,14 +61,11 @@ class NumberPath {
   }
 }
 
-/// قاعدة بيانات مسارات الأرقام 0-9
+/// قاعدة بيانات مسارات الأرقام 0-9.
 ///
-/// ⚠️ ملاحظة مهمة: الإحداثيات أدناه تقريبية وتم وضعها لتوضيح البنية فقط.
-/// قبل الإنتاج، يجب ضبطها بدقة عبر إحدى الطريقتين:
-///   1. رسم كل رقم على شبكة 10×10 ورقياً، وتسجيل نقاط الانعطاف كنسبة (0.0-1.0)
-///   2. تصدير مسار SVG لكل رقم من Figma/Illustrator، ثم استخراج نقاطه برمجياً
-///
-/// النقاط مرتبة بنفس ترتيب الكتابة الطبيعي للرقم (من أين يبدأ القلم).
+/// الإحداثيات نسبية حتى يعمل المسار على الهاتف والتابلت بنفس المنطق.
+/// ترتيب النقاط يمثل طريقة الكتابة التعليمية، وstrokeBreaks يحدد متى
+/// يجب رفع الإصبع وبدء ضربة جديدة.
 class NumberPathData {
   static final Map<int, NumberPath> _paths = {
     0: const NumberPath(
@@ -110,11 +121,11 @@ class NumberPathData {
     4: const NumberPath(
       digit: 4,
       points: [
-        // الضربة الأولى: الخط المائل + الأفقي
+        // الضربة الأولى: الخط المائل + الأفقي.
         PathPoint(0.60, 0.10),
         PathPoint(0.25, 0.55),
         PathPoint(0.75, 0.55),
-        // الضربة الثانية: الخط العمودي (منفصلة)
+        // الضربة الثانية: الخط العمودي.
         PathPoint(0.60, 0.10),
         PathPoint(0.60, 0.90),
       ],
