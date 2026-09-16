@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = "com.example.arqami"
     compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
 
     defaultConfig {
         applicationId = "com.example.arqami"
@@ -27,7 +28,8 @@ android {
 
     buildTypes {
         release {
-            // Keep the existing signing configuration/workflow unchanged.
+            // Temporary debug signing keeps CI builds reproducible.
+            // A Play release must use the project's release/upload key before submission.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
