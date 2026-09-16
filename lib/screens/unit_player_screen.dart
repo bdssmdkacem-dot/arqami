@@ -47,9 +47,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   }
 
   Future<void> _completeUnit() async {
-    final stars = _wrongAttemptsInUnit == 0
-        ? 3
-        : (_wrongAttemptsInUnit <= 2 ? 2 : 1);
+    final stars = _wrongAttemptsInUnit == 0 ? 3 : (_wrongAttemptsInUnit <= 2 ? 2 : 1);
     await ProgressTracker.instance.markUnitComplete(widget.unit.id, stars: stars);
     AudioService.instance.playUnitComplete();
     if (mounted) setState(() => _unitCompleted = true);
@@ -67,9 +65,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           child: Responsive.constrainedCenter(
-            child: _unitCompleted
-                ? _buildCompletionView()
-                : _buildActivity(_currentActivity),
+            child: _unitCompleted ? _buildCompletionView() : _buildActivity(_currentActivity),
           ),
         ),
       ),
@@ -79,28 +75,42 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   Widget _buildCompletionView() {
     final progress = ProgressTracker.instance.getUnitProgress(widget.unit.id);
     final isFinalUnit = widget.unit.order == UnitsData.units.length;
+    final children = <Widget>[
+      const Icon(Icons.celebration_rounded, size: 64, color: AppColors.gold),
+      const SizedBox(height: 12),
+      const Text('أحسنت!', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
+      const SizedBox(height: 6),
+      const Text('أكملت هذه الوحدة بنجاح', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
+      const SizedBox(height: 18),
+      Row(mainAxisSize: MainAxisSize.min, children: List.generate(3, (i) => Icon(i < progress.stars ? Icons.star_rounded : Icons.star_border_rounded, color: AppColors.gold, size: 40))),
+      const SizedBox(height: 24),
+    ];
+    if (isFinalUnit) {
+      children.add(
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CertificateScreen())),
+            icon: const Icon(Icons.workspace_premium_rounded),
+            label: const Text('احصل على شهادتك'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: AppColors.textPrimary),
+          ),
+        ),
+      );
+      children.add(const SizedBox(height: 10));
+    }
+    children.add(
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('رجوع لخريطة الوحدات')),
+      ),
+    );
+
     return Center(
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.celebration_rounded, size: 64, color: AppColors.gold),
-              const SizedBox(height: 12),
-              const Text('أحسنت!', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 6),
-              const Text('أكملت هذه الوحدة بنجاح', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
-              const SizedBox(height: 18),
-              Row(mainAxisSize: MainAxisSize.min, children: List.generate(3, (i) => Icon(i < progress.stars ? Icons.star_rounded : Icons.star_border_rounded, color: AppColors.gold, size: 40))),
-              const SizedBox(height: 24),
-              if (isFinalUnit) ...[
-                SizedBox(width: double.infinity, child: ElevatedButton.icon(onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CertificateScreen())), icon: const Icon(Icons.workspace_premium_rounded), label: const Text('احصل على شهادتك'), style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold, foregroundColor: AppColors.textPrimary))),
-                const SizedBox(height: 10),
-              ],
-              SizedBox(width: double.infinity, child: OutlinedButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('رجوع لخريطة الوحدات'))),
-            ],
-          ),
+          child: Column(mainAxisSize: MainAxisSize.min, children: children),
         ),
       ),
     );
@@ -125,33 +135,79 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
     } else if (config is WordProblemActivityConfig) {
       activity = _ArithmeticView(config: ArithmeticActivityConfig(operation: 'مسألة', questions: config.questions), onWrong: _onWrongAttempt, onComplete: _onActivityComplete);
     } else if (config is TraceActivityConfig) {
-      activity = TraceWidget(key: ValueKey('trace_${config.digit}_$_activityIndex'), number: config.digit, onComplete: () {
-        AudioService.instance.playCorrect();
-        AudioService.instance.playNumber(config.digit);
-        Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
-      });
+      activity = TraceWidget(
+        key: ValueKey('trace_${config.digit}_$_activityIndex'),
+        number: config.digit,
+        onComplete: () {
+          AudioService.instance.playCorrect();
+          AudioService.instance.playNumber(config.digit);
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
+      );
     } else if (config is MatchingActivityConfig) {
-      final pairs = config.pairs.map((spec) => MatchPair(id: spec.id, leftContent: _buildMatchContent(spec.leftType, spec.leftValue), rightContent: _buildMatchContent(spec.rightType, spec.rightValue))).toList();
-      activity = MatchingWidget(key: ValueKey('matching_$_activityIndex'), pairs: pairs, onCorrectMatch: (_) => AudioService.instance.playCorrect(), onWrongAttempt: _onWrongAttempt, onAllMatched: () => Future.delayed(const Duration(milliseconds: 700), _onActivityComplete));
+      final pairs = config.pairs
+          .map((spec) => MatchPair(
+                id: spec.id,
+                leftContent: _buildMatchContent(spec.leftType, spec.leftValue),
+                rightContent: _buildMatchContent(spec.rightType, spec.rightValue),
+              ))
+          .toList();
+      activity = MatchingWidget(
+        key: ValueKey('matching_$_activityIndex'),
+        pairs: pairs,
+        onCorrectMatch: (_) => AudioService.instance.playCorrect(),
+        onWrongAttempt: _onWrongAttempt,
+        onAllMatched: () => Future.delayed(const Duration(milliseconds: 700), _onActivityComplete),
+      );
     } else if (config is ComparisonActivityConfig) {
-      activity = ComparisonWidget(key: ValueKey('comparison_$_activityIndex'), leftCount: config.leftCount, rightCount: config.rightCount, question: config.question == ComparisonQuestionType.more ? ComparisonQuestion.more : ComparisonQuestion.fewer, onWrongAttempt: _onWrongAttempt, onComplete: () { AudioService.instance.playCorrect(); Future.delayed(const Duration(milliseconds: 700), _onActivityComplete); });
+      activity = ComparisonWidget(
+        key: ValueKey('comparison_$_activityIndex'),
+        leftCount: config.leftCount,
+        rightCount: config.rightCount,
+        question: config.question == ComparisonQuestionType.more ? ComparisonQuestion.more : ComparisonQuestion.fewer,
+        onWrongAttempt: _onWrongAttempt,
+        onComplete: () {
+          AudioService.instance.playCorrect();
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
+      );
     } else if (config is SceneExploreActivityConfig) {
       if (_lastAnnouncedSceneIndex != _activityIndex) {
         _lastAnnouncedSceneIndex = _activityIndex;
         WidgetsBinding.instance.addPostFrameCallback((_) => AudioService.instance.playNumber(config.targetDigit));
       }
-      activity = SceneExploreWidget(key: ValueKey('scene_$_activityIndex'), sceneType: config.sceneType, targetDigit: config.targetDigit, onWrongAttempt: _onWrongAttempt, onComplete: () { AudioService.instance.playCorrect(); Future.delayed(const Duration(milliseconds: 700), _onActivityComplete); });
+      activity = SceneExploreWidget(
+        key: ValueKey('scene_$_activityIndex'),
+        sceneType: config.sceneType,
+        targetDigit: config.targetDigit,
+        onWrongAttempt: _onWrongAttempt,
+        onComplete: () {
+          AudioService.instance.playCorrect();
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
+      );
     } else if (config is DragCountActivityConfig) {
-      activity = DragCountWidget(key: ValueKey('dragcount_$_activityIndex'), targetCount: config.targetCount, onItemDropped: (count) => AudioService.instance.playNumber(count), onWrongDigitSelected: _onWrongAttempt, onComplete: () { AudioService.instance.playCorrect(); Future.delayed(const Duration(milliseconds: 700), _onActivityComplete); });
+      activity = DragCountWidget(
+        key: ValueKey('dragcount_$_activityIndex'),
+        targetCount: config.targetCount,
+        onItemDropped: (count) => AudioService.instance.playNumber(count),
+        onWrongDigitSelected: _onWrongAttempt,
+        onComplete: () {
+          AudioService.instance.playCorrect();
+          Future.delayed(const Duration(milliseconds: 700), _onActivityComplete);
+        },
+      );
     } else {
       return const SizedBox.shrink();
     }
 
-    return Column(children: [
-      _ActivityProgress(current: currentNumber, total: totalActivities, value: progressValue),
-      const SizedBox(height: 14),
-      Expanded(child: activity),
-    ]);
+    return Column(
+      children: [
+        _ActivityProgress(current: currentNumber, total: totalActivities, value: progressValue),
+        const SizedBox(height: 14),
+        Expanded(child: activity),
+      ],
+    );
   }
 
   Widget _buildMatchContent(MatchContentType type, int value) {
@@ -171,23 +227,48 @@ class _LessonView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final children = <Widget>[
+      const Icon(Icons.menu_book_rounded, size: 58, color: AppColors.teal),
+      const SizedBox(height: 16),
+      Text(config.titleAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
+      const SizedBox(height: 16),
+      Text(config.explanationAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, height: 1.6)),
+    ];
+    if (config.examplesAr.isNotEmpty) {
+      children.add(const SizedBox(height: 20));
+      for (final example in config.examplesAr) {
+        children.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.teal.withValues(alpha: .08),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(example, textAlign: TextAlign.center, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        );
+      }
+    }
+    children.add(const SizedBox(height: 22));
+    children.add(
+      SizedBox(
+        height: 52,
+        child: ElevatedButton.icon(
+          onPressed: onContinue,
+          icon: const Icon(Icons.arrow_forward_rounded),
+          label: const Text('فهمت، نبدأ التمرين'),
+        ),
+      ),
+    );
+
     return SingleChildScrollView(
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            const Icon(Icons.menu_book_rounded, size: 58, color: AppColors.teal),
-            const SizedBox(height: 16),
-            Text(config.titleAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 16),
-            Text(config.explanationAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, height: 1.6)),
-            if (config.examplesAr.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              ...config.examplesAr.map((example) => Padding(padding: const EdgeInsets.only(bottom: 10), child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppColors.teal.withValues(alpha: .08), borderRadius: BorderRadius.circular(16)), child: Text(example, textAlign: TextAlign.center, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)))),
-            ],
-            const SizedBox(height: 22),
-            SizedBox(height: 52, child: ElevatedButton.icon(onPressed: onContinue, icon: const Icon(Icons.arrow_forward_rounded), label: const Text('فهمت، نبدأ التمرين'))),
-          ]),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
         ),
       ),
     );
@@ -215,13 +296,20 @@ class _ChoiceQuizViewState extends State<_ChoiceQuizView> {
   void choose(int selected) {
     if (answered) return;
     if (selected == question.correctIndex) {
-      setState(() { answered = true; message = 'أحسنت! إجابة صحيحة'; });
+      setState(() {
+        answered = true;
+        message = 'أحسنت! إجابة صحيحة';
+      });
       Future.delayed(const Duration(milliseconds: 650), () {
         if (!mounted) return;
         if (index == widget.questions.length - 1) {
           widget.onComplete();
         } else {
-          setState(() { index++; answered = false; message = null; });
+          setState(() {
+            index++;
+            answered = false;
+            message = null;
+          });
         }
       });
     } else {
@@ -232,14 +320,43 @@ class _ChoiceQuizViewState extends State<_ChoiceQuizView> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(child: Padding(padding: const EdgeInsets.all(22), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    final children = <Widget>[
       Text(widget.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
       const SizedBox(height: 24),
       Text(question.questionAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, height: 1.5)),
       const SizedBox(height: 22),
-      ...List.generate(question.options.length, (i) => Padding(padding: const EdgeInsets.only(bottom: 12), child: SizedBox(height: 54, child: ElevatedButton(onPressed: () => choose(i), child: Text(question.options[i], style: const TextStyle(fontSize: 19))))),
-      if (message != null) ...[const SizedBox(height: 8), Text(message!, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, color: answered ? AppColors.teal : AppColors.terracotta))],
-    ])));
+    ];
+    for (var i = 0; i < question.options.length; i++) {
+      children.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: SizedBox(
+            height: 54,
+            child: ElevatedButton(
+              onPressed: () => choose(i),
+              child: Text(question.options[i], style: const TextStyle(fontSize: 19)),
+            ),
+          ),
+        ),
+      );
+    }
+    if (message != null) {
+      children.add(const SizedBox(height: 8));
+      children.add(
+        Text(
+          message!,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.w700, color: answered ? AppColors.teal : AppColors.terracotta),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+      ),
+    );
   }
 }
 
@@ -260,20 +377,31 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
   bool locked = false;
 
   @override
-  void dispose() { controller.dispose(); super.dispose(); }
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
   void submit() {
     if (locked) return;
     final value = int.tryParse(controller.text.trim());
     final question = widget.config.questions[index];
     if (value == question.correctAnswer) {
-      setState(() { locked = true; message = 'أحسنت! إجابة صحيحة'; });
+      setState(() {
+        locked = true;
+        message = 'أحسنت! إجابة صحيحة';
+      });
       Future.delayed(const Duration(milliseconds: 650), () {
         if (!mounted) return;
         if (index == widget.config.questions.length - 1) {
           widget.onComplete();
         } else {
-          setState(() { index++; locked = false; message = null; controller.clear(); });
+          setState(() {
+            index++;
+            locked = false;
+            message = null;
+            controller.clear();
+          });
         }
       });
     } else {
@@ -285,14 +413,38 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
   @override
   Widget build(BuildContext context) {
     final question = widget.config.questions[index];
-    return Card(child: Padding(padding: const EdgeInsets.all(22), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    final children = <Widget>[
       Text(question.questionAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
       const SizedBox(height: 24),
-      TextField(controller: controller, enabled: !locked, keyboardType: TextInputType.number, textAlign: TextAlign.center, textDirection: TextDirection.ltr, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800), decoration: const InputDecoration(labelText: 'اكتب الإجابة', border: OutlineInputBorder())),
+      TextField(
+        controller: controller,
+        enabled: !locked,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+        decoration: const InputDecoration(labelText: 'اكتب الإجابة', border: OutlineInputBorder()),
+      ),
       const SizedBox(height: 16),
       SizedBox(height: 54, child: ElevatedButton(onPressed: submit, child: const Text('تحقق', style: TextStyle(fontSize: 18)))),
-      if (message != null) ...[const SizedBox(height: 12), Text(message!, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, color: message!.startsWith('أحسنت') ? AppColors.teal : AppColors.terracotta))],
-    ]));
+    ];
+    if (message != null) {
+      children.add(const SizedBox(height: 12));
+      children.add(
+        Text(
+          message!,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.w700, color: message!.startsWith('أحسنت') ? AppColors.teal : AppColors.terracotta),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+      ),
+    );
   }
 }
 
@@ -304,13 +456,26 @@ class _ActivityProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        const Text('خطوة التعلّم', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
-        Text('$current من $total', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.teal)),
-      ]),
-      const SizedBox(height: 8),
-      ClipRRect(borderRadius: BorderRadius.circular(99), child: LinearProgressIndicator(value: value, minHeight: 8, backgroundColor: AppColors.teal.withValues(alpha: 0.12), valueColor: const AlwaysStoppedAnimation<Color>(AppColors.teal))),
-    ]);
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('خطوة التعلّم', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+            Text('$current من $total', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.teal)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 8,
+            backgroundColor: AppColors.teal.withValues(alpha: 0.12),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.teal),
+          ),
+        ),
+      ],
+    );
   }
 }
