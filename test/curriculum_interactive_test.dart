@@ -48,13 +48,13 @@ void main() {
     expect(activities.length, greaterThanOrEqualTo(4));
   });
 
-  test('units 35-40 use real arithmetic activities', () {
-    for (var order = 35; order <= 40; order++) {
+  test('units 35, 36, 38 and 39 use real arithmetic activities', () {
+    for (final order in [35, 36, 38, 39]) {
       final activities = unit(order).activities;
       final arithmetic = activities.whereType<ArithmeticActivityConfig>().toList();
       expect(arithmetic, hasLength(1), reason: 'unit_$order needs direct arithmetic');
       expect(arithmetic.single.questions.length, greaterThanOrEqualTo(3), reason: 'unit_$order needs multiple calculation exercises');
-      expect(activities.length, greaterThanOrEqualTo(4), reason: 'unit_$order must include lesson, arithmetic/word-problem practice, quiz and assessment');
+      expect(activities.length, greaterThanOrEqualTo(4), reason: 'unit_$order must include lesson, arithmetic practice, quiz and assessment');
     }
   });
 
@@ -65,6 +65,7 @@ void main() {
       expect(wordProblems, hasLength(1), reason: 'unit_$order needs word-problem activity');
       expect(wordProblems.single.questions.length, greaterThanOrEqualTo(2));
       expect(wordProblems.single.questions.every((q) => q.correctAnswer != null), isTrue);
+      expect(activities.length, greaterThanOrEqualTo(4), reason: 'unit_$order must include lesson, word-problem practice, quiz and assessment');
     }
   });
 
