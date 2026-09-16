@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   build-android:
-    name: Analyze, Test and Build Android APK
+    name: Analyze, Test and Build Android
     runs-on: ubuntu-latest
 
     steps:
@@ -54,22 +54,26 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      # CI uses the existing debug signing configuration until a protected
-      # Play upload key is configured. This APK is a build candidate,
-      # not yet the final Play-signed release artifact.
+      # These are release-mode build candidates. Final Play artifacts must use
+      # the protected production upload key before publishing.
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Prepare artifact
+      - name: Build release App Bundle
+        run: flutter build appbundle --release
+
+      - name: Prepare release artifacts
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p build/release
           cp build/app/outputs/flutter-apk/app-release.apk build/release/arqami-release.apk
+          cp build/app/outputs/bundle/release/app-release.aab build/release/arqami-release.aab
 
-      - name: Upload Android APK
+      - name: Upload Android release candidates
         uses: actions/upload-artifact@v4
         with:
-          name: arqami-android-release-candidate
-          path: build/release/arqami-release.apk
+          name: arqami-android-release-candidates
+          path: build/release/*
           if-no-files-found: error
           retention-days: 30
