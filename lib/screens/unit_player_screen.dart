@@ -392,6 +392,16 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
     return value.replaceAll('٫', '.').replaceAll(',', '.').replaceAll('،', '.');
   }
 
+  void _keepWesternDigits(String input) {
+    final normalized = _normalizeDigits(input);
+    if (normalized == input) return;
+    controller.value = controller.value.copyWith(
+      text: normalized,
+      selection: TextSelection.collapsed(offset: normalized.length),
+      composing: TextRange.empty,
+    );
+  }
+
   num? _parseNumber(String input) {
     final normalized = _normalizeDigits(input);
     if (normalized.isEmpty) return null;
@@ -445,6 +455,7 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
         controller: controller,
         enabled: !locked,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        onChanged: _keepWesternDigits,
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
