@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../models/unit_model.dart';
 import '../../models/units_data.dart';
 import 'unit_progress.dart';
 
@@ -75,7 +76,7 @@ class ProgressTracker {
   Future<void> markUnitComplete(String unitId, {int stars = 1}) async {
     _ensureInitialized();
     final current = getUnitProgress(unitId);
-    final safeStars = stars.clamp(1, 3);
+    final safeStars = stars.clamp(1, 3).toInt();
     final updated = current.copyWith(
       completed: true,
       stars: safeStars > current.stars ? safeStars : current.stars,
