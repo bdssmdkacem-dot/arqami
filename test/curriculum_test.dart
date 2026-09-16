@@ -41,6 +41,28 @@ void main() {
     expect(activities.whereType<AssessmentActivityConfig>(), isNotEmpty);
   });
 
+  test('arithmetic model supports integers, decimals and compound answers', () {
+    const integer = ArithmeticQuestion(questionAr: '3 + 4 = ؟', correctAnswer: 7);
+    const decimal = ArithmeticQuestion(questionAr: '1.5 + 2.5 = ؟', correctAnswer: 4.0);
+    const remainder = ArithmeticQuestion(
+      questionAr: '14 ÷ 3 = ؟',
+      correctAnswerText: '4 والباقي 2',
+    );
+
+    expect(integer.correctAnswer, 7);
+    expect(decimal.correctAnswer, 4.0);
+    expect(remainder.correctAnswerText, '4 والباقي 2');
+  });
+
+  test('decimal curriculum exercises have numeric answers', () {
+    final unit44 = UnitsData.units.firstWhere((unit) => unit.id == 'unit_44');
+    final activity = unit44.activities.whereType<ArithmeticActivityConfig>().single;
+    expect(activity.questions, hasLength(2));
+    expect(activity.questions.every((question) => question.correctAnswer != null), isTrue);
+    expect(activity.questions.first.correctAnswer, 4);
+    expect(activity.questions.last.correctAnswer, 5);
+  });
+
   test('all digit paths 0-9 exist and contain valid points', () {
     for (var digit = 0; digit <= 9; digit++) {
       expect(NumberPathData.hasPath(digit), isTrue);
