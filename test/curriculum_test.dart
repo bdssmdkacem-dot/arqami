@@ -18,16 +18,17 @@ void main() {
     }
   });
 
-  test('every unit has a complete lesson and quiz', () {
+  test('every unit has a complete lesson and assessment', () {
     for (final unit in UnitsData.units) {
       final lessons = unit.activities.whereType<LessonActivityConfig>().toList();
-      final quizzes = unit.activities.whereType<AssessmentActivityConfig>().toList();
+      final assessments = unit.activities.whereType<AssessmentActivityConfig>().toList();
 
       expect(lessons, hasLength(1), reason: unit.id);
+      expect(lessons.single.titleAr, isNotEmpty, reason: unit.id);
       expect(lessons.single.explanationAr, isNotEmpty, reason: unit.id);
       expect(lessons.single.examplesAr, isNotEmpty, reason: unit.id);
-      expect(quizzes, hasLength(1), reason: unit.id);
-      expect(quizzes.single.questions.length, greaterThanOrEqualTo(2), reason: unit.id);
+      expect(assessments, hasLength(1), reason: unit.id);
+      expect(assessments.single.questions.length, greaterThanOrEqualTo(2), reason: unit.id);
     }
   });
 
@@ -41,8 +42,16 @@ void main() {
     expect(titles, contains('مفهوم الكسور'));
     expect(titles, contains('الأعداد العشرية'));
     expect(titles, contains('النسبة المئوية'));
-    expect(titles, contains('المتغيرات والتعبيرات الجبرية'));
-    expect(titles, contains('المعادلات ذات الخطوتين'));
+    expect(titles, contains('المتغيرات والتعبيرات الجبرية والمعادلات والمتباينات'));
+
+    final orders = {for (final unit in UnitsData.units) unit.titleAr: unit.order};
+    expect(orders['الجمع مع الحمل']!, greaterThan(orders['الطرح بدون استلاف']!));
+    expect(orders['الطرح مع الاستلاف']!, greaterThan(orders['الجمع مع الحمل']!));
+    expect(orders['جداول الضرب 7 و8 و9']!, greaterThan(orders['جداول الضرب 2 و5 و10']!));
+    expect(orders['القسمة مع الباقي']!, greaterThan(orders['القسمة والمشاركة المتساوية']!));
+    expect(orders['مفهوم الكسور']!, greaterThan(orders['القسمة مع الباقي']!));
+    expect(orders['الأعداد العشرية']!, greaterThan(orders['مفهوم الكسور']!));
+    expect(orders['النسبة المئوية وتطبيقاتها']!, greaterThan(orders['الأعداد العشرية']!));
   });
 
   test('curriculum uses lessons, arithmetic, word problems and assessments', () {
@@ -63,9 +72,9 @@ void main() {
           texts.add(activity.titleAr);
           texts.add(activity.explanationAr);
           texts.addAll(activity.examplesAr);
-        } else if (activity is AssessmentActivityConfig) {
-          texts.add(activity.titleAr);
-          for (final question in activity.questions) {
+        } else if (activity is MultipleChoiceActivityConfig || activity is AssessmentActivityConfig) {
+          final questions = activity is MultipleChoiceActivityConfig ? activity.questions : (activity as AssessmentActivityConfig).questions;
+          for (final question in questions) {
             texts.add(question.questionAr);
             texts.addAll(question.options);
             if (question.hintAr != null) texts.add(question.hintAr!);
@@ -104,12 +113,20 @@ void main() {
   });
 
   test('decimal curriculum exercises have numeric answers', () {
-    final unit44 = UnitsData.units.firstWhere((unit) => unit.id == 'unit_44');
-    final activity = unit44.activities.whereType<ArithmeticActivityConfig>().single;
+    final decimalUnits = UnitsData.units.where(
+      (unit) => unit.titleAr.contains('الأعداد العشرية'),
+    );
+    expect(decimalUnits, isNotEmpty);
+
+    final activity = decimalUnits
+        .expand((unit) => unit.activities)
+        .whereType<ArithmeticActivityConfig>()
+        .single;
+
     expect(activity.questions, hasLength(2));
     expect(activity.questions.every((question) => question.correctAnswer != null), isTrue);
-    expect(activity.questions.first.correctAnswer, 4);
-    expect(activity.questions.last.correctAnswer, 5);
+    expect(activity.questions.first.correctAnswer, 4.0);
+    expect(activity.questions.last.correctAnswer, 3.8);
   });
 
   test('all digit paths 0-9 exist and contain valid points', () {
