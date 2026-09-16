@@ -1,11 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:arqami/models/number_path.dart';
+import 'package:arqami/models/unit_model.dart';
 import 'package:arqami/models/units_data.dart';
 
 void main() {
-  test('curriculum contains 13 ordered playable units', () {
-    expect(UnitsData.units, hasLength(13));
+  test('curriculum covers 3-16 years with ordered units', () {
+    expect(UnitsData.units.length, greaterThanOrEqualTo(50));
 
     for (var i = 0; i < UnitsData.units.length; i++) {
       final unit = UnitsData.units[i];
@@ -13,7 +14,31 @@ void main() {
       expect(unit.id, 'unit_${(i + 1).toString().padLeft(2, '0')}');
       expect(unit.activities, isNotEmpty);
       expect(unit.isImplemented, isTrue);
+      expect(unit.ageRangeAr, isNotEmpty);
     }
+  });
+
+  test('curriculum progresses through core math domains', () {
+    final titles = UnitsData.units.map((u) => u.titleAr).join(' | ');
+    expect(titles, contains('الأعداد حتى 9,999'));
+    expect(titles, contains('الجمع مع الحمل'));
+    expect(titles, contains('الطرح مع الاستلاف'));
+    expect(titles, contains('جداول الضرب 7 و8 و9'));
+    expect(titles, contains('القسمة مع الباقي'));
+    expect(titles, contains('مفهوم الكسور'));
+    expect(titles, contains('الأعداد العشرية'));
+    expect(titles, contains('النسبة المئوية'));
+    expect(titles, contains('المتغيرات والتعبيرات الجبرية'));
+    expect(titles, contains('المعادلات ذات الخطوتين'));
+  });
+
+  test('curriculum uses lessons, arithmetic, word problems and assessments', () {
+    final activities = UnitsData.units.expand((u) => u.activities);
+    expect(activities.whereType<LessonActivityConfig>(), isNotEmpty);
+    expect(activities.whereType<ArithmeticActivityConfig>(), isNotEmpty);
+    expect(activities.whereType<WordProblemActivityConfig>(), isNotEmpty);
+    expect(activities.whereType<MultipleChoiceActivityConfig>(), isNotEmpty);
+    expect(activities.whereType<AssessmentActivityConfig>(), isNotEmpty);
   });
 
   test('all digit paths 0-9 exist and contain valid points', () {
@@ -41,7 +66,6 @@ void main() {
     expect(four.strokeSegments, hasLength(2));
     expect(four.strokeSegments[0], hasLength(3));
     expect(four.strokeSegments[1], hasLength(2));
-
     expect(four.strokeSegments[0].first.x, closeTo(0.60, 0.0001));
     expect(four.strokeSegments[1].first.x, closeTo(0.60, 0.0001));
   });
