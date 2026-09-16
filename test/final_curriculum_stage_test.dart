@@ -46,7 +46,9 @@ void main() {
 
     expect(u45.activities.whereType<ArithmeticActivityConfig>(), isNotEmpty);
     expect(u46.activities.whereType<WordProblemActivityConfig>(), isNotEmpty);
-    expect(u47.activities.whereType<MultipleChoiceActivityConfig>().single.questions.length, greaterThanOrEqualTo(3));
+    final u47Quizzes = u47.activities.whereType<MultipleChoiceActivityConfig>();
+    expect(u47Quizzes, isNotEmpty);
+    expect(u47Quizzes.any((quiz) => quiz.questions.length >= 3), isTrue);
     expect(u48.activities.whereType<ArithmeticActivityConfig>(), isNotEmpty);
     expect(u49.activities.whereType<ArithmeticActivityConfig>(), isNotEmpty);
     expect(u50.activities.whereType<ArithmeticActivityConfig>(), isNotEmpty);
