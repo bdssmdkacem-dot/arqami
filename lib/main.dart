@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'core/ads/ad_service.dart';
@@ -12,10 +14,28 @@ Future<void> main() async {
 
   applyFinalCurriculumStageSplit();
   await ProgressTracker.instance.init();
-  await AudioService.instance.init();
-  await AdService.instance.init();
 
+  // لا نجعل خدمات الصوت والإعلانات الثانوية تمنع ظهور الواجهة.
+  // أي فشل فيها لا يجب أن يغلق التطبيق عند بدء التشغيل.
   runApp(const ArqamiApp());
+
+  unawaited(_initializeSecondaryServices());
+}
+
+Future<void> _initializeSecondaryServices() async {
+  try {
+    await AudioService.instance.init();
+  } catch (error, stackTrace) {
+    debugPrint('AudioService initialization failed: $error');
+    debugPrintStack(stackTrace: stackTrace);
+  }
+
+  try {
+    await AdService.instance.init();
+  } catch (error, stackTrace) {
+    debugPrint('AdService initialization failed: $error');
+    debugPrintStack(stackTrace: stackTrace);
+  }
 }
 
 class ArqamiApp extends StatelessWidget {
