@@ -1,0 +1,38 @@
+name: Repair const ReviewActivityConfig
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove invalid const calls
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/models/units_data.dart')
+          s = p.read_text(encoding='utf-8')
+          old = 'const ReviewActivityConfig'
+          new = 'ReviewActivityConfig'
+          count = s.count(old)
+          if count == 0:
+              print('No const ReviewActivityConfig calls found.')
+              raise SystemExit(0)
+          p.write_text(s.replace(old, new), encoding='utf-8')
+          print(f'Replaced {count} invalid const calls.')
+          PY
+      - name: Commit repair
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/models/units_data.dart
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: remove invalid const ReviewActivityConfig calls"
+          git push
