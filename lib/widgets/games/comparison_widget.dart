@@ -60,8 +60,7 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
       return;
     }
 
-    final tappedIsCorrect =
-        tappedLeft ? _leftIsCorrect : !_leftIsCorrect;
+    final tappedIsCorrect = tappedLeft ? _leftIsCorrect : !_leftIsCorrect;
 
     if (tappedIsCorrect) {
       setState(() {
@@ -95,8 +94,6 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
   }
 
   /// يعيد المكون لحالته الأولية.
-  ///
-  /// مفيدة عند الحاجة إلى إعادة السؤال من خارج المكون.
   void reset() {
     if (!mounted) {
       return;
@@ -132,18 +129,18 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
               icon: widget.itemIcon,
               color: AppColors.teal,
               isWrong: _wrongLeft,
-              isCorrectAndCompleted:
-                  _completed && _leftIsCorrect,
+              isCorrectAndCompleted: _completed && _leftIsCorrect,
               onTap: () => _handleTap(true),
+              semanticLabel: 'مجموعة فيها ${widget.leftCount} عناصر، اليسار',
             ),
             _GroupCard(
               count: widget.rightCount,
               icon: widget.itemIcon,
               color: AppColors.terracotta,
               isWrong: _wrongRight,
-              isCorrectAndCompleted:
-                  _completed && !_leftIsCorrect,
+              isCorrectAndCompleted: _completed && !_leftIsCorrect,
               onTap: () => _handleTap(false),
+              semanticLabel: 'مجموعة فيها ${widget.rightCount} عناصر، اليمين',
             ),
           ],
         ),
@@ -159,6 +156,7 @@ class _GroupCard extends StatelessWidget {
   final bool isWrong;
   final bool isCorrectAndCompleted;
   final VoidCallback onTap;
+  final String semanticLabel;
 
   const _GroupCard({
     required this.count,
@@ -167,6 +165,7 @@ class _GroupCard extends StatelessWidget {
     required this.isWrong,
     required this.isCorrectAndCompleted,
     required this.onTap,
+    required this.semanticLabel,
   });
 
   @override
@@ -181,41 +180,36 @@ class _GroupCard extends StatelessWidget {
       borderColor = Colors.white;
     }
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 140,
-        constraints: const BoxConstraints(
-          minHeight: 140,
-        ),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: borderColor,
-            width: 3,
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 140,
+          constraints: const BoxConstraints(minHeight: 140),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: borderColor, width: 3),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
+            ],
           ),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        alignment: Alignment.center,
-        child: Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          alignment: WrapAlignment.center,
-          children: List.generate(
-            count,
-            (_) => Icon(
-              icon,
-              size: 20,
-              color: color,
+          alignment: Alignment.center,
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            alignment: WrapAlignment.center,
+            children: List.generate(
+              count,
+              (_) => Icon(icon, size: 20, color: color),
             ),
           ),
         ),
