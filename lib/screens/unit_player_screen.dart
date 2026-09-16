@@ -382,11 +382,36 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
     super.dispose();
   }
 
+  String _normalizeDigits(String input) {
+    const arabic = '٠١٢٣٤٥٦٧٨٩';
+    const eastern = '۰۱۲۳۴۵۶۷۸۹';
+    var value = input.trim();
+    for (var i = 0; i < 10; i++) {
+      value = value.replaceAll(arabic[i], '$i').replaceAll(eastern[i], '$i');
+    }
+    return value.replaceAll('٫', '.').replaceAll(',', '.').replaceAll('،', '.');
+  }
+
+  num? _parseNumber(String input) {
+    final normalized = _normalizeDigits(input);
+    if (normalized.isEmpty) return null;
+    return num.tryParse(normalized);
+  }
+
+  bool _matches(ArithmeticQuestion question, String rawInput) {
+    if (question.correctAnswerText != null) {
+      return _normalizeDigits(rawInput) == _normalizeDigits(question.correctAnswerText!);
+    }
+    final value = _parseNumber(rawInput);
+    final expected = question.correctAnswer;
+    if (value == null || expected == null) return false;
+    return (value - expected).abs() < 0.000001;
+  }
+
   void submit() {
     if (locked) return;
-    final value = int.tryParse(controller.text.trim());
     final question = widget.config.questions[index];
-    if (value == question.correctAnswer) {
+    if (_matches(question, controller.text)) {
       setState(() {
         locked = true;
         message = 'أحسنت! إجابة صحيحة';
@@ -419,7 +444,7 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
       TextField(
         controller: controller,
         enabled: !locked,
-        keyboardType: TextInputType.number,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
