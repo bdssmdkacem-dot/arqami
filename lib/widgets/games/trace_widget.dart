@@ -47,6 +47,12 @@ class TraceWidgetState extends State<TraceWidget> {
   late SignatureController _controller;
   late NumberPath _numberPath;
 
+  /// موضع بداية الضربة الحالية داخل controller.points.
+  int _strokeStartIndex = 0;
+
+  /// الضربات التي اكتملت منذ بداية المحاولة الحالية.
+  final List<List<Offset>> _userStrokes = [];
+
   _TraceStatus _status = _TraceStatus.idle;
   double _accuracy = 0;
 
@@ -85,6 +91,7 @@ class TraceWidgetState extends State<TraceWidget> {
 
   void _onDrawStart() {
     if (_status == _TraceStatus.complete) return;
+    _strokeStartIndex = _controller.points.length;
     if (!mounted) return;
     setState(() => _status = _TraceStatus.inProgress);
   }
@@ -94,19 +101,45 @@ class TraceWidgetState extends State<TraceWidget> {
       return;
     }
 
+    final points = _controller.points;
+    if (_strokeStartIndex >= points.length) return;
+
+    final stroke = points
+        .sublist(_strokeStartIndex)
+        .map((point) => point.offset)
+        .toList(growable: false);
+
+    if (stroke.isNotEmpty) {
+      _userStrokes.add(stroke);
+    }
+
     _checkAccuracy();
+  }
+
+  List<List<PathPoint>> _expectedStrokeSegments() {
+    final points = _numberPath.points;
+    if (points.isEmpty) return const [];
+
+    final breaks = <int>{0, ..._numberPath.strokeBreaks, points.length}.toList()
+      ..sort();
+
+    final segments = <List<PathPoint>>[];
+    for (var i = 0; i < breaks.length - 1; i++) {
+      final start = breaks[i];
+      final end = breaks[i + 1];
+      if (start < end) {
+        segments.add(points.sublist(start, end));
+      }
+    }
+    return segments;
   }
 
   void _checkAccuracy() {
     final size = context.size;
     if (size == null || _numberPath.points.isEmpty) return;
 
-    final expectedStrokes = _numberPath.strokeSegments;
-    final userStrokes = _controller
-        .pointsToStrokes(4)
-        .map((stroke) => stroke.map((point) => point.offset).toList(growable: false))
-        .where((stroke) => stroke.isNotEmpty)
-        .toList(growable: false);
+    final expectedStrokes = _expectedStrokeSegments();
+    final userStrokes = List<List<Offset>>.unmodifiable(_userStrokes);
 
     if (userStrokes.isEmpty) return;
 
@@ -114,7 +147,7 @@ class TraceWidgetState extends State<TraceWidget> {
     // لم تكتمل كل الضربات بعد، لكن أي ضربة إضافية تعني أن المحاولة تحتاج
     // إلى إعادة الرسم.
     if (userStrokes.length > expectedStrokes.length) {
-      _setRetry(0);
+      _setRetry(0.0);
       return;
     }
 
@@ -127,10 +160,11 @@ class TraceWidgetState extends State<TraceWidget> {
       final result = _matchStroke(expected, user, size);
 
       totalMatched += result.matched;
-      totalExpected += expected.length;
+      totalExpected += result.expected;
     }
 
-    final accuracy = totalExpected == 0 ? 0.0 : totalMatched / totalExpected;
+    final double accuracy =
+        totalExpected == 0 ? 0.0 : totalMatched / totalExpected;
     _accuracy = accuracy;
 
     // إذا لم نصل بعد إلى آخر ضربة، لا نحكم على المحاولة بالفشل.
@@ -198,6 +232,8 @@ class TraceWidgetState extends State<TraceWidget> {
   /// يمسح اللوحة ويعيد المحاولة.
   void reset() {
     _controller.clear();
+    _strokeStartIndex = 0;
+    _userStrokes.clear();
 
     if (!mounted) return;
     setState(() {
