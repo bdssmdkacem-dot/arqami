@@ -1,22 +1,16 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../models/units_data.dart';
 import 'unit_progress.dart';
 
-/// متتبع التقدم — Singleton فوق Hive Box مكتوب (typed) باستعمال
-/// UnitProgressAdapter. أسرع وأكثر أماناً من النوع (type-safe) مقارنة
-/// بتخزين Maps خام، ويستفيد من ميزات HiveObject مثل .save() المباشرة.
+/// متتبع تقدم الطفل فوق Hive.
 ///
-/// الاستخدام:
-/// ```dart
-/// // مرة واحدة عند إقلاع التطبيق (قبل runApp):
-/// await ProgressTracker.instance.init();
-///
-/// // عند إكمال نشاط:
-/// await ProgressTracker.instance.markUnitComplete('unit_01', stars: 3);
-///
-/// // للقراءة:
-/// final progress = ProgressTracker.instance.getUnitProgress('unit_01');
-/// ```
+/// قاعدة التقدم:
+/// - الوحدة الأولى متاحة دائماً.
+/// - كل وحدة لاحقة تحتاج إكمال الوحدة السابقة.
+/// - إكمال الوحدة لا يحدث إلا بعد المرور بكل أنشطتها، بما فيها الـQuiz
+///   والـAssessment الموجودان في UnitsData.
+/// - النجوم تحفظ أفضل نتيجة للوحدة.
 class ProgressTracker {
   ProgressTracker._internal();
   static final ProgressTracker instance = ProgressTracker._internal();
@@ -29,9 +23,6 @@ class ProgressTracker {
     if (_initialized) return;
 
     await Hive.initFlutter();
-
-    // نتفادى محاولة تسجيل نفس الـ adapter مرتين (مهم إذا init() اتنادات
-    // أكثر من مرة بالخطأ، أو في hot restart أثناء التطوير)
     if (!Hive.isAdapterRegistered(UnitProgressAdapter().typeId)) {
       Hive.registerAdapter(UnitProgressAdapter());
     }
@@ -48,26 +39,52 @@ class ProgressTracker {
     }
   }
 
-  /// يجلب تقدم وحدة معينة، أو قيمة افتراضية فارغة إذا لم تُلمس بعد
   UnitProgress getUnitProgress(String unitId) {
     _ensureInitialized();
     return _box.get(unitId) ?? UnitProgress(unitId: unitId);
   }
 
-  /// يسجّل إكمال وحدة بعدد نجوم معين (يحافظ على أفضل نتيجة سابقة)
+  /// هل يمكن للطفل فتح وحدة معينة؟
+  bool isUnitUnlocked(String unitId) {
+    _ensureInitialized();
+    final index = UnitsData.units.indexWhere((unit) => unit.id == unitId);
+    if (index < 0) return false;
+    if (index == 0) return true;
+    return getUnitProgress(UnitsData.units[index - 1].id).completed;
+  }
+
+  /// هل أُنجزت كل وحدات المرحلة المحددة؟
+  bool isStageComplete(int startOrder, int endOrder) {
+    _ensureInitialized();
+    final stageUnits = UnitsData.units.where(
+      (unit) => unit.order >= startOrder && unit.order <= endOrder,
+    );
+    return stageUnits.isNotEmpty &&
+        stageUnits.every((unit) => getUnitProgress(unit.id).completed);
+  }
+
+  /// أول وحدة لم تكتمل بعد، وهي نقطة الاستئناف الطبيعية للطفل.
+  UnitModel? getNextUnit() {
+    _ensureInitialized();
+    for (final unit in UnitsData.units) {
+      if (!getUnitProgress(unit.id).completed) return unit;
+    }
+    return null;
+  }
+
   Future<void> markUnitComplete(String unitId, {int stars = 1}) async {
     _ensureInitialized();
     final current = getUnitProgress(unitId);
+    final safeStars = stars.clamp(1, 3);
     final updated = current.copyWith(
       completed: true,
-      stars: stars > current.stars ? stars : current.stars,
+      stars: safeStars > current.stars ? safeStars : current.stars,
       lastAttemptAt: DateTime.now(),
       attemptsCount: current.attemptsCount + 1,
     );
     await _box.put(unitId, updated);
   }
 
-  /// يسجّل محاولة لم تكتمل (لإحصائيات لاحقة)
   Future<void> recordAttempt(String unitId) async {
     _ensureInitialized();
     final current = getUnitProgress(unitId);
@@ -78,7 +95,6 @@ class ProgressTracker {
     await _box.put(unitId, updated);
   }
 
-  /// كل معرّفات الوحدات المكتملة (لشاشة خريطة التقدم)
   List<String> getCompletedUnitIds() {
     _ensureInitialized();
     return _box.values
@@ -87,14 +103,12 @@ class ProgressTracker {
         .toList();
   }
 
-  /// نسبة الإكمال الكلية عبر كل الوحدات (لشريط تقدم عام)
   double getOverallProgress(int totalUnitsCount) {
     if (totalUnitsCount == 0) return 0.0;
     final completedCount = getCompletedUnitIds().length;
     return completedCount / totalUnitsCount;
   }
 
-  /// لإعادة تعيين كل التقدم (مفيدة لزر "إعادة البدء" في إعدادات الأهل)
   Future<void> resetAll() async {
     _ensureInitialized();
     await _box.clear();
