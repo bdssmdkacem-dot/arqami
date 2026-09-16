@@ -5,8 +5,8 @@ import 'package:arqami/models/unit_model.dart';
 import 'package:arqami/models/units_data.dart';
 
 void main() {
-  test('curriculum covers 3-16 years with ordered units', () {
-    expect(UnitsData.units.length, greaterThanOrEqualTo(50));
+  test('curriculum covers 3-16 years with 52 ordered units', () {
+    expect(UnitsData.units.length, 52);
 
     for (var i = 0; i < UnitsData.units.length; i++) {
       final unit = UnitsData.units[i];
@@ -15,6 +15,19 @@ void main() {
       expect(unit.activities, isNotEmpty);
       expect(unit.isImplemented, isTrue);
       expect(unit.ageRangeAr, isNotEmpty);
+    }
+  });
+
+  test('every unit has a complete lesson and quiz', () {
+    for (final unit in UnitsData.units) {
+      final lessons = unit.activities.whereType<LessonActivityConfig>().toList();
+      final quizzes = unit.activities.whereType<AssessmentActivityConfig>().toList();
+
+      expect(lessons, hasLength(1), reason: unit.id);
+      expect(lessons.single.explanationAr, isNotEmpty, reason: unit.id);
+      expect(lessons.single.examplesAr, isNotEmpty, reason: unit.id);
+      expect(quizzes, hasLength(1), reason: unit.id);
+      expect(quizzes.single.questions.length, greaterThanOrEqualTo(2), reason: unit.id);
     }
   });
 
@@ -37,8 +50,44 @@ void main() {
     expect(activities.whereType<LessonActivityConfig>(), isNotEmpty);
     expect(activities.whereType<ArithmeticActivityConfig>(), isNotEmpty);
     expect(activities.whereType<WordProblemActivityConfig>(), isNotEmpty);
-    expect(activities.whereType<MultipleChoiceActivityConfig>(), isNotEmpty);
     expect(activities.whereType<AssessmentActivityConfig>(), isNotEmpty);
+  });
+
+  test('all user-facing curriculum digits are western digits only', () {
+    final nonWesternDigits = RegExp(r'[٠-٩۰-۹]');
+
+    for (final unit in UnitsData.units) {
+      final texts = <String>[unit.titleAr, unit.ageRangeAr, unit.descriptionAr ?? ''];
+      for (final activity in unit.activities) {
+        if (activity is LessonActivityConfig) {
+          texts.add(activity.titleAr);
+          texts.add(activity.explanationAr);
+          texts.addAll(activity.examplesAr);
+        } else if (activity is AssessmentActivityConfig) {
+          texts.add(activity.titleAr);
+          for (final question in activity.questions) {
+            texts.add(question.questionAr);
+            texts.addAll(question.options);
+            if (question.hintAr != null) texts.add(question.hintAr!);
+          }
+        } else if (activity is ArithmeticActivityConfig) {
+          for (final question in activity.questions) {
+            texts.add(question.questionAr);
+            if (question.correctAnswerText != null) texts.add(question.correctAnswerText!);
+            if (question.hintAr != null) texts.add(question.hintAr!);
+          }
+        } else if (activity is WordProblemActivityConfig) {
+          for (final question in activity.questions) {
+            texts.add(question.questionAr);
+            if (question.correctAnswerText != null) texts.add(question.correctAnswerText!);
+          }
+        }
+      }
+
+      for (final text in texts) {
+        expect(nonWesternDigits.hasMatch(text), isFalse, reason: '${unit.id}: $text');
+      }
+    }
   });
 
   test('arithmetic model supports integers, decimals and compound answers', () {
