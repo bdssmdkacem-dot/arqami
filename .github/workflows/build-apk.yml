@@ -1,4 +1,4 @@
-name: Arqami APK Build
+name: Arqami Android Build
 
 on:
   push:
@@ -6,24 +6,22 @@ on:
       - main
       - master
       - develop
-
   pull_request:
     branches:
       - main
       - master
-
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: arqami-apk-${{ github.ref }}
+  group: arqami-android-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-apk:
-    name: Build Arqami Release APK
+  build-android:
+    name: Analyze, Test and Build Android
     runs-on: ubuntu-latest
 
     steps:
@@ -34,47 +32,48 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
+          cache: gradle
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.41.9"
+          flutter-version: '3.41.9'
           channel: stable
           cache: true
 
-      - name: Flutter Doctor
-        run: flutter doctor -v
-
-      - name: Flutter Version
+      - name: Flutter version
         run: flutter --version
 
       - name: Get dependencies
         run: flutter pub get
 
-      # Analyze (لا يمنع بناء الـ APK إذا كانت هناك تحذيرات)
       - name: Analyze project
-        continue-on-error: true
         run: flutter analyze
 
-      # Tests (اختياري)
       - name: Run tests
-        continue-on-error: true
         run: flutter test
 
-      - name: Build Release APK
+      # CI uses the existing debug signing configuration until a protected
+      # Play upload key is configured. These artifacts are build candidates,
+      # not yet the final Play-signed release bundle.
+      - name: Build release APK
         run: flutter build apk --release
 
-      - name: Prepare APK
+      - name: Build release AAB
+        run: flutter build appbundle --release
+
+      - name: Prepare artifacts
         shell: bash
         run: |
           mkdir -p build/release
           cp build/app/outputs/flutter-apk/app-release.apk build/release/arqami-release.apk
+          cp build/app/outputs/bundle/release/app-release.aab build/release/arqami-release.aab
 
-      - name: Upload APK
+      - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: arqami-release-apk
-          path: build/release/arqami-release.apk
+          name: arqami-android-release-candidates
+          path: build/release/*
           if-no-files-found: error
           retention-days: 30
