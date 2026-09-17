@@ -39,6 +39,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   int _feedbackToken = 0;
 
   CurriculumSpec get _spec => CurriculumSpecs.forUnit(widget.unit);
+  List<ActivityConfig> get _activities => CurriculumActivityPlanner.plan(widget.unit);
   ActivityConfig get _currentActivity => widget.unit.activities[_activityIndex];
   AgeActivityPresentation get _age => AgeActivityPresentation.current();
 
@@ -65,7 +66,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   void _onActivityComplete() {
     if (!mounted) return;
     _showFeedback(_AnswerFeedback.correct);
-    if (_activityIndex < widget.unit.activities.length - 1) {
+    if (_activityIndex < _activities.length - 1) {
       Future.delayed(const Duration(milliseconds: 360), () {
         if (!mounted) return;
         setState(() => _activityIndex++);
@@ -130,7 +131,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   }
 
   Widget _buildPlayerView() {
-    final total = widget.unit.activities.length;
+    final total = _activities.length;
     final current = _activityIndex + 1;
     final progress = total == 0 ? 0.0 : current / total;
 
@@ -147,7 +148,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
           estimatedMinutes: _spec.estimatedMinutes,
         ),
         const SizedBox(height: 10),
-        Expanded(child: _buildActivity(_currentActivity)),
+        Expanded(child: _buildActivity(_activities[_activityIndex])),
       ],
     );
   }
