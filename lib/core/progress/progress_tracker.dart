@@ -7,18 +7,15 @@ import 'unit_progress.dart';
 
 /// متتبع تقدم الطفل فوق Hive.
 ///
-/// قاعدة التقدم:
-/// - الوحدة الأولى متاحة دائماً.
-/// - كل وحدة لاحقة تحتاج إكمال الوحدة السابقة.
-/// - إكمال الوحدة لا يحدث إلا بعد المرور بكل أنشطتها والـAssessment النهائي.
-/// - النجوم تحفظ أفضل نتيجة للوحدة.
-/// - مكافآت المراحل وAchievements تحفظ بشكل مستقل عن UI والصوت.
+/// لا يعتمد هذا الكلاس على UI أو الصوت؛ فهو مسؤول فقط عن التقدم
+/// والمكافآت والإنجازات وحفظها محلياً.
 class ProgressTracker {
   ProgressTracker._internal();
   static final ProgressTracker instance = ProgressTracker._internal();
 
   static const String _boxName = 'arqami_progress';
   static const String _rewardsBoxName = 'arqami_stage_rewards';
+
   late Box<UnitProgress> _box;
   late Box<dynamic> _rewardsBox;
   bool _initialized = false;
@@ -90,12 +87,12 @@ class ProgressTracker {
     return _rewardsBox.get('achievement:$achievementId') == true;
   }
 
-  /// يجمع مكافأة المرحلة مرة واحدة فقط.
-  /// يعيد true عند الجمع الفعلي، وfalse إذا كانت مقفلة أو جُمعت سابقاً.
   Future<bool> claimStageReward(int stage) async {
     _ensureInitialized();
     final reward = StageRewards.forStage(stage);
-    if (getStageRewardStatus(stage) != StageRewardStatus.available) return false;
+    if (getStageRewardStatus(stage) != StageRewardStatus.available) {
+      return false;
+    }
 
     await _rewardsBox.put(reward.id, true);
     await _rewardsBox.put('achievement:${reward.achievementId}', true);
@@ -105,7 +102,7 @@ class ProgressTracker {
   List<int> getClaimedStageRewards() {
     _ensureInitialized();
     return StageRewards.all
-        .where(isStageRewardClaimed)
+        .where((reward) => isStageRewardClaimed(reward.stage))
         .map((reward) => reward.stage)
         .toList();
   }
@@ -126,13 +123,16 @@ class ProgressTracker {
     return null;
   }
 
-  /// تسجيل إكمال وحدة بعد اجتياز جميع أنشطتها والـAssessment النهائي.
   Future<void> markUnitComplete(String unitId, {int stars = 1}) async {
     _ensureInitialized();
 
     final unitIndex = UnitsData.units.indexWhere((unit) => unit.id == unitId);
     if (unitIndex < 0) {
-      throw ArgumentError.value(unitId, 'unitId', 'الوحدة غير موجودة في المنهج');
+      throw ArgumentError.value(
+        unitId,
+        'unitId',
+        'الوحدة غير موجودة في المنهج',
+      );
     }
     if (!isUnitUnlocked(unitId)) {
       throw StateError('لا يمكن إكمال $unitId قبل إكمال الوحدة السابقة.');
