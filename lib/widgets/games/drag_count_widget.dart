@@ -174,6 +174,7 @@ class DragCountWidgetState extends State<DragCountWidget> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: GestureDetector(
+                      key: ValueKey('drag-count-choice-$digit'),
                       onTap: () => _handleDigitTap(digit),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
