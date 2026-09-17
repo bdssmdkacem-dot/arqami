@@ -13,10 +13,6 @@ import '../widgets/shared/banner_ad_widget.dart';
 import 'certificate_screen.dart';
 import 'unit_player_screen.dart';
 
-/// خريطة رحلة أرقامي.
-///
-/// الخريطة تستخدم نفس ترتيب المنهج ونفس ProgressTracker؛ لا توجد حالة
-/// منفصلة للخريطة يمكن أن تختلف عن حالة التقدم الحقيقية.
 class UnitsMapScreen extends StatefulWidget {
   const UnitsMapScreen({super.key});
 
@@ -27,9 +23,8 @@ class UnitsMapScreen extends StatefulWidget {
 class _UnitsMapScreenState extends State<UnitsMapScreen> {
   final List<UnitModel> _units = UnitsData.units;
 
-  bool _isUnitUnlocked(int index) {
-    return ProgressTracker.instance.isUnitUnlocked(_units[index].id);
-  }
+  bool _isUnitUnlocked(int index) =>
+      ProgressTracker.instance.isUnitUnlocked(_units[index].id);
 
   Future<void> _openUnit(UnitModel unit) async {
     await Navigator.of(context).push(
@@ -40,15 +35,14 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
 
   void _openNextUnit() {
     final next = ProgressTracker.instance.getNextUnit();
-    if (next == null) return;
-    _openUnit(next);
+    if (next != null) _openUnit(next);
   }
 
   @override
   Widget build(BuildContext context) {
     final completedCount =
         ProgressTracker.instance.getCompletedUnitIds().length;
-    final overallProgress =
+    final progress =
         ProgressTracker.instance.getOverallProgress(_units.length);
     final nextUnit = ProgressTracker.instance.getNextUnit();
     final allCompleted = completedCount == _units.length;
@@ -62,12 +56,14 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
           if (allCompleted)
             IconButton(
               tooltip: 'شهادتك',
-              icon: const Icon(Icons.workspace_premium_rounded),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const CertificateScreen()),
-                );
-              },
+              icon: Image.asset(
+                'assets/game/rewards/trophy.png',
+                width: 25,
+                height: 25,
+              ),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CertificateScreen()),
+              ),
             ),
         ],
       ),
@@ -76,7 +72,7 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
           children: [
             Responsive.constrainedCenter(
               child: _JourneyHeader(
-                progress: overallProgress,
+                progress: progress,
                 completedCount: completedCount,
                 totalCount: _units.length,
                 nextUnit: nextUnit,
@@ -95,23 +91,17 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
                       itemBuilder: (context, index) {
                         final unit = _units[index];
                         final unlocked = _isUnitUnlocked(index);
-                        final progress =
+                        final unitProgress =
                             ProgressTracker.instance.getUnitProgress(unit.id);
                         final previousCompleted = index == 0 ||
                             ProgressTracker.instance
                                 .getUnitProgress(_units[index - 1].id)
                                 .completed;
-                        final nextUnlocked = index + 1 < _units.length &&
-                            ProgressTracker.instance.isUnitUnlocked(
-                              _units[index + 1].id,
-                            );
-
                         return _MapLevel(
                           unit: unit,
-                          progress: progress,
+                          progress: unitProgress,
                           unlocked: unlocked,
                           previousCompleted: previousCompleted,
-                          nextUnlocked: nextUnlocked,
                           onTap: unlocked ? () => _openUnit(unit) : null,
                         );
                       },
@@ -153,18 +143,10 @@ class _JourneyHeader extends StatelessWidget {
           children: [
             Row(
               children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: AppColors.gold.withValues(alpha: 0.16),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.route_rounded,
-                    color: AppColors.gold,
-                    size: 27,
-                  ),
+                Image.asset(
+                  'assets/game/rewards/trophy.png',
+                  width: 44,
+                  height: 44,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -236,7 +218,6 @@ class _MapLevel extends StatelessWidget {
   final UnitProgress progress;
   final bool unlocked;
   final bool previousCompleted;
-  final bool nextUnlocked;
   final VoidCallback? onTap;
 
   const _MapLevel({
@@ -244,7 +225,6 @@ class _MapLevel extends StatelessWidget {
     required this.progress,
     required this.unlocked,
     required this.previousCompleted,
-    required this.nextUnlocked,
     required this.onTap,
   });
 
@@ -255,8 +235,6 @@ class _MapLevel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRight = unit.order.isEven;
-    final stage = _stageFor(unit.order);
-
     return SizedBox(
       height: 126,
       child: Stack(
@@ -290,7 +268,7 @@ class _MapLevel extends StatelessWidget {
               top: 4,
               left: isRight ? null : 10,
               right: isRight ? 10 : null,
-              child: _StageChip(label: stage),
+              child: _StageChip(label: _stageFor(unit.order)),
             ),
         ],
       ),
@@ -327,78 +305,88 @@ class _LevelNode extends StatelessWidget {
       width: math.min(MediaQuery.sizeOf(context).width * 0.72, 310),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         child: Container(
           constraints: const BoxConstraints(minWidth: 170, maxWidth: 250),
-          padding: const EdgeInsetsDirectional.fromSTEB(10, 8, 14, 8),
+          padding: const EdgeInsetsDirectional.fromSTEB(9, 8, 14, 8),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor.withValues(
-              alpha: locked ? 0.70 : 1,
-            ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: current
-                  ? AppColors.gold
-                  : nodeColor.withValues(alpha: 0.22),
+              color: current ? AppColors.gold : nodeColor.withValues(alpha: 0.28),
               width: current ? 2.5 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 blurRadius: current ? 12 : 6,
                 offset: const Offset(0, 3),
-                color: Colors.black.withValues(
-                  alpha: current ? 0.12 : 0.06,
-                ),
+                color: Colors.black.withValues(alpha: current ? 0.12 : 0.06),
               ),
             ],
           ),
-          child: Row(
+          child: Stack(
             children: [
-              _CircularNode(
-                order: unit.order,
-                color: nodeColor,
-                completed: progress.completed,
-                locked: locked,
-                current: current,
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'المستوى ${unit.order}',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: nodeColor,
-                            fontWeight: FontWeight.w900,
-                          ),
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: Opacity(
+                    opacity: locked ? 0.32 : 0.90,
+                    child: Image.asset(
+                      'assets/game/ui/kenney_button.png',
+                      fit: BoxFit.fill,
+                      filterQuality: FilterQuality.medium,
                     ),
-                    const SizedBox(height: 1),
-                    Text(
-                      unit.titleAr,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: locked ? AppColors.locked : null,
-                          ),
-                    ),
-                    if (progress.completed) ...[
-                      const SizedBox(height: 2),
-                      _StarsRow(stars: progress.stars),
-                    ] else if (current) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        'ابدأ الآن',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.gold,
-                              fontWeight: FontWeight.w900,
-                            ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
+              ),
+              Row(
+                children: [
+                  _CircularNode(
+                    order: unit.order,
+                    color: nodeColor,
+                    completed: progress.completed,
+                    locked: locked,
+                    current: current,
+                  ),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'المستوى ${unit.order}',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: nodeColor,
+                                fontWeight: FontWeight.w900,
+                              ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          unit.titleAr,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: locked ? AppColors.locked : null,
+                              ),
+                        ),
+                        if (progress.completed) ...[
+                          const SizedBox(height: 2),
+                          _StarsRow(stars: progress.stars),
+                        ] else if (current) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'ابدأ الآن',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: AppColors.gold,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -430,7 +418,7 @@ class _CircularNode extends StatelessWidget {
       width: current ? 58 : 52,
       height: current ? 58 : 52,
       decoration: BoxDecoration(
-        color: color,
+        color: color.withValues(alpha: locked ? 0.72 : 1),
         shape: BoxShape.circle,
         border: Border.all(
           color: current ? AppColors.gold : Colors.white.withValues(alpha: 0.85),
@@ -445,14 +433,17 @@ class _CircularNode extends StatelessWidget {
             ),
         ],
       ),
-      child: Icon(
-        locked
-            ? Icons.lock_rounded
-            : completed
-                ? Icons.check_rounded
-                : Icons.play_arrow_rounded,
-        color: Colors.white,
-        size: current ? 28 : 24,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Image.asset(
+          locked
+              ? 'assets/game/rewards/lock.png'
+              : completed
+                  ? 'assets/game/rewards/checkmark.png'
+                  : 'assets/game/rewards/trophy.png',
+          color: Colors.white,
+          filterQuality: FilterQuality.high,
+        ),
       ),
     );
   }
@@ -495,11 +486,10 @@ class _PathPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _PathPainter oldDelegate) {
-    return oldDelegate.fromRight != fromRight ||
-        oldDelegate.toRight != toRight ||
-        oldDelegate.active != active;
-  }
+  bool shouldRepaint(covariant _PathPainter oldDelegate) =>
+      oldDelegate.fromRight != fromRight ||
+      oldDelegate.toRight != toRight ||
+      oldDelegate.active != active;
 }
 
 class _StageChip extends StatelessWidget {
@@ -537,10 +527,17 @@ class _StarsRow extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (index) {
-        return Icon(
-          index < stars ? Icons.star_rounded : Icons.star_border_rounded,
-          color: AppColors.gold,
-          size: 16,
+        return Padding(
+          padding: const EdgeInsetsDirectional.only(end: 2),
+          child: Opacity(
+            opacity: index < stars ? 1 : 0.25,
+            child: Image.asset(
+              'assets/game/rewards/star.png',
+              width: 17,
+              height: 17,
+              color: AppColors.gold,
+            ),
+          ),
         );
       }),
     );
@@ -558,6 +555,5 @@ String _stageFor(int order) {
   return 'رحلة أرقامي';
 }
 
-bool _isStageStart(int order) {
-  return const {14, 21, 31, 39, 45, 47}.contains(order);
-}
+bool _isStageStart(int order) =>
+    const {14, 21, 31, 39, 45, 47}.contains(order);
