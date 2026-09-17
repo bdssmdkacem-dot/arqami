@@ -23,10 +23,162 @@ class CurriculumSpec {
 }
 
 /// الخطة التعليمية التفصيلية للوحدات الـ52.
+/// نوع النشاط المطلوب في المسار التعليمي. تعريف برمجي مستقل عن النص العربي.
+enum CurriculumActivityKind {
+  lesson,
+  trace,
+  dragCount,
+  matching,
+  comparison,
+  sceneExplore,
+  quiz,
+  review,
+  arithmetic,
+  wordProblem,
+}
+
+class CurriculumActivityPlanner {
+  CurriculumActivityPlanner._();
+
+  static List<ActivityConfig> plan(UnitModel unit) {
+    final source = unit.sourceActivities;
+    final kinds = CurriculumSpecs.activityKindsForUnit(unit);
+    final used = <int>{};
+    final result = <ActivityConfig>[];
+
+    for (final kind in kinds) {
+      for (var i = 0; i < source.length; i++) {
+        if (used.contains(i) || !_matches(source[i], kind)) continue;
+        result.add(source[i]);
+        used.add(i);
+        break;
+      }
+    }
+
+    for (var i = 0; i < source.length; i++) {
+      if (used.contains(i)) continue;
+      if (source[i] is AssessmentActivityConfig) {
+        result.add(source[i]);
+        used.add(i);
+      }
+    }
+
+    for (var i = 0; i < source.length; i++) {
+      if (!used.contains(i)) result.add(source[i]);
+    }
+
+    return List.unmodifiable(result);
+  }
+
+  static bool _matches(ActivityConfig config, CurriculumActivityKind kind) {
+    switch (kind) {
+      case CurriculumActivityKind.lesson:
+        return config is LessonActivityConfig;
+      case CurriculumActivityKind.trace:
+        return config is TraceActivityConfig;
+      case CurriculumActivityKind.dragCount:
+        return config is DragCountActivityConfig;
+      case CurriculumActivityKind.matching:
+        return config is MatchingActivityConfig;
+      case CurriculumActivityKind.comparison:
+        return config is ComparisonActivityConfig;
+      case CurriculumActivityKind.sceneExplore:
+        return config is SceneExploreActivityConfig;
+      case CurriculumActivityKind.quiz:
+        return config is MultipleChoiceActivityConfig;
+      case CurriculumActivityKind.review:
+        return config is ReviewActivityConfig;
+      case CurriculumActivityKind.arithmetic:
+        return config is ArithmeticActivityConfig;
+      case CurriculumActivityKind.wordProblem:
+        return config is WordProblemActivityConfig;
+    }
+  }
+}
+
+
 class CurriculumSpecs {
   CurriculumSpecs._();
 
   static CurriculumSpec forUnit(UnitModel unit) => _specs[unit.order - 1];
+
+  static List<CurriculumActivityKind> activityKindsForUnit(UnitModel unit) {
+    final n = unit.order;
+    if (n <= 6 || (n >= 8 && n <= 12)) {
+      return const [
+        CurriculumActivityKind.lesson,
+        CurriculumActivityKind.trace,
+        CurriculumActivityKind.dragCount,
+        CurriculumActivityKind.matching,
+        CurriculumActivityKind.quiz,
+      ];
+    }
+    if (n == 7 || n == 13) {
+      return const [
+        CurriculumActivityKind.lesson,
+        CurriculumActivityKind.review,
+        CurriculumActivityKind.matching,
+        CurriculumActivityKind.comparison,
+        CurriculumActivityKind.quiz,
+      ];
+    }
+    if (n >= 14 && n <= 34) {
+      return const [
+        CurriculumActivityKind.lesson,
+        CurriculumActivityKind.matching,
+        CurriculumActivityKind.comparison,
+        CurriculumActivityKind.quiz,
+      ];
+    }
+    if (n >= 35 && n <= 40) {
+      return const [
+        CurriculumActivityKind.lesson,
+        CurriculumActivityKind.arithmetic,
+        CurriculumActivityKind.wordProblem,
+        CurriculumActivityKind.quiz,
+      ];
+    }
+    if (n >= 41 && n <= 46) {
+      return const [
+        CurriculumActivityKind.lesson,
+        CurriculumActivityKind.arithmetic,
+        CurriculumActivityKind.matching,
+        CurriculumActivityKind.quiz,
+      ];
+    }
+    if (n == 47 || n == 48) {
+      return const [
+        CurriculumActivityKind.lesson,
+        CurriculumActivityKind.quiz,
+        CurriculumActivityKind.quiz,
+        CurriculumActivityKind.review,
+      ];
+    }
+    if (n == 49) {
+      return const [
+        CurriculumActivityKind.lesson,
+        CurriculumActivityKind.quiz,
+        CurriculumActivityKind.arithmetic,
+        CurriculumActivityKind.review,
+      ];
+    }
+    if (n == 50 || n == 51) {
+      return const [
+        CurriculumActivityKind.lesson,
+        CurriculumActivityKind.arithmetic,
+        CurriculumActivityKind.quiz,
+        CurriculumActivityKind.review,
+      ];
+    }
+    return const [
+      CurriculumActivityKind.lesson,
+      CurriculumActivityKind.quiz,
+      CurriculumActivityKind.arithmetic,
+      CurriculumActivityKind.review,
+    ];
+  }
+
+
 
   static const List<CurriculumSpec> _specs = [
     CurriculumSpec(learningGoalAr:'فهم الصفر', objectivesAr:['تمييز 0 كعدم وجود كمية','ربط الرمز بالكمية'], skillsAr:['التعرف البصري','الكمية'], activityPlanAr:['درس بصري','اسحب وعدّ','مطابقة الرمز بالكمية','تتبع 0','تحدي الصفر'], finalChallengeAr:'أكمل حديقة فارغة ثم اختر 0 الصحيح', estimatedMinutes:7),
