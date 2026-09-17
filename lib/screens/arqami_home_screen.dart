@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/profile/learner_profile.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/game_theme.dart';
 import 'achievements_screen.dart';
 import 'units_map_screen.dart';
 
@@ -62,8 +63,8 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
               Text(
                 AgeBand.fromAge(selectedAge).labelAr,
                 style: const TextStyle(
-                  color: AppColors.teal,
-                  fontWeight: FontWeight.w800,
+                  color: AppColors.primaryDark,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ],
@@ -74,9 +75,10 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text('إلغاء'),
               ),
-            FilledButton(
+            FilledButton.icon(
               onPressed: () => Navigator.pop(context, selectedAge),
-              child: const Text('حفظ'),
+              icon: const Icon(Icons.rocket_launch_rounded),
+              label: const Text('هيا نبدأ'),
             ),
           ],
         ),
@@ -94,35 +96,93 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
     final age = LearnerProfile.age;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('أرقامي'),
+        titleSpacing: 16,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.sunshine,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accent.withValues(alpha: .25),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                color: AppColors.textPrimary,
+                size: 23,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('أرقامي'),
+                Text(
+                  'عالم الأرقام 🎮',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           if (age != null)
-            IconButton(
-              tooltip: 'تغيير العمر',
-              onPressed: () => _showAgePicker(required: false),
-              icon: const Icon(Icons.person_rounded),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 10),
+              child: InkWell(
+                onTap: () => _showAgePicker(required: false),
+                borderRadius: BorderRadius.circular(18),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: GameTheme.paper,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: .14)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.face_rounded, size: 18, color: AppColors.primaryDark),
+                      const SizedBox(width: 5),
+                      Text('$age سنة', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+                    ],
+                  ),
+                ),
+              ),
             ),
         ],
       ),
       body: IndexedStack(index: _index, children: _screens),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (value) => setState(() => _index = value),
-        backgroundColor: AppColors.cardBackground,
-        indicatorColor: AppColors.goldLight.withAlpha(90),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.map_outlined),
-            selectedIcon: Icon(Icons.map_rounded, color: AppColors.teal),
-            label: 'الرحلة',
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: NavigationBar(
+            selectedIndex: _index,
+            onDestinationSelected: (value) => setState(() => _index = value),
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.map_outlined),
+                selectedIcon: Icon(Icons.map_rounded),
+                label: 'الرحلة',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.emoji_events_outlined),
+                selectedIcon: Icon(Icons.emoji_events_rounded),
+                label: 'جوائزي',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.emoji_events_outlined),
-            selectedIcon:
-                Icon(Icons.emoji_events_rounded, color: AppColors.gold),
-            label: 'الإنجازات',
-          ),
-        ],
+        ),
       ),
     );
   }
