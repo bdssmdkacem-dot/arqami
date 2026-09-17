@@ -41,7 +41,7 @@ class CurriculumActivityPlanner {
   CurriculumActivityPlanner._();
 
   static List<ActivityConfig> plan(UnitModel unit) {
-    final source = unit.sourceActivities;
+    final source = unit.activities;
     final kinds = CurriculumSpecs.activityKindsForUnit(unit);
     final used = <int>{};
     final result = <ActivityConfig>[];
