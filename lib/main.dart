@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'core/ads/ad_service.dart';
 import 'core/audio/audio_service.dart';
+import 'core/profile/learner_profile.dart';
 import 'core/progress/progress_tracker.dart';
 import 'core/theme/app_theme.dart';
 import 'models/deep_curriculum_fixes.dart';
@@ -16,6 +17,7 @@ Future<void> main() async {
   applyFinalCurriculumStageSplit();
   applyDeepCurriculumFixes();
   await ProgressTracker.instance.init();
+  await LearnerProfile.init();
 
   // لا نجعل خدمات الصوت والإعلانات الثانوية تمنع ظهور الواجهة.
   // أي فشل فيها لا يجب أن يغلق التطبيق عند بدء التشغيل.
