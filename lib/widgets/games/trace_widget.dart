@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:signature/signature.dart';
@@ -362,7 +363,13 @@ class _GardenBackgroundPainter extends CustomPainter {
     canvas.drawCircle(Offset(size.width * .27, size.height * .105), 17, cloudPaint);
 
     final sign = Paint()..color = GameTheme.mango.withValues(alpha: .28);
-    canvas.drawRRect(Rect.fromCenter(center: Offset(size.width * .82, size.height * .15), width: 54, height: 34), Radius.circular(12), sign);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(size.width * .82, size.height * .15), width: 54, height: 34),
+        const Radius.circular(12),
+      ),
+      sign,
+    );
     final tp = TextPainter(
       text: TextSpan(text: '$number', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: GameTheme.ink)),
       textDirection: TextDirection.rtl,
@@ -426,7 +433,7 @@ class _NumberRoadPainter extends CustomPainter {
     final total = metrics.fold<double>(0, (sum, metric) => sum + metric.length);
     if (total <= 0) return;
     var distance = total * animationValue;
-    PathMetric? activeMetric;
+    ui.PathMetric? activeMetric;
     for (final metric in metrics) {
       if (distance <= metric.length) {
         activeMetric = metric;
