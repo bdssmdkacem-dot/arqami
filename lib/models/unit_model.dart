@@ -1,5 +1,6 @@
 import '../core/profile/age_activity_adapter.dart';
 import '../widgets/games/scene_explore_widget.dart' show SceneType;
+import 'curriculum_spec.dart';
 
 /// وصف عام لنشاط داخل وحدة. كل وحدة تتكون من قائمة أنشطة مرتبة،
 /// والطفل يكملها بالترتيب قبل اعتبار الوحدة منتهية.
@@ -170,6 +171,10 @@ class UnitModel {
   /// الأنشطة التي يراها المتعلم بعد تكييفها للعمر ومفهوم الوحدة.
   /// المصدر الأصلي يبقى محفوظاً داخل الوحدة، لذلك لا يتغير المنهج نفسه.
   List<ActivityConfig> get activities => AgeActivityPlan.current().adaptUnit(this);
+
+  /// مواصفات التعلم العميق الخاصة بالوحدة: أهداف، مهارات، أنشطة مقترحة،
+  /// وتحدٍ نهائي. تبقى مستقلة عن الواجهة حتى يمكن تطوير المحرك لاحقاً.
+  CurriculumSpec get curriculumSpec => CurriculumSpecs.forOrder(order);
 
   /// الأنشطة الأصلية قبل أي تكييف عمري. تستخدمها اختبارات سلامة المنهج.
   List<ActivityConfig> get sourceActivities => List.unmodifiable(_activities);
