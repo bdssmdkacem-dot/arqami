@@ -99,99 +99,102 @@ class DragCountWidgetState extends State<DragCountWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: Text(
-            '$_droppedCount',
-            key: ValueKey(_droppedCount),
-            style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+    return CustomPaint(
+      painter: _GardenPainter(),
+      child: Column(
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: Text(
+              '$_droppedCount',
+              key: ValueKey(_droppedCount),
+              style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        if (_remainingItemKeys.isNotEmpty)
-          _GardenPatch(items: _remainingItemKeys, icon: widget.itemIcon, color: widget.itemColor),
-        if (_remainingItemKeys.isNotEmpty) const SizedBox(height: 18),
-        if (_remainingItemKeys.isNotEmpty)
-          DragTarget<int>(
-            onWillAcceptWithDetails: (details) => _remainingItemKeys.contains(details.data),
-            onAcceptWithDetails: (details) => _handleDropped(details.data),
-            builder: (context, candidateData, rejectedData) {
-              final isHovering = candidateData.isNotEmpty;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: 150,
-                height: 108,
-                decoration: BoxDecoration(
-                  color: isHovering ? GameTheme.paperWarm : GameTheme.paper,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isHovering ? GameTheme.mango : GameTheme.skyDeep,
-                    width: 3,
+          const SizedBox(height: 16),
+          if (_remainingItemKeys.isNotEmpty)
+            _GardenPatch(items: _remainingItemKeys, icon: widget.itemIcon, color: widget.itemColor),
+          if (_remainingItemKeys.isNotEmpty) const SizedBox(height: 18),
+          if (_remainingItemKeys.isNotEmpty)
+            DragTarget<int>(
+              onWillAcceptWithDetails: (details) => _remainingItemKeys.contains(details.data),
+              onAcceptWithDetails: (details) => _handleDropped(details.data),
+              builder: (context, candidateData, rejectedData) {
+                final isHovering = candidateData.isNotEmpty;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  width: 150,
+                  height: 108,
+                  decoration: BoxDecoration(
+                    color: isHovering ? GameTheme.paperWarm : GameTheme.paper,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isHovering ? GameTheme.mango : GameTheme.skyDeep,
+                      width: 3,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4)),
+                    ],
                   ),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4)),
-                  ],
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.shopping_basket_rounded, size: 42, color: GameTheme.mango),
+                      const SizedBox(height: 4),
+                      Text('السلة', style: TextStyle(color: GameTheme.inkSoft, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                );
+              },
+            ),
+          if (_remainingItemKeys.isNotEmpty) const SizedBox(height: 24),
+          if (_showDigitChoices)
+            Column(
+              children: [
+                Text(
+                  widget.targetCount == 0 ? 'كم عنصراً؟ لا توجد عناصر.' : 'كم عنصر جمعت؟',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.shopping_basket_rounded, size: 42, color: GameTheme.mango),
-                    const SizedBox(height: 4),
-                    Text('السلة', style: TextStyle(color: GameTheme.inkSoft, fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              );
-            },
-          ),
-        if (_remainingItemKeys.isNotEmpty) const SizedBox(height: 24),
-        if (_showDigitChoices)
-          Column(
-            children: [
-              Text(
-                widget.targetCount == 0 ? 'كم عنصراً؟ لا توجد عناصر.' : 'كم عنصر جمعت؟',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: _digitChoices.map((digit) {
-                  final isWrong = _wrongSelection == digit;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: GestureDetector(
-                      key: ValueKey('drag-count-choice-$digit'),
-                      onTap: () => _handleDigitTap(digit),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: isWrong ? GameTheme.danger.withValues(alpha: .12) : GameTheme.paper,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: isWrong ? GameTheme.danger : GameTheme.skyDeep,
-                            width: 2,
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _digitChoices.map((digit) {
+                    final isWrong = _wrongSelection == digit;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: GestureDetector(
+                        key: ValueKey('drag-count-choice-$digit'),
+                        onTap: () => _handleDigitTap(digit),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: isWrong ? GameTheme.danger.withValues(alpha: .12) : GameTheme.paper,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isWrong ? GameTheme.danger : GameTheme.skyDeep,
+                              width: 2,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+                            ],
                           ),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '$digit',
-                          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: GameTheme.ink),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '$digit',
+                            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: GameTheme.ink),
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-      ],
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
