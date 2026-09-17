@@ -17,11 +17,18 @@ class AssessmentResult {
 
 /// Pure assessment logic kept separate from the quiz/training flow.
 ///
-/// An assessment is passed when at least 70% of its questions are correct.
+/// For very short assessments (1–2 questions), one correct answer is enough
+/// to avoid turning a single mistake into a hard block for young learners.
+/// Longer assessments keep the 70% mastery threshold.
 class AssessmentEngine {
   static const double passThreshold = 0.70;
+  static const double shortAssessmentThreshold = 0.50;
 
   const AssessmentEngine();
+
+  double thresholdFor(int questionCount) {
+    return questionCount <= 2 ? shortAssessmentThreshold : passThreshold;
+  }
 
   AssessmentResult evaluate({
     required List<ChoiceQuestion> questions,
@@ -51,7 +58,7 @@ class AssessmentEngine {
       totalQuestions: questions.length,
       correctAnswers: correct,
       score: score,
-      passed: score >= passThreshold,
+      passed: score >= thresholdFor(questions.length),
     );
   }
 }
