@@ -1,3 +1,4 @@
+import '../core/profile/age_activity_adapter.dart';
 import '../widgets/games/scene_explore_widget.dart' show SceneType;
 
 /// وصف عام لنشاط داخل وحدة. كل وحدة تتكون من قائمة أنشطة مرتبة،
@@ -155,16 +156,23 @@ class UnitModel {
   final String titleAr;
   final String? descriptionAr;
   final String ageRangeAr;
-  final List<ActivityConfig> activities;
+  final List<ActivityConfig> _activities;
 
   const UnitModel({
     required this.id,
     required this.order,
     required this.titleAr,
-    required this.activities,
+    required List<ActivityConfig> activities,
     this.descriptionAr,
     this.ageRangeAr = '3–16 سنة',
-  });
+  }) : _activities = activities;
 
-  bool get isImplemented => activities.isNotEmpty;
+  /// الأنشطة التي يراها المتعلم بعد تكييفها للعمر الحالي.
+  /// المصدر الأصلي يبقى محفوظاً داخل الوحدة، لذلك لا يتغير المنهج نفسه.
+  List<ActivityConfig> get activities => AgeActivityPlan.current().adaptActivities(_activities);
+
+  /// العدد الأصلي لأنشطة الوحدة، مفيد للتحقق من سلامة المنهج والاختبارات.
+  int get sourceActivityCount => _activities.length;
+
+  bool get isImplemented => _activities.isNotEmpty;
 }
