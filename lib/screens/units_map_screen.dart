@@ -29,9 +29,8 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
       ProgressTracker.instance.isUnitUnlocked(_units[index].id);
 
   Future<void> _openUnit(UnitModel unit) async {
-    final completedBefore = ProgressTracker.instance
-        .getCompletedUnitIds()
-        .toSet();
+    final completedBefore =
+        ProgressTracker.instance.getCompletedUnitIds().toSet();
 
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => UnitPlayerScreen(unit: unit)),
@@ -45,21 +44,21 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
     UnitModel? newlyUnlocked;
 
     for (final completedId in newlyCompleted) {
-      final index = _units.indexWhere((candidate) => candidate.id == completedId);
+      final index =
+          _units.indexWhere((candidate) => candidate.id == completedId);
       if (index >= 0 && index + 1 < _units.length) {
         newlyUnlocked = _units[index + 1];
         break;
       }
     }
 
-    setState(() {
-      _newlyUnlockedUnitId = newlyUnlocked?.id;
-    });
+    final unlockedId = newlyUnlocked?.id;
+    setState(() => _newlyUnlockedUnitId = unlockedId);
 
     if (newlyUnlocked != null) {
       await AudioService.instance.playUnlock();
       Future<void>.delayed(const Duration(milliseconds: 2200), () {
-        if (mounted && _newlyUnlockedUnitId == newlyUnlocked!.id) {
+        if (mounted && _newlyUnlockedUnitId == unlockedId) {
           setState(() => _newlyUnlockedUnitId = null);
         }
       });
