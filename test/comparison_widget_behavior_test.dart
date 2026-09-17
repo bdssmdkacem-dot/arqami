@@ -49,5 +49,9 @@ void main() {
 
     expect(completed, 0);
     expect(wrong, 1);
+
+    // The widget clears the wrong-answer highlight after 400ms.
+    // Advance the fake clock so the test does not finish with a pending timer.
+    await tester.pump(const Duration(milliseconds: 400));
   });
 }
