@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../core/audio/audio_service.dart';
 import '../../models/unit_model.dart';
 import '../../models/units_data.dart';
 import 'unit_progress.dart';
@@ -19,10 +20,6 @@ class ProgressTracker {
   late Box<UnitProgress> _box;
   bool _initialized = false;
 
-  /// يهيئ Hive.
-  ///
-  /// في التطبيق الحقيقي نستخدم Hive.initFlutter()، بينما تسمح [hivePath]
-  /// للاختبارات بتمرير مجلد مؤقت وتجنب الاعتماد على path_provider/plugin.
   Future<void> init({String? hivePath}) async {
     if (_initialized) return;
 
@@ -53,7 +50,6 @@ class ProgressTracker {
     return _box.get(unitId) ?? UnitProgress(unitId: unitId);
   }
 
-  /// هل يمكن للطفل فتح وحدة معينة؟
   bool isUnitUnlocked(String unitId) {
     _ensureInitialized();
     final index = UnitsData.units.indexWhere((unit) => unit.id == unitId);
@@ -62,7 +58,6 @@ class ProgressTracker {
     return getUnitProgress(UnitsData.units[index - 1].id).completed;
   }
 
-  /// هل أُنجزت كل وحدات المرحلة المحددة؟
   bool isStageComplete(int startOrder, int endOrder) {
     _ensureInitialized();
     final stageUnits = UnitsData.units.where(
@@ -72,7 +67,6 @@ class ProgressTracker {
         stageUnits.every((unit) => getUnitProgress(unit.id).completed);
   }
 
-  /// أول وحدة لم تكتمل بعد، وهي نقطة الاستئناف الطبيعية للطفل.
   UnitModel? getNextUnit() {
     _ensureInitialized();
     for (final unit in UnitsData.units) {
@@ -82,9 +76,7 @@ class ProgressTracker {
   }
 
   /// تسجيل إكمال وحدة بعد اجتياز جميع أنشطتها والـAssessment النهائي.
-  ///
-  /// نتحقق هنا أيضًا من التسلسل حتى لا تستطيع أي طبقة أخرى في التطبيق
-  /// وضع وحدة متقدمة في حالة مكتملة وتجاوز الوحدات السابقة.
+  /// بعد الحفظ، تُطلق إشارة فتح للوحدة التالية فقط إذا أصبحت متاحة فعلاً.
   Future<void> markUnitComplete(String unitId, {int stars = 1}) async {
     _ensureInitialized();
 
@@ -105,6 +97,12 @@ class ProgressTracker {
       attemptsCount: current.attemptsCount + 1,
     );
     await _box.put(unitId, updated);
+
+    final nextIndex = unitIndex + 1;
+    if (nextIndex < UnitsData.units.length &&
+        isUnitUnlocked(UnitsData.units[nextIndex].id)) {
+      await AudioService.instance.playUnlock();
+    }
   }
 
   Future<void> recordAttempt(String unitId) async {
