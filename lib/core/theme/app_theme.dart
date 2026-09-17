@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Design system واحد لأرقامي: مرح، هادئ، واضح ومناسب للأطفال.
-/// نستخدم خط النظام العربي لتفادي الاعتماد على خط غير مسجّل في pubspec.
+/// Design system واحد لأرقامي: مرح، واضح، متماسك، وقابل للتكييف مع العمر.
 class AppTheme {
   AppTheme._();
 
@@ -17,11 +16,16 @@ class AppTheme {
       ).copyWith(
         primary: AppColors.teal,
         onPrimary: Colors.white,
+        primaryContainer: AppColors.tealSoft,
+        onPrimaryContainer: AppColors.tealDark,
         secondary: AppColors.gold,
         onSecondary: AppColors.textPrimary,
+        secondaryContainer: AppColors.goldSoft,
+        onSecondaryContainer: AppColors.textPrimary,
         surface: AppColors.cardBackground,
         onSurface: AppColors.textPrimary,
         error: AppColors.incorrect,
+        errorContainer: AppColors.incorrectSoft,
       ),
     );
 
@@ -34,15 +38,33 @@ class AppTheme {
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
       textTheme: text.copyWith(
-        headlineSmall: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800, height: 1.2),
-        titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w800, height: 1.2),
-        titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w700, height: 1.25),
+        displaySmall: text.displaySmall?.copyWith(
+          fontWeight: FontWeight.w900,
+          height: 1.12,
+        ),
+        headlineSmall: text.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+          height: 1.2,
+        ),
+        titleLarge: text.titleLarge?.copyWith(
+          fontWeight: FontWeight.w800,
+          height: 1.2,
+        ),
+        titleMedium: text.titleMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+          height: 1.25,
+        ),
         bodyLarge: text.bodyLarge?.copyWith(height: 1.45),
-        bodyMedium: text.bodyMedium?.copyWith(color: AppColors.textSecondary, height: 1.4),
+        bodyMedium: text.bodyMedium?.copyWith(
+          color: AppColors.textSecondary,
+          height: 1.4,
+        ),
+        labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w800),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
@@ -54,20 +76,39 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.cardBackground,
-        elevation: 0,
+        elevation: 1,
+        shadowColor: AppColors.textPrimary.withValues(alpha: .08),
         margin: EdgeInsets.zero,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
-          side: const BorderSide(color: Color(0x14000000)),
+          side: const BorderSide(color: Color(0x12000000)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.teal,
           foregroundColor: Colors.white,
-          minimumSize: const Size(0, 52),
+          minimumSize: const Size(0, 54),
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 2,
+          shadowColor: AppColors.teal.withValues(alpha: .24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(17),
+          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.teal,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(0, 54),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(17),
+          ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
       ),
@@ -80,6 +121,39 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: AppColors.textPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.backgroundAlt,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 15,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0x18000000)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0x18000000)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.teal, width: 2),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Color(0x14000000),
+        thickness: 1,
+        space: 1,
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.teal,
