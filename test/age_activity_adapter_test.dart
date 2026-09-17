@@ -22,15 +22,25 @@ void main() {
       explanationAr: 'شرح',
     ),
     MultipleChoiceActivityConfig([q('1', 0), q('2', 1), q('3', 2), q('4', 0)]),
-    ArithmeticActivityConfig(operation: '+', questions: [a('1+1', 2), a('2+2', 4), a('3+3', 6), a('4+4', 8)]),
-    WordProblemActivityConfig([a('مسألة 1', 2), a('مسألة 2', 4), a('مسألة 3', 6)]),
+    ArithmeticActivityConfig(
+      operation: '+',
+      questions: [a('1+1', 2), a('2+2', 4), a('3+3', 6), a('4+4', 8)],
+    ),
+    WordProblemActivityConfig([
+      a('مسألة 1', 2),
+      a('مسألة 2', 4),
+      a('مسألة 3', 6),
+    ]),
     const TraceActivityConfig(3),
     AssessmentActivityConfig(titleAr: 'تقييم', questions: [q('تقييم', 0)]),
   ];
 
   test('early learners prioritize concrete activities and keep assessment last', () {
     final plan = AgeActivityPlan.forBand(AgeBand.early);
-    final result = plan.adaptActivities(mixed);
+    final result = plan.adaptActivities(
+      mixed,
+      domain: CurriculumDomain.foundation,
+    );
 
     expect(result[0], isA<LessonActivityConfig>());
     expect(result[1], isA<TraceActivityConfig>());
@@ -56,10 +66,24 @@ void main() {
       final result = AgeActivityPlan.forBand(band).adaptActivities(mixed);
       final types = result.map((activity) => activity.runtimeType).toList();
 
-      expect(types.indexOf(ArithmeticActivityConfig), lessThan(types.indexOf(MultipleChoiceActivityConfig)));
-      expect(types.indexOf(WordProblemActivityConfig), lessThan(types.indexOf(MultipleChoiceActivityConfig)));
-      expect((result.whereType<MultipleChoiceActivityConfig>().single).questions.length, 4);
-      expect((result.whereType<ArithmeticActivityConfig>().single).questions.length, 4);
+      expect(
+        types.indexOf(ArithmeticActivityConfig),
+        lessThan(types.indexOf(MultipleChoiceActivityConfig)),
+      );
+      expect(
+        types.indexOf(WordProblemActivityConfig),
+        lessThan(types.indexOf(MultipleChoiceActivityConfig)),
+      );
+      expect(
+        (result.whereType<MultipleChoiceActivityConfig>().single)
+            .questions
+            .length,
+        4,
+      );
+      expect(
+        (result.whereType<ArithmeticActivityConfig>().single).questions.length,
+        4,
+      );
       expect(result.last, isA<AssessmentActivityConfig>());
     }
   });
