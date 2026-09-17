@@ -38,8 +38,18 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
   bool _wrongLeft = false;
   bool _wrongRight = false;
 
+  /// Equality is determined by the actual quantities. This also protects
+  /// against a malformed curriculum config that accidentally labels an
+  /// equal pair as "more" or "fewer".
+  ComparisonQuestion get _effectiveQuestion {
+    if (widget.leftCount == widget.rightCount) {
+      return ComparisonQuestion.equal;
+    }
+    return widget.question;
+  }
+
   bool get _leftIsCorrect {
-    switch (widget.question) {
+    switch (_effectiveQuestion) {
       case ComparisonQuestion.more:
         return widget.leftCount > widget.rightCount;
       case ComparisonQuestion.fewer:
@@ -50,7 +60,7 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
   }
 
   String get _questionLabel {
-    switch (widget.question) {
+    switch (_effectiveQuestion) {
       case ComparisonQuestion.more:
         return 'أيّ كومة فيها أكثر؟';
       case ComparisonQuestion.fewer:
@@ -67,7 +77,7 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
 
     // في سؤال التساوي لا توجد إجابة "يسار/يمين"؛ الضغط على أي كومة
     // يعني اختيار أن الكومتين متساويتان.
-    final tappedIsCorrect = widget.question == ComparisonQuestion.equal
+    final tappedIsCorrect = _effectiveQuestion == ComparisonQuestion.equal
         ? widget.leftCount == widget.rightCount
         : (tappedLeft ? _leftIsCorrect : !_leftIsCorrect);
 
@@ -116,7 +126,7 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final equalQuestion = widget.question == ComparisonQuestion.equal;
+    final equalQuestion = _effectiveQuestion == ComparisonQuestion.equal;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
