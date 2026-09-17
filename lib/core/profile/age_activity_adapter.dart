@@ -10,7 +10,6 @@ enum CurriculumDomain {
   algebra,
 }
 
-/// تصنيف تربوي ثابت للوحدات حتى يختار التكييف النشاط المناسب لمفهوم الوحدة.
 CurriculumDomain curriculumDomainForUnit(int order) {
   if (order <= 13) return CurriculumDomain.foundation;
   if (order <= 34) return CurriculumDomain.placeValue;
@@ -20,7 +19,6 @@ CurriculumDomain curriculumDomainForUnit(int order) {
   return CurriculumDomain.algebra;
 }
 
-/// مستوى التحدي المتوقع من بنية المنهج، مستقل عن حجم الخط أو شكل الواجهة.
 int curriculumDifficultyForUnit(int order) {
   if (order <= 13) return 1;
   if (order <= 20) return 2;
@@ -31,9 +29,6 @@ int curriculumDifficultyForUnit(int order) {
   return 7;
 }
 
-/// يحول نفس محتوى المنهج إلى تجربة مختلفة بحسب العمر ومفهوم الوحدة.
-/// لا يضيف وحدات جديدة ولا يحذف محتوى التقييم النهائي؛ التكييف هنا في
-/// اختيار ترتيب النشاط، نوع التدريب المقدم أولاً، وصعوبة أسئلة التدريب.
 class AgeActivityPlan {
   final AgeBand band;
   final int practiceQuestionLimit;
@@ -96,46 +91,31 @@ class AgeActivityPlan {
         AgeBand.fromAge(LearnerProfile.age ?? 6),
       );
 
-  /// تصنيف الوحدة المستخدم عند بناء تجربة اللعب.
-  CurriculumDomain domainForUnit(int unitOrder) => curriculumDomainForUnit(unitOrder);
-
-  /// مستوى صعوبة المنهج قبل تأثير العمر.
-  int difficultyForUnit(int unitOrder) => curriculumDifficultyForUnit(unitOrder);
-
-  /// يبني قائمة الأنشطة للوحدة مع مراعاة العمر ومفهومها الرياضي.
-  List<ActivityConfig> adaptUnit(UnitModel unit) => adaptActivities(
-        unit.sourceActivities,
-        domain: curriculumDomainForUnit(unit.order),
-      );
-
-  /// يعيد ترتيب الأنشطة بحسب طريقة التعلم ومفهوم الوحدة.
-  /// التقييم النهائي يبقى دائماً في النهاية.
-  List<ActivityConfig> orderActivities(
-    List<ActivityConfig> activities, {
-    CurriculumDomain domain = CurriculumDomain.foundation,
-  }) {
+  List<ActivityConfig> orderActivities(List<ActivityConfig> activities, {CurriculumDomain? domain}) {
     final indexed = activities.asMap().entries.toList();
     indexed.sort((a, b) {
-      final pa = _priority(a.value, domain);
-      final pb = _priority(b.value, domain);
+      final pa = _priority(a.value, domain: domain);
+      final pb = _priority(b.value, domain: domain);
       if (pa != pb) return pa.compareTo(pb);
       return a.key.compareTo(b.key);
     });
     return indexed.map((entry) => entry.value).toList(growable: false);
   }
 
-  /// يطبق التكييف على التدريب فقط، بينما يبقى Assessment كاملاً.
+  List<ActivityConfig> adaptUnit(UnitModel unit) => adaptActivities(
+        unit.sourceActivities,
+        domain: curriculumDomainForUnit(unit.order),
+      );
+
   List<ActivityConfig> adaptActivities(
     List<ActivityConfig> source, {
-    CurriculumDomain domain = CurriculumDomain.foundation,
+    CurriculumDomain? domain,
   }) {
     final ordered = orderActivities(source, domain: domain);
     return ordered.map((activity) {
       if (activity is AssessmentActivityConfig) return activity;
       if (activity is MultipleChoiceActivityConfig) {
-        return MultipleChoiceActivityConfig(
-          practiceChoices(activity.questions),
-        );
+        return MultipleChoiceActivityConfig(practiceChoices(activity.questions));
       }
       if (activity is ReviewActivityConfig) {
         return ReviewActivityConfig(
@@ -150,75 +130,49 @@ class AgeActivityPlan {
         );
       }
       if (activity is WordProblemActivityConfig) {
-        return WordProblemActivityConfig(
-          practiceArithmetic(activity.questions),
-        );
+        return WordProblemActivityConfig(practiceArithmetic(activity.questions));
       }
       return activity;
     }).toList(growable: false);
   }
 
-  int _priority(ActivityConfig activity, CurriculumDomain domain) {
+  int _priority(ActivityConfig activity, {CurriculumDomain? domain}) {
     if (activity is AssessmentActivityConfig) return 100;
 
-    // الأساسيات: نبدأ بالتمثيل الملموس.
-    if (domain == CurriculumDomain.foundation && prioritizeConcreteActivities) {
-      if (activity is LessonActivityConfig) return 0;
-      if (activity is TraceActivityConfig) return 1;
-      if (activity is ArithmeticActivityConfig) return 2;
-      if (activity is DragCountActivityConfig) return 3;
-      if (activity is MatchingActivityConfig) return 4;
-      if (activity is ComparisonActivityConfig) return 5;
-      if (activity is SceneExploreActivityConfig) return 6;
-      if (activity is MultipleChoiceActivityConfig) return 7;
-      if (activity is ReviewActivityConfig) return 8;
-      if (activity is WordProblemActivityConfig) return 9;
-    }
-
-    // الآحاد والعشرات والقيمة المكانية: التمثيل → بناء العدد → الرمز.
-    if (domain == CurriculumDomain.placeValue && prioritizeConcreteActivities) {
-      if (activity is LessonActivityConfig) return 0;
-      if (activity is MatchingActivityConfig) return 1;
-      if (activity is ComparisonActivityConfig) return 2;
-      if (activity is DragCountActivityConfig) return 3;
-      if (activity is MultipleChoiceActivityConfig) return 4;
-      if (activity is ReviewActivityConfig) return 5;
-      if (activity is ArithmeticActivityConfig) return 6;
-      if (activity is WordProblemActivityConfig) return 7;
-      if (activity is TraceActivityConfig) return 8;
-      if (activity is SceneExploreActivityConfig) return 9;
-    }
-
-    // الجمع والطرح والضرب والقسمة: العملية هي قلب النشاط، ثم التطبيق.
-    if (domain == CurriculumDomain.additionSubtraction ||
-        domain == CurriculumDomain.multiplicationDivision) {
-      if (prioritizeProblemSolving) {
-        if (activity is LessonActivityConfig) return 0;
-        if (activity is ArithmeticActivityConfig) return 1;
-        if (activity is WordProblemActivityConfig) return 2;
-        if (activity is ComparisonActivityConfig) return 3;
-        if (activity is MultipleChoiceActivityConfig) return 4;
-        if (activity is ReviewActivityConfig) return 5;
-      } else {
-        if (activity is LessonActivityConfig) return 0;
-        if (activity is MultipleChoiceActivityConfig) return 1;
-        if (activity is ComparisonActivityConfig) return 2;
-        if (activity is ArithmeticActivityConfig) return 3;
-        if (activity is WordProblemActivityConfig) return 4;
-        if (activity is ReviewActivityConfig) return 5;
+    if (band == AgeBand.early && domain != null) {
+      switch (domain) {
+        case CurriculumDomain.foundation:
+          if (activity is LessonActivityConfig) return 0;
+          if (activity is TraceActivityConfig) return 1;
+          if (activity is DragCountActivityConfig) return 2;
+          if (activity is MatchingActivityConfig) return 3;
+          if (activity is ComparisonActivityConfig) return 4;
+          break;
+        case CurriculumDomain.placeValue:
+          if (activity is LessonActivityConfig) return 0;
+          if (activity is MatchingActivityConfig) return 1;
+          if (activity is ComparisonActivityConfig) return 2;
+          if (activity is DragCountActivityConfig) return 3;
+          break;
+        default:
+          if (activity is LessonActivityConfig) return 0;
+          if (activity is ComparisonActivityConfig) return 1;
+          if (activity is MatchingActivityConfig) return 2;
+          break;
       }
     }
 
-    // الكسور والعشريات والجبر: من المفهوم إلى الرمز ثم حل المشكلة.
-    if (domain == CurriculumDomain.fractionsDecimals ||
-        domain == CurriculumDomain.algebra) {
+    if (prioritizeConcreteActivities) {
       if (activity is LessonActivityConfig) return 0;
-      if (activity is WordProblemActivityConfig && prioritizeProblemSolving) return 1;
-      if (activity is ArithmeticActivityConfig) return 2;
-      if (activity is MultipleChoiceActivityConfig) return 3;
-      if (activity is ReviewActivityConfig) return 4;
-      if (activity is ComparisonActivityConfig) return 5;
-      if (activity is WordProblemActivityConfig) return 6;
+      if (activity is TraceActivityConfig) return 1;
+      if (activity is DragCountActivityConfig) return 2;
+      if (activity is MatchingActivityConfig) return 3;
+      if (activity is ComparisonActivityConfig) return 4;
+      if (activity is SceneExploreActivityConfig) return 5;
+      if (activity is MultipleChoiceActivityConfig) return 6;
+      if (activity is ReviewActivityConfig) return 7;
+      if (activity is ArithmeticActivityConfig) return 8;
+      if (activity is WordProblemActivityConfig) return 9;
     }
 
     if (prioritizeProblemSolving) {
@@ -239,12 +193,12 @@ class AgeActivityPlan {
 
   List<ChoiceQuestion> practiceChoices(List<ChoiceQuestion> questions) {
     if (questions.length <= practiceQuestionLimit) return questions;
-    return _selectByDifficulty(questions, practiceQuestionLimit);
+    return _selectByDifficulty<ChoiceQuestion>(questions, practiceQuestionLimit);
   }
 
   List<ArithmeticQuestion> practiceArithmetic(List<ArithmeticQuestion> questions) {
     if (questions.length <= arithmeticQuestionLimit) return questions;
-    return _selectByDifficulty(questions, arithmeticQuestionLimit);
+    return _selectByDifficulty<ArithmeticQuestion>(questions, arithmeticQuestionLimit);
   }
 
   List<T> _selectByDifficulty<T>(List<T> questions, int limit) {
