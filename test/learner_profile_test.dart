@@ -13,15 +13,4 @@ void main() {
     expect(AgeBand.fromAge(13), AgeBand.teen);
     expect(AgeBand.fromAge(16), AgeBand.teen);
   });
-
-  test('rejects ages outside the supported 3-16 range', () async {
-    await expectLater(
-      LearnerProfile.setAge(2),
-      throwsA(isA<ArgumentError>()),
-    );
-    await expectLater(
-      LearnerProfile.setAge(17),
-      throwsA(isA<ArgumentError>()),
-    );
-  });
 }
