@@ -9,8 +9,7 @@ import 'unit_progress.dart';
 /// قاعدة التقدم:
 /// - الوحدة الأولى متاحة دائماً.
 /// - كل وحدة لاحقة تحتاج إكمال الوحدة السابقة.
-/// - إكمال الوحدة لا يحدث إلا بعد المرور بكل أنشطتها، بما فيها الـQuiz
-///   والـAssessment الموجودان في UnitsData.
+/// - إكمال الوحدة لا يحدث إلا بعد المرور بكل أنشطتها واجتياز الـAssessment.
 /// - النجوم تحفظ أفضل نتيجة للوحدة.
 class ProgressTracker {
   ProgressTracker._internal();
@@ -73,8 +72,21 @@ class ProgressTracker {
     return null;
   }
 
+  /// تسجيل إكمال وحدة بعد اجتياز جميع أنشطتها والـAssessment النهائي.
+  ///
+  /// نتحقق هنا أيضًا من التسلسل حتى لا تستطيع أي طبقة أخرى في التطبيق
+  /// وضع وحدة متقدمة في حالة مكتملة وتجاوز الوحدات السابقة.
   Future<void> markUnitComplete(String unitId, {int stars = 1}) async {
     _ensureInitialized();
+
+    final unitIndex = UnitsData.units.indexWhere((unit) => unit.id == unitId);
+    if (unitIndex < 0) {
+      throw ArgumentError.value(unitId, 'unitId', 'الوحدة غير موجودة في المنهج');
+    }
+    if (!isUnitUnlocked(unitId)) {
+      throw StateError('لا يمكن إكمال $unitId قبل إكمال الوحدة السابقة.');
+    }
+
     final current = getUnitProgress(unitId);
     final safeStars = stars.clamp(1, 3).toInt();
     final updated = current.copyWith(
