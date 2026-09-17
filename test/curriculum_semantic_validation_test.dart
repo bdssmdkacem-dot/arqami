@@ -8,6 +8,34 @@ import 'package:arqami/widgets/games/scene_explore_widget.dart';
 void main() {
   setUp(applyDeepCurriculumFixes);
 
+  test('all interactive activity lists are non-empty', () {
+    for (final unit in UnitsData.units) {
+      expect(unit.activities, isNotEmpty, reason: 'unit ${unit.order} has no activities');
+      for (final activity in unit.activities) {
+        switch (activity) {
+          case MultipleChoiceActivityConfig a:
+            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty quiz');
+          case ReviewActivityConfig a:
+            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty review');
+          case AssessmentActivityConfig a:
+            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty assessment');
+          case ArithmeticActivityConfig a:
+            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty arithmetic activity');
+          case WordProblemActivityConfig a:
+            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty word-problem activity');
+          case MatchingActivityConfig a:
+            expect(a.pairs, isNotEmpty, reason: 'unit ${unit.order} has an empty matching activity');
+          case LessonActivityConfig _:
+          case TraceActivityConfig _:
+          case DragCountActivityConfig _:
+          case ComparisonActivityConfig _:
+          case SceneExploreActivityConfig _:
+            break;
+        }
+      }
+    }
+  });
+
   test('all choice-based questions have valid answer indexes and usable options', () {
     for (final unit in UnitsData.units) {
       for (final activity in unit.activities) {

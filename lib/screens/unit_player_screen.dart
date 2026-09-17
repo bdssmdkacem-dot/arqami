@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/ads/ad_service.dart';
 import '../core/assessment/assessment_engine.dart';
+import '../core/answer/arithmetic_answer_matcher.dart';
 import '../core/audio/audio_service.dart';
 import '../core/progress/progress_tracker.dart';
 import '../core/theme/app_colors.dart';
@@ -177,7 +178,11 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
         key: ValueKey('comparison_$_activityIndex'),
         leftCount: config.leftCount,
         rightCount: config.rightCount,
-        question: config.question == ComparisonQuestionType.more ? ComparisonQuestion.more : ComparisonQuestion.fewer,
+        question: switch (config.question) {
+          ComparisonQuestionType.more => ComparisonQuestion.more,
+          ComparisonQuestionType.fewer => ComparisonQuestion.fewer,
+          ComparisonQuestionType.equal => ComparisonQuestion.equal,
+        },
         onWrongAttempt: _onWrongAttempt,
         onComplete: () {
           AudioService.instance.playCorrect();
@@ -477,18 +482,8 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
     super.dispose();
   }
 
-  String _normalizeDigits(String input) {
-    const arabic = '٠١٢٣٤٥٦٧٨٩';
-    const eastern = '۰۱۲۳۴۵۶۷۸۹';
-    var value = input.trim();
-    for (var i = 0; i < 10; i++) {
-      value = value.replaceAll(arabic[i], '$i').replaceAll(eastern[i], '$i');
-    }
-    return value.replaceAll('٫', '.').replaceAll(',', '.').replaceAll('،', '.');
-  }
-
   void _keepWesternDigits(String input) {
-    final normalized = _normalizeDigits(input);
+    final normalized = ArithmeticAnswerMatcher.normalize(input);
     if (normalized == input) return;
     controller.value = controller.value.copyWith(
       text: normalized,
@@ -497,21 +492,8 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
     );
   }
 
-  num? _parseNumber(String input) {
-    final normalized = _normalizeDigits(input);
-    if (normalized.isEmpty) return null;
-    return num.tryParse(normalized);
-  }
-
-  bool _matches(ArithmeticQuestion question, String rawInput) {
-    if (question.correctAnswerText != null) {
-      return _normalizeDigits(rawInput) == _normalizeDigits(question.correctAnswerText!);
-    }
-    final value = _parseNumber(rawInput);
-    final expected = question.correctAnswer;
-    if (value == null || expected == null) return false;
-    return (value - expected).abs() < 0.000001;
-  }
+  bool _matches(ArithmeticQuestion question, String rawInput) =>
+      ArithmeticAnswerMatcher.matches(question, rawInput);
 
   void submit() {
     if (locked) return;
@@ -549,12 +531,22 @@ class _ArithmeticViewState extends State<_ArithmeticView> {
       TextField(
         controller: controller,
         enabled: !locked,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        keyboardType: question.correctAnswerText != null
+            ? TextInputType.text
+            : const TextInputType.numberWithOptions(decimal: true),
         onChanged: _keepWesternDigits,
         textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
+        textDirection: question.correctAnswerText != null
+            ? TextDirection.rtl
+            : TextDirection.ltr,
         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-        decoration: const InputDecoration(labelText: 'اكتب الإجابة', border: OutlineInputBorder()),
+        decoration: InputDecoration(
+          labelText: 'اكتب الإجابة',
+          helperText: question.correctAnswerText != null
+              ? 'اكتب العدد ثم "والباقي" ثم الباقي'
+              : null,
+          border: const OutlineInputBorder(),
+        ),
       ),
       const SizedBox(height: 16),
       SizedBox(height: 54, child: ElevatedButton(onPressed: submit, child: const Text('تحقق', style: TextStyle(fontSize: 18)))),

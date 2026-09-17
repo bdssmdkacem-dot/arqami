@@ -21,6 +21,17 @@ class QuantityRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (count == 0) {
+      return Text(
+        '0',
+        style: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      );
+    }
+
     return Wrap(
       spacing: 3,
       runSpacing: 3,
