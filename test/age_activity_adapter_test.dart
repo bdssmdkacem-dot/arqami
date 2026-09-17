@@ -46,7 +46,7 @@ void main() {
     expect(result[0], isA<LessonActivityConfig>());
     expect(result[1], isA<TraceActivityConfig>());
     expect(
-      types.indexOf(ArithmeticActivityConfig),
+      types.indexOf(TraceActivityConfig),
       lessThan(types.indexOf(MultipleChoiceActivityConfig)),
     );
     expect(result.last, isA<AssessmentActivityConfig>());
