@@ -41,13 +41,23 @@ void main() {
       mixed,
       domain: CurriculumDomain.foundation,
     );
+    final types = result.map((activity) => activity.runtimeType).toList();
 
     expect(result[0], isA<LessonActivityConfig>());
     expect(result[1], isA<TraceActivityConfig>());
-    expect(result[2], isA<ArithmeticActivityConfig>());
+    expect(
+      types.indexOf(ArithmeticActivityConfig),
+      lessThan(types.indexOf(MultipleChoiceActivityConfig)),
+    );
     expect(result.last, isA<AssessmentActivityConfig>());
-    expect((result[3] as MultipleChoiceActivityConfig).questions.length, 2);
-    expect((result[2] as ArithmeticActivityConfig).questions.length, 2);
+    expect(
+      (result.whereType<MultipleChoiceActivityConfig>().single).questions.length,
+      2,
+    );
+    expect(
+      (result.whereType<ArithmeticActivityConfig>().single).questions.length,
+      2,
+    );
   });
 
   test('primary learners retain a wider practice set', () {
