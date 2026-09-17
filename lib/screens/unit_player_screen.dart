@@ -176,7 +176,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'هدف التعلم: ' + _spec.learningGoalAr,
+                  'هدف التعلم: ${_spec.learningGoalAr}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
                 ),
@@ -205,7 +205,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(color: AppColors.tealSoft, borderRadius: BorderRadius.circular(18)),
                   child: Text(
-                    'التحدي النهائي: ' + _spec.finalChallengeAr,
+                    'التحدي النهائي: ${_spec.finalChallengeAr}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontWeight: FontWeight.w800, height: 1.4),
                   ),
@@ -622,7 +622,7 @@ class _LessonView extends StatelessWidget {
             const SizedBox(height: 14),
             Text(config.titleAr, textAlign: TextAlign.center, style: TextStyle(fontSize: age.questionTextSize + 2, fontWeight: FontWeight.w900)),
             const SizedBox(height: 14),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11), decoration: BoxDecoration(color: AppColors.goldSoft, borderRadius: BorderRadius.circular(16)), child: Text('هدف التعلم: ' + spec.learningGoalAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800))),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11), decoration: BoxDecoration(color: AppColors.goldSoft, borderRadius: BorderRadius.circular(16)), child: Text('هدف التعلم: ${spec.learningGoalAr}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800))),
             const SizedBox(height: 12),
             Text(config.explanationAr, textAlign: TextAlign.center, style: TextStyle(fontSize: age.questionTextSize - 1, height: 1.65, color: AppColors.textSecondary)),
             if (config.examplesAr.isNotEmpty) ...[
