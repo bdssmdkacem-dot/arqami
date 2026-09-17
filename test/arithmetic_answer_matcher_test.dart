@@ -19,6 +19,16 @@ void main() {
     ), isTrue);
   });
 
+  test('matches Arabic number words for simple answers', () {
+    const question = ArithmeticQuestion(questionAr: 'كم يساوي؟', correctAnswer: 5);
+    expect(ArithmeticAnswerMatcher.matches(question, 'خمسة'), isTrue);
+    expect(ArithmeticAnswerMatcher.matches(question, 'خَمْسَة'), isTrue);
+    expect(ArithmeticAnswerMatcher.matches(
+      const ArithmeticQuestion(questionAr: 'كم يساوي؟', correctAnswer: 8),
+      'ثمانية',
+    ), isTrue);
+  });
+
   test('matches textual remainder answers despite spacing and digit variants', () {
     const question = ArithmeticQuestion(
       questionAr: '14 ÷ 3 = ؟',
