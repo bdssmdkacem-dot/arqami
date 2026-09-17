@@ -4,29 +4,15 @@ import '../../core/theme/app_colors.dart';
 
 /// مكون "اسحب وعدّ" — الطفل يسحب عناصر (نجوم/تفاح) من الكومة لسلة،
 /// والعداد يتحدث حياً، وفي النهاية يختار الرقم المطابق للعدد الذي جمعه.
-///
-/// الاستخدام:
-/// ```dart
-/// DragCountWidget(
-///   targetCount: 5,
-///   itemIcon: Icons.star,
-///   onComplete: () => print('أحسنت! 5 نجوم'),
-/// )
-/// ```
 class DragCountWidget extends StatefulWidget {
-  /// عدد العناصر الذي يجب على الطفل سحبه ثم التعرف على رقمه
+  /// عدد العناصر الذي يجب على الطفل سحبه ثم التعرف على رقمه.
+  /// الصفر مدعوم أيضاً: لا توجد عناصر للسحب، ويظهر اختيار الرقم مباشرة.
   final int targetCount;
 
   final IconData itemIcon;
   final Color itemColor;
-
-  /// يُستدعى بعد سحب كل العناصر واختيار الرقم الصحيح
   final VoidCallback onComplete;
-
-  /// يُستدعى عند كل عنصر يُسحب للسلة (مفيد لصوت "نقرة" + نطق الرقم الحالي)
   final void Function(int currentCount)? onItemDropped;
-
-  /// يُستدعى عند اختيار رقم خاطئ من قائمة الاختيار
   final VoidCallback? onWrongDigitSelected;
 
   const DragCountWidget({
@@ -37,15 +23,17 @@ class DragCountWidget extends StatefulWidget {
     this.itemColor = AppColors.gold,
     this.onItemDropped,
     this.onWrongDigitSelected,
-  })  : assert(targetCount > 0 && targetCount <= 10,
-            'targetCount يجب أن يكون بين 1 و 10');
+  }) : assert(
+          targetCount >= 0 && targetCount <= 10,
+          'targetCount يجب أن يكون بين 0 و 10',
+        );
 
   @override
   State<DragCountWidget> createState() => DragCountWidgetState();
 }
 
 class DragCountWidgetState extends State<DragCountWidget> {
-  late List<int> _remainingItemKeys; // عناصر لم تُسحب بعد
+  late List<int> _remainingItemKeys;
   int _droppedCount = 0;
   bool _showDigitChoices = false;
   late List<int> _digitChoices;
@@ -60,7 +48,7 @@ class DragCountWidgetState extends State<DragCountWidget> {
   void _setup() {
     _remainingItemKeys = List.generate(widget.targetCount, (i) => i);
     _droppedCount = 0;
-    _showDigitChoices = false;
+    _showDigitChoices = widget.targetCount == 0;
     _wrongSelection = null;
     _digitChoices = _buildDigitChoices(widget.targetCount);
   }
@@ -78,8 +66,7 @@ class DragCountWidgetState extends State<DragCountWidget> {
       if (choices.length >= 3) break;
       choices.add(c);
     }
-    final list = choices.toList()..shuffle();
-    return list;
+    return choices.toList()..shuffle();
   }
 
   @override
@@ -90,7 +77,6 @@ class DragCountWidgetState extends State<DragCountWidget> {
     }
   }
 
-  /// يعيد اللعبة لحالتها الأولية (لزر "حاول مرة أخرى")
   void reset() => setState(_setup);
 
   void _handleDropped(int itemKey) {
@@ -122,7 +108,6 @@ class DragCountWidgetState extends State<DragCountWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // عداد حي
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           child: Text(
@@ -132,77 +117,54 @@ class DragCountWidgetState extends State<DragCountWidget> {
           ),
         ),
         const SizedBox(height: 16),
-
-        // كومة العناصر القابلة للسحب
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          alignment: WrapAlignment.center,
-          children: _remainingItemKeys.map((itemKey) {
-            return Draggable<int>(
-              data: itemKey,
-              feedback: _DragItem(
-                icon: widget.itemIcon,
-                color: widget.itemColor,
-                size: 56,
-              ),
-              childWhenDragging: Opacity(
-                opacity: 0.3,
-                child: _DragItem(
-                  icon: widget.itemIcon,
-                  color: widget.itemColor,
-                  size: 48,
+        if (_remainingItemKeys.isNotEmpty)
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: _remainingItemKeys.map((itemKey) {
+              return Draggable<int>(
+                data: itemKey,
+                feedback: _DragItem(icon: widget.itemIcon, color: widget.itemColor, size: 56),
+                childWhenDragging: Opacity(
+                  opacity: 0.3,
+                  child: _DragItem(icon: widget.itemIcon, color: widget.itemColor, size: 48),
                 ),
-              ),
-              child: _DragItem(
-                icon: widget.itemIcon,
-                color: widget.itemColor,
-                size: 48,
-              ),
-            );
-          }).toList(),
-        ),
-
-        const SizedBox(height: 24),
-
-        // السلة (DragTarget)
-        DragTarget<int>(
-          onWillAcceptWithDetails: (details) => true,
-          onAcceptWithDetails: (details) => _handleDropped(details.data),
-          builder: (context, candidateData, rejectedData) {
-            final isHovering = candidateData.isNotEmpty;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: 140,
-              height: 100,
-              decoration: BoxDecoration(
-                color: isHovering
-                    ? const Color(0xFFFFF3CD)
-                    : const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isHovering
-                      ? const Color(0xFFFFA000)
-                      : const Color(0xFFBDBDBD),
-                  width: 3,
+                child: _DragItem(icon: widget.itemIcon, color: widget.itemColor, size: 48),
+              );
+            }).toList(),
+          ),
+        if (_remainingItemKeys.isNotEmpty) const SizedBox(height: 24),
+        if (_remainingItemKeys.isNotEmpty)
+          DragTarget<int>(
+            onWillAcceptWithDetails: (details) => true,
+            onAcceptWithDetails: (details) => _handleDropped(details.data),
+            builder: (context, candidateData, rejectedData) {
+              final isHovering = candidateData.isNotEmpty;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 140,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: isHovering ? const Color(0xFFFFF3CD) : const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isHovering ? const Color(0xFFFFA000) : const Color(0xFFBDBDBD),
+                    width: 3,
+                  ),
                 ),
-              ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.shopping_basket_outlined,
-                  size: 40, color: Color(0xFF8D6E63)),
-            );
-          },
-        ),
-
-        const SizedBox(height: 24),
-
-        // اختيار الرقم المطابق (يظهر فقط بعد سحب كل العناصر)
+                alignment: Alignment.center,
+                child: const Icon(Icons.shopping_basket_outlined, size: 40, color: Color(0xFF8D6E63)),
+              );
+            },
+          ),
+        if (_remainingItemKeys.isNotEmpty) const SizedBox(height: 24),
         if (_showDigitChoices)
           Column(
             children: [
-              const Text(
-                'كم عنصر جمعت؟',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              Text(
+                widget.targetCount == 0 ? 'كم عنصراً؟ لا توجد عناصر.' : 'كم عنصر جمعت؟',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
               Row(
@@ -218,30 +180,18 @@ class DragCountWidgetState extends State<DragCountWidget> {
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          color: isWrong
-                              ? const Color(0xFFFFCDD2)
-                              : Colors.white,
+                          color: isWrong ? const Color(0xFFFFCDD2) : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isWrong
-                                ? const Color(0xFFE57373)
-                                : const Color(0xFFBDBDBD),
+                            color: isWrong ? const Color(0xFFE57373) : const Color(0xFFBDBDBD),
                             width: 2,
                           ),
                           boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
-                            ),
+                            BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
                           ],
                         ),
                         alignment: Alignment.center,
-                        child: Text(
-                          '$digit',
-                          style: const TextStyle(
-                              fontSize: 26, fontWeight: FontWeight.bold),
-                        ),
+                        child: Text('$digit', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   );
