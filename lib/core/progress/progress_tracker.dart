@@ -191,17 +191,19 @@ class ProgressTracker {
   Future<void> syncAchievements() async {
     _ensureInitialized();
     for (final achievement in Achievements.all) {
-      final progress = getAchievementProgress(achievement.id);
-      var unlocked = progress >= achievement.target;
-
+      // إنجازات المراحل مرتبطة بجمع المكافأة، لا بمجرد إنهاء المرحلة.
       if (achievement.stage != null && achievement.id != 'all_rewards') {
-        final reward = StageRewards.forStage(achievement.stage!);
-        unlocked = isStageComplete(reward.startOrder, reward.endOrder);
+        continue;
       }
 
-      if (unlocked) {
+      final progress = getAchievementProgress(achievement.id);
+      if (progress >= achievement.target) {
         await _markAchievementUnlocked(achievement.id);
       }
+    }
+
+    if (getClaimedStageRewards().length >= 7) {
+      await _markAchievementUnlocked('all_rewards');
     }
   }
 
