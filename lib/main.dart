@@ -8,7 +8,7 @@ import 'core/progress/progress_tracker.dart';
 import 'core/theme/app_theme.dart';
 import 'models/deep_curriculum_fixes.dart';
 import 'models/final_curriculum_override.dart';
-import 'screens/units_map_screen.dart';
+import 'screens/arqami_home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,7 +57,7 @@ class ArqamiApp extends StatelessWidget {
           child: child ?? const SizedBox.shrink(),
         );
       },
-      home: const UnitsMapScreen(),
+      home: const ArqamiHomeScreen(),
     );
   }
 }
