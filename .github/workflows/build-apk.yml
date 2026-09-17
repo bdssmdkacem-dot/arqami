@@ -45,6 +45,10 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
+      - name: Prepare selected CC0 game assets
+        shell: bash
+        run: bash tool/prepare_game_assets.sh
+
       - name: Get dependencies
         run: flutter pub get
 
