@@ -5,6 +5,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/game_theme.dart';
 import 'achievements_screen.dart';
 import 'units_map_screen.dart';
+import 'settings_screen.dart';
 
 class ArqamiHomeScreen extends StatefulWidget {
   const ArqamiHomeScreen({super.key});
@@ -135,6 +136,16 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'الإعدادات',
+            icon: const Icon(Icons.settings_rounded),
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+              if (mounted) setState(() {});
+            },
+          ),
           if (age != null)
             Padding(
               padding: const EdgeInsetsDirectional.only(end: 10),
