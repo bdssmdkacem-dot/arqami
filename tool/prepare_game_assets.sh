@@ -28,9 +28,21 @@ cp "$CHARACTER" "$ROOT/assets/game/characters/roguelikeChar_transparent.png"
 fetch_zip "https://opengameart.org/sites/default/files/kenney_ui-pack.zip" "$TMP/ui.zip"
 unzip -q "$TMP/ui.zip" -d "$TMP/ui"
 UI_BUTTON="$(find "$TMP/ui" -type f -iname '*button*' -iname '*.png' | sort | head -n 1)"
-UI_PANEL="$(find "$TMP/ui" -type f \( -iname '*panel*' -o -iname '*window*' \) -iname '*.png' | sort | head -n 1)"
+# The current Kenney UI Pack contains 430+ separate PNG elements, but its
+# filenames do not reliably contain "panel" or "window". Prefer those names
+# when present, then fall back to a deterministic UI PNG instead of failing CI.
+UI_PANEL="$(find "$TMP/ui" -type f -iname '*panel*' -iname '*.png' | sort | head -n 1)"
+if [[ -z "$UI_PANEL" ]]; then
+  UI_PANEL="$(find "$TMP/ui" -type f -iname '*window*' -iname '*.png' | sort | head -n 1)"
+fi
+if [[ -z "$UI_PANEL" ]]; then
+  UI_PANEL="$(find "$TMP/ui" -type f -iname '*.png' | sort | grep -Ei '/(ui|panel|window|bar|square|button)[^/]*\.png$' | head -n 1 || true)"
+fi
+if [[ -z "$UI_PANEL" ]]; then
+  UI_PANEL="$(find "$TMP/ui" -type f -iname '*.png' | sort | head -n 1)"
+fi
 [[ -n "$UI_BUTTON" ]] || { echo "Kenney UI button PNG was not found" >&2; exit 1; }
-[[ -n "$UI_PANEL" ]] || { echo "Kenney UI panel/window PNG was not found" >&2; exit 1; }
+[[ -n "$UI_PANEL" ]] || { echo "Kenney UI sprite for panel background was not found" >&2; exit 1; }
 cp "$UI_BUTTON" "$ROOT/assets/game/ui/kenney_button.png"
 cp "$UI_PANEL" "$ROOT/assets/game/ui/kenney_panel.png"
 
