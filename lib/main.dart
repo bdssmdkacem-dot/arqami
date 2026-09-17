@@ -6,6 +6,7 @@ import 'core/ads/ad_service.dart';
 import 'core/audio/audio_service.dart';
 import 'core/progress/progress_tracker.dart';
 import 'core/theme/app_theme.dart';
+import 'models/deep_curriculum_fixes.dart';
 import 'models/final_curriculum_override.dart';
 import 'screens/units_map_screen.dart';
 
@@ -13,6 +14,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   applyFinalCurriculumStageSplit();
+  applyDeepCurriculumFixes();
   await ProgressTracker.instance.init();
 
   // لا نجعل خدمات الصوت والإعلانات الثانوية تمنع ظهور الواجهة.
