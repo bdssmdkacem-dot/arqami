@@ -75,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: Text(
                 age == null
                     ? 'لم يتم تحديد العمر'
-                    : '${age} سنة • ${LearnerProfile.band.labelAr}',
+                    : '$age سنة • ${LearnerProfile.band.labelAr}',
               ),
               trailing: const Icon(Icons.edit_rounded),
               onTap: _changeAge,
