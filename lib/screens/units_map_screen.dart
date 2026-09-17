@@ -514,7 +514,7 @@ class _StageChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.ink,
+        color: AppColors.textPrimary,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
