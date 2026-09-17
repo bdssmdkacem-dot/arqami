@@ -8,6 +8,20 @@ void main() {
   setUpAll(applyFinalCurriculumStageSplit);
 
   test('all 52 units contain only activity types supported by UnitPlayerScreen', () {
+    const supportedTypes = <Type>{
+      LessonActivityConfig,
+      MultipleChoiceActivityConfig,
+      AssessmentActivityConfig,
+      ReviewActivityConfig,
+      ArithmeticActivityConfig,
+      WordProblemActivityConfig,
+      TraceActivityConfig,
+      MatchingActivityConfig,
+      ComparisonActivityConfig,
+      SceneExploreActivityConfig,
+      DragCountActivityConfig,
+    };
+
     for (final unit in UnitsData.units) {
       expect(unit.activities, isNotEmpty, reason: unit.id);
       expect(unit.activities.first, isA<LessonActivityConfig>(), reason: unit.id);
@@ -15,20 +29,8 @@ void main() {
 
       for (final activity in unit.activities) {
         expect(
-          activity,
-          anyOf(
-            isA<LessonActivityConfig>(),
-            isA<MultipleChoiceActivityConfig>(),
-            isA<AssessmentActivityConfig>(),
-            isA<ReviewActivityConfig>(),
-            isA<ArithmeticActivityConfig>(),
-            isA<WordProblemActivityConfig>(),
-            isA<TraceActivityConfig>(),
-            isA<MatchingActivityConfig>(),
-            isA<ComparisonActivityConfig>(),
-            isA<SceneExploreActivityConfig>(),
-            isA<DragCountActivityConfig>(),
-          ),
+          supportedTypes.contains(activity.runtimeType),
+          isTrue,
           reason: '${unit.id}: unsupported ${activity.runtimeType}',
         );
       }
