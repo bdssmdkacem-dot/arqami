@@ -12,10 +12,6 @@ fetch_zip() {
   curl -fsSL --retry 3 --retry-delay 2 "$url" -o "$out"
 }
 
-first_match() {
-  find "$1" -type f ${2:-} -print -quit
-}
-
 # All selected packs are Kenney CC0 assets.
 fetch_zip "https://opengameart.org/sites/default/files/kenney_tiny-town.zip" "$TMP/tiny-town.zip"
 unzip -q "$TMP/tiny-town.zip" -d "$TMP/tiny-town"
@@ -35,17 +31,10 @@ UI_BUTTON="$(find "$TMP/ui" -type f -iname '*button*' -iname '*.png' -print -qui
 [[ -n "$UI_BUTTON" ]] || { echo "Kenney UI button PNG was not found" >&2; exit 1; }
 
 # The current UI Pack does not guarantee semantic panel/window filenames.
-# Prefer those names, then use a deterministic UI sprite as the panel texture.
+# Prefer panel/window names, then use a deterministic UI sprite as the panel texture.
 UI_PANEL="$(find "$TMP/ui" -type f -iname '*panel*' -iname '*.png' -print -quit)"
 if [[ -z "$UI_PANEL" ]]; then
   UI_PANEL="$(find "$TMP/ui" -type f -iname '*window*' -iname '*.png' -print -quit)"
-fi
-if [[ -z "$UI_PANEL" ]]; then
-  UI_PANEL="$(find "$TMP/ui" -type f -iname '*.png' -print | while IFS= read -r f; do
-    case "$(basename "$f")" in
-      *bar*|*square*|*button*) printf '%s\n' "$f"; break ;;
-    esac
-  done)"
 fi
 if [[ -z "$UI_PANEL" ]]; then
   UI_PANEL="$(find "$TMP/ui" -type f -iname '*.png' -print -quit)"
@@ -60,11 +49,8 @@ unzip -q "$TMP/icons.zip" -d "$TMP/icons"
 copy_icon() {
   local name="$1" target="$2"
   local found
-  found="$(find "$TMP/icons" -type f -iname "${name}*.png" -print -quit)"
-  if [[ -z "$found" ]]; then
-    found="$(find "$TMP/icons" -type f -iname "*${name}*.png" -print -quit)"
-  fi
-  [[ -n "$found" ]] || { echo "Kenney icon matching ${name}*.png was not found" >&2; exit 1; }
+  found="$(find "$TMP/icons" -type f \( -iname "${name}.png" -o -iname "${name}_*.png" -o -iname "*${name}*.png" \) -print -quit)"
+  [[ -n "$found" ]] || { echo "Kenney icon matching ${name} was not found" >&2; exit 1; }
   cp "$found" "$target"
 }
 copy_icon "star" "$ROOT/assets/game/rewards/star.png"
@@ -79,7 +65,7 @@ unzip -q "$TMP/audio.zip" -d "$TMP/audio"
 CLICK="$(find "$TMP/audio" -type f -iname '*.wav' -print -quit)"
 [[ -n "$CLICK" ]] || { echo "Kenney UI Audio WAV was not found" >&2; exit 1; }
 cp "$CLICK" "$ROOT/assets/game/sounds/tap.wav"
-SECOND="$(find "$TMP/audio" -type f -iname '*.wav' -print | sed -n '2p')"
+SECOND="$(find "$TMP/audio" -type f -iname '*.wav' ! -path "$CLICK" -print -quit)"
 [[ -n "$SECOND" ]] && cp "$SECOND" "$ROOT/assets/game/sounds/success.wav" || cp "$CLICK" "$ROOT/assets/game/sounds/success.wav"
 
 printf 'Prepared Arqami game assets:\n'
