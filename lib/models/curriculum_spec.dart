@@ -55,16 +55,19 @@ class CurriculumActivityPlanner {
       }
     }
 
+    // Keep all remaining training activities before the assessment gate.
     for (var i = 0; i < source.length; i++) {
-      if (used.contains(i)) continue;
-      if (source[i] is AssessmentActivityConfig) {
-        result.add(source[i]);
-        used.add(i);
-      }
+      if (used.contains(i) || source[i] is AssessmentActivityConfig) continue;
+      result.add(source[i]);
+      used.add(i);
     }
 
+    // Assessment is always the final gate, regardless of the requested
+    // curriculum activity kinds or age-adapted ordering.
     for (var i = 0; i < source.length; i++) {
-      if (!used.contains(i)) result.add(source[i]);
+      if (used.contains(i) || source[i] is! AssessmentActivityConfig) continue;
+      result.add(source[i]);
+      used.add(i);
     }
 
     return List.unmodifiable(result);
