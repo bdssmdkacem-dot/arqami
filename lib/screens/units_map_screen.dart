@@ -10,8 +10,8 @@ import '../widgets/shared/banner_ad_widget.dart';
 import 'certificate_screen.dart';
 import 'unit_player_screen.dart';
 
-/// الشاشة الرئيسية: خريطة الوحدات الـ13 بترتيب تصاعدي.
-/// كل وحدة مقفلة حتى تكتمل الوحدة اللي قبلها.
+/// الشاشة الرئيسية: خريطة الوحدات الـ52 بترتيب تصاعدي.
+/// كل وحدة مقفلة حتى تكتمل الوحدة التي قبلها.
 class UnitsMapScreen extends StatefulWidget {
   const UnitsMapScreen({super.key});
 
