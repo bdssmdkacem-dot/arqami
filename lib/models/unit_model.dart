@@ -171,6 +171,9 @@ class UnitModel {
   /// المصدر الأصلي يبقى محفوظاً داخل الوحدة، لذلك لا يتغير المنهج نفسه.
   List<ActivityConfig> get activities => AgeActivityPlan.current().adaptActivities(_activities);
 
+  /// الأنشطة الأصلية قبل أي تكييف عمري. تستخدمها اختبارات سلامة المنهج.
+  List<ActivityConfig> get sourceActivities => List.unmodifiable(_activities);
+
   /// العدد الأصلي لأنشطة الوحدة، مفيد للتحقق من سلامة المنهج والاختبارات.
   int get sourceActivityCount => _activities.length;
 
