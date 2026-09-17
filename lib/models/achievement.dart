@@ -51,7 +51,7 @@ class Achievements {
       titleAr: 'عشر خطوات',
       descriptionAr: 'أكمل 10 وحدات.',
       category: AchievementCategory.progress,
-      icon: Icons.looks_10_rounded,
+      icon: Icons.format_list_numbered_rounded,
       target: 10,
     ),
     const AchievementDefinition(
