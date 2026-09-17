@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-
-import '../lib/models/curriculum_spec.dart';
-import '../lib/models/units_data.dart';
+import 'package:arqami/models/curriculum_spec.dart';
+import 'package:arqami/models/units_data.dart';
 
 void main() {
   test('all 52 units have a complete learning specification', () {
