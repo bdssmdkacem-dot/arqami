@@ -21,7 +21,6 @@ void main() {
 
   tearDownAll(() async {
     await tracker.resetAll();
-    await tracker.close();
     if (await hiveDirectory.exists()) {
       await hiveDirectory.delete(recursive: true);
     }
