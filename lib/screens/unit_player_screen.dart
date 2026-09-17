@@ -27,17 +27,32 @@ class UnitPlayerScreen extends StatefulWidget {
   State<UnitPlayerScreen> createState() => _UnitPlayerScreenState();
 }
 
+enum _AnswerFeedback { correct, wrong }
+
 class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   int _activityIndex = 0;
   int _wrongAttemptsInUnit = 0;
   bool _unitCompleted = false;
   int? _lastAnnouncedSceneIndex;
+  _AnswerFeedback? _feedback;
+  int _feedbackToken = 0;
 
   ActivityConfig get _currentActivity => widget.unit.activities[_activityIndex];
   AgeActivityPresentation get _age => AgeActivityPresentation.current();
 
+  void _showFeedback(_AnswerFeedback feedback) {
+    if (!mounted) return;
+    final token = ++_feedbackToken;
+    setState(() => _feedback = feedback);
+    Future.delayed(const Duration(milliseconds: 520), () {
+      if (!mounted || token != _feedbackToken) return;
+      setState(() => _feedback = null);
+    });
+  }
+
   void _onWrongAttempt() {
     _wrongAttemptsInUnit++;
+    _showFeedback(_AnswerFeedback.wrong);
     AudioService.instance.playTryAgain();
   }
 
@@ -47,10 +62,14 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
 
   void _onActivityComplete() {
     if (!mounted) return;
+    _showFeedback(_AnswerFeedback.correct);
     if (_activityIndex < widget.unit.activities.length - 1) {
-      setState(() => _activityIndex++);
+      Future.delayed(const Duration(milliseconds: 360), () {
+        if (!mounted) return;
+        setState(() => _activityIndex++);
+      });
     } else {
-      _completeUnit();
+      Future.delayed(const Duration(milliseconds: 360), _completeUnit);
     }
   }
 
@@ -91,7 +110,17 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Responsive.constrainedCenter(
-            child: _unitCompleted ? _buildCompletionView() : _buildPlayerView(),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: _unitCompleted ? _buildCompletionView() : _buildPlayerView(),
+                ),
+                if (_feedback != null)
+                  Positioned.fill(
+                    child: IgnorePointer(child: _AnswerFeedbackOverlay(type: _feedback!)),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -316,6 +345,57 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
       case MatchContentType.quantity:
         return QuantityRow(count: value);
     }
+  }
+}
+
+class _AnswerFeedbackOverlay extends StatelessWidget {
+  final _AnswerFeedback type;
+
+  const _AnswerFeedbackOverlay({required this.type});
+
+  @override
+  Widget build(BuildContext context) {
+    final correct = type == _AnswerFeedback.correct;
+    final color = correct ? AppColors.correct : AppColors.incorrect;
+    final soft = correct ? AppColors.correctSoft : AppColors.incorrectSoft;
+    final icon = correct ? Icons.check_rounded : Icons.close_rounded;
+    final label = correct ? 'أحسنت!' : 'حاول مرة أخرى';
+
+    return Center(
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.65, end: 1),
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.elasticOut,
+        builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 150, maxWidth: 230),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+          decoration: BoxDecoration(
+            color: soft.withValues(alpha: .97),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: color.withValues(alpha: .35), width: 2),
+            boxShadow: const [BoxShadow(blurRadius: 18, offset: Offset(0, 7), color: Color(0x25000000))],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                child: Icon(icon, color: Colors.white, size: 38),
+              ),
+              const SizedBox(height: 9),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: color),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
