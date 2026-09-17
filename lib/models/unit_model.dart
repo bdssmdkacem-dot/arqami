@@ -167,9 +167,9 @@ class UnitModel {
     this.ageRangeAr = '3–16 سنة',
   }) : _activities = activities;
 
-  /// الأنشطة التي يراها المتعلم بعد تكييفها للعمر الحالي.
+  /// الأنشطة التي يراها المتعلم بعد تكييفها للعمر ومفهوم الوحدة.
   /// المصدر الأصلي يبقى محفوظاً داخل الوحدة، لذلك لا يتغير المنهج نفسه.
-  List<ActivityConfig> get activities => AgeActivityPlan.current().adaptActivities(_activities);
+  List<ActivityConfig> get activities => AgeActivityPlan.current().adaptUnit(this);
 
   /// الأنشطة الأصلية قبل أي تكييف عمري. تستخدمها اختبارات سلامة المنهج.
   List<ActivityConfig> get sourceActivities => List.unmodifiable(_activities);
