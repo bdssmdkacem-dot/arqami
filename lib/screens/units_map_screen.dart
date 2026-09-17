@@ -129,6 +129,10 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
                             ProgressTracker.instance
                                 .getUnitProgress(_units[index - 1].id)
                                 .completed;
+                        final stageRewardReady = index > 0 &&
+                            _isStageStart(unit.order) &&
+                            _isStageComplete(_stageForOrder(unit.order - 1));
+
                         return _MapLevel(
                           key: ValueKey('map_level_${unit.id}'),
                           unit: unit,
@@ -136,6 +140,7 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
                           unlocked: unlocked,
                           previousCompleted: previousCompleted,
                           highlight: unit.id == _newlyUnlockedUnitId,
+                          stageRewardReady: stageRewardReady,
                           onTap: unlocked ? () => _openUnit(unit) : null,
                         );
                       },
@@ -149,6 +154,12 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
         ),
       ),
     );
+  }
+
+  bool _isStageComplete(int stage) {
+    final range = _stageRange(stage);
+    return range != null &&
+        ProgressTracker.instance.isStageComplete(range.$1, range.$2);
   }
 }
 
@@ -253,6 +264,7 @@ class _MapLevel extends StatelessWidget {
   final bool unlocked;
   final bool previousCompleted;
   final bool highlight;
+  final bool stageRewardReady;
   final VoidCallback? onTap;
 
   const _MapLevel({
@@ -262,6 +274,7 @@ class _MapLevel extends StatelessWidget {
     required this.unlocked,
     required this.previousCompleted,
     required this.highlight,
+    required this.stageRewardReady,
     required this.onTap,
   });
 
@@ -272,9 +285,12 @@ class _MapLevel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRight = unit.order.isEven;
+    final showCompanion = _current || highlight;
+
     return SizedBox(
       height: 126,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Positioned.fill(
             child: CustomPaint(
@@ -301,6 +317,18 @@ class _MapLevel extends StatelessWidget {
               ),
             ),
           ),
+          if (showCompanion)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Align(
+                  alignment: Alignment(isRight ? 0.42 : -0.42, -0.62),
+                  child: _CompanionMarker(
+                    key: ValueKey('companion_${unit.id}'),
+                    arriving: highlight,
+                  ),
+                ),
+              ),
+            ),
           if (highlight)
             Positioned.fill(
               child: IgnorePointer(
@@ -312,9 +340,73 @@ class _MapLevel extends StatelessWidget {
               top: 4,
               left: isRight ? null : 10,
               right: isRight ? 10 : null,
-              child: _StageChip(label: _stageFor(unit.order)),
+              child: _StageChip(
+                label: _stageFor(unit.order),
+                rewardReady: stageRewardReady,
+              ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _CompanionMarker extends StatelessWidget {
+  final bool arriving;
+
+  const _CompanionMarker({super.key, required this.arriving});
+
+  static const _asset = 'assets/game/characters/roguelikeChar_transparent.png';
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: arriving ? 0.0 : 0.82, end: 1.0),
+      duration: Duration(milliseconds: arriving ? 900 : 500),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) {
+        final lift = (1 - value) * 24;
+        final scale = 0.82 + value * 0.18;
+        return Transform.translate(
+          offset: Offset(0, lift),
+          child: Transform.scale(scale: scale, child: child),
+        );
+      },
+      child: Container(
+        width: 62,
+        height: 62,
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.88),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.gold,
+            width: 2.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.gold.withValues(alpha: 0.28),
+              blurRadius: 12,
+              spreadRadius: 2,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ClipRect(
+          child: Align(
+            alignment: Alignment.topLeft,
+            widthFactor: 16 / 918,
+            heightFactor: 16 / 203,
+            child: Image.asset(
+              _asset,
+              width: 918 * 3.2,
+              height: 203 * 3.2,
+              fit: BoxFit.none,
+              filterQuality: FilterQuality.none,
+              alignment: Alignment.topLeft,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -604,23 +696,56 @@ class _PathPainter extends CustomPainter {
 
 class _StageChip extends StatelessWidget {
   final String label;
-  const _StageChip({required this.label});
+  final bool rewardReady;
+
+  const _StageChip({required this.label, required this.rewardReady});
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.textPrimary,
-        borderRadius: BorderRadius.circular(16),
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: rewardReady ? 0.86 : 1, end: 1),
+      duration: const Duration(milliseconds: 650),
+      curve: Curves.easeOutBack,
+      builder: (context, scale, child) => Transform.scale(
+        scale: scale,
+        alignment: AlignmentDirectional.topStart,
+        child: child,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: rewardReady ? AppColors.gold : AppColors.textPrimary,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            if (rewardReady)
+              BoxShadow(
+                color: AppColors.gold.withValues(alpha: 0.35),
+                blurRadius: 12,
+                spreadRadius: 1,
+              ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (rewardReady) ...[
+                const Icon(
+                  Icons.emoji_events_rounded,
+                  color: Colors.white,
+                  size: 15,
+                ),
+                const SizedBox(width: 5),
+              ],
+              Text(
+                rewardReady ? '$label · مكافأة مفتوحة' : label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -665,5 +790,38 @@ String _stageFor(int order) {
   return 'رحلة أرقامي';
 }
 
+int _stageNumberForOrder(int order) {
+  if (order <= 13) return 1;
+  if (order <= 20) return 2;
+  if (order <= 30) return 3;
+  if (order <= 38) return 4;
+  if (order <= 44) return 5;
+  if (order <= 46) return 6;
+  return 7;
+}
+
+(int, int)? _stageRange(int stage) {
+  switch (stage) {
+    case 1:
+      return (1, 13);
+    case 2:
+      return (14, 20);
+    case 3:
+      return (21, 30);
+    case 4:
+      return (31, 38);
+    case 5:
+      return (39, 44);
+    case 6:
+      return (45, 46);
+    case 7:
+      return (47, 52);
+    default:
+      return null;
+  }
+}
+
 bool _isStageStart(int order) =>
     const {14, 21, 31, 39, 45, 47}.contains(order);
+
+String _stageForOrder(int order) => _stageNumberForOrder(order);
