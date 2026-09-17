@@ -82,13 +82,38 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
     final progress = ProgressTracker.instance.getUnitProgress(widget.unit.id);
     final isFinalUnit = widget.unit.order == UnitsData.units.length;
     final children = <Widget>[
-      const Icon(Icons.celebration_rounded, size: 64, color: AppColors.gold),
+      TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.55, end: 1),
+        duration: const Duration(milliseconds: 650),
+        curve: Curves.elasticOut,
+        builder: (context, scale, child) => Transform.scale(
+          scale: scale,
+          child: child,
+        ),
+        child: const Icon(
+          Icons.celebration_rounded,
+          size: 64,
+          color: AppColors.gold,
+        ),
+      ),
       const SizedBox(height: 12),
-      const Text('أحسنت!', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
+      TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 500),
+        builder: (context, value, child) => Opacity(opacity: value, child: child),
+        child: const Text(
+          'أحسنت!',
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+        ),
+      ),
       const SizedBox(height: 6),
-      const Text('أكملت هذه الوحدة بنجاح', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
+      const Text(
+        'أكملت هذه الوحدة بنجاح',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: AppColors.textSecondary),
+      ),
       const SizedBox(height: 18),
-      Row(mainAxisSize: MainAxisSize.min, children: List.generate(3, (i) => Icon(i < progress.stars ? Icons.star_rounded : Icons.star_border_rounded, color: AppColors.gold, size: 40))),
+      _AnimatedStars(stars: progress.stars),
       const SizedBox(height: 24),
     ];
     if (isFinalUnit) {
@@ -238,6 +263,45 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   }
 }
 
+class _AnimatedStars extends StatelessWidget {
+  final int stars;
+
+  const _AnimatedStars({required this.stars});
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeOut,
+      builder: (context, value, child) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (index) {
+            final start = index / 3;
+            final local = ((value - start) / (1 - start)).clamp(0.0, 1.0);
+            final earned = index < stars;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              child: Transform.scale(
+                scale: earned ? 0.65 + local * 0.35 : 1,
+                child: Opacity(
+                  opacity: earned ? local : 0.35,
+                  child: Icon(
+                    earned ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: AppColors.gold,
+                    size: 42,
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+}
+
 class _LessonView extends StatelessWidget {
   final LessonActivityConfig config;
   final VoidCallback onContinue;
@@ -258,347 +322,3 @@ class _LessonView extends StatelessWidget {
         children.add(
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.teal.withValues(alpha: .08),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(example, textAlign: TextAlign.center, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
-            ),
-          ),
-        );
-      }
-    }
-    children.add(const SizedBox(height: 22));
-    children.add(
-      SizedBox(
-        height: 52,
-        child: ElevatedButton.icon(
-          onPressed: onContinue,
-          icon: const Icon(Icons.arrow_forward_rounded),
-          label: const Text('فهمت، نبدأ التمرين'),
-        ),
-      ),
-    );
-
-    return SingleChildScrollView(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
-        ),
-      ),
-    );
-  }
-}
-
-class _ChoiceQuizView extends StatefulWidget {
-  final String title;
-  final List<ChoiceQuestion> questions;
-  final VoidCallback onWrong;
-  final VoidCallback onComplete;
-  final bool isAssessment;
-  final Future<void> Function(AssessmentResult result)? onAssessmentFailed;
-
-  const _ChoiceQuizView({
-    super.key,
-    required this.title,
-    required this.questions,
-    required this.onWrong,
-    required this.onComplete,
-    this.isAssessment = false,
-    this.onAssessmentFailed,
-  });
-
-  @override
-  State<_ChoiceQuizView> createState() => _ChoiceQuizViewState();
-}
-
-class _ChoiceQuizViewState extends State<_ChoiceQuizView> {
-  int index = 0;
-  bool answered = false;
-  String? message;
-  final List<int> _selectedAnswers = [];
-  static const AssessmentEngine _assessmentEngine = AssessmentEngine();
-
-  ChoiceQuestion get question => widget.questions[index];
-
-  void choose(int selected) {
-    if (answered || widget.questions.isEmpty) return;
-
-    if (widget.isAssessment) {
-      _chooseAssessment(selected);
-      return;
-    }
-
-    if (selected == question.correctIndex) {
-      setState(() {
-        answered = true;
-        message = 'أحسنت! إجابة صحيحة';
-      });
-      Future.delayed(const Duration(milliseconds: 650), () {
-        if (!mounted) return;
-        if (index == widget.questions.length - 1) {
-          widget.onComplete();
-        } else {
-          setState(() {
-            index++;
-            answered = false;
-            message = null;
-          });
-        }
-      });
-    } else {
-      widget.onWrong();
-      setState(() => message = question.hintAr ?? 'حاول مرة أخرى وفكّر بهدوء');
-    }
-  }
-
-  void _chooseAssessment(int selected) {
-    final isCorrect = selected == question.correctIndex;
-    _selectedAnswers.add(selected);
-
-    if (!isCorrect) {
-      widget.onWrong();
-    }
-
-    setState(() {
-      answered = true;
-      message = isCorrect ? 'أحسنت! إجابة صحيحة' : 'تم تسجيل الإجابة';
-    });
-
-    Future.delayed(const Duration(milliseconds: 650), () async {
-      if (!mounted) return;
-
-      if (index == widget.questions.length - 1) {
-        final result = _assessmentEngine.evaluate(
-          questions: widget.questions,
-          selectedAnswers: _selectedAnswers,
-        );
-
-        if (result.passed) {
-          widget.onComplete();
-          return;
-        }
-
-        await widget.onAssessmentFailed?.call(result);
-        if (!mounted) return;
-        final percentage = (result.score * 100).round();
-        setState(() {
-          index = 0;
-          _selectedAnswers.clear();
-          answered = false;
-          message = 'نتيجتك $percentage٪ — تحتاج إلى 70٪ على الأقل. حاول مرة أخرى.';
-        });
-        return;
-      }
-
-      setState(() {
-        index++;
-        answered = false;
-        message = null;
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.questions.isEmpty) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(22),
-          child: Center(child: Text('لا توجد أسئلة في هذا النشاط.')),
-        ),
-      );
-    }
-
-    final children = <Widget>[
-      Text(widget.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 24),
-      if (widget.isAssessment)
-        Text(
-          'السؤال ${index + 1} من ${widget.questions.length}',
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-        ),
-      if (widget.isAssessment) const SizedBox(height: 10),
-      Text(question.questionAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, height: 1.5)),
-      const SizedBox(height: 22),
-    ];
-    for (var i = 0; i < question.options.length; i++) {
-      children.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: SizedBox(
-            height: 54,
-            child: ElevatedButton(
-              onPressed: () => choose(i),
-              child: Text(question.options[i], style: const TextStyle(fontSize: 19)),
-            ),
-          ),
-        ),
-      );
-    }
-    if (message != null) {
-      children.add(const SizedBox(height: 8));
-      children.add(
-        Text(
-          message!,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.w700, color: answered ? AppColors.teal : AppColors.terracotta),
-        ),
-      );
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(22),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
-      ),
-    );
-  }
-}
-
-class _ArithmeticView extends StatefulWidget {
-  final ArithmeticActivityConfig config;
-  final VoidCallback onWrong;
-  final VoidCallback onComplete;
-  const _ArithmeticView({required this.config, required this.onWrong, required this.onComplete});
-
-  @override
-  State<_ArithmeticView> createState() => _ArithmeticViewState();
-}
-
-class _ArithmeticViewState extends State<_ArithmeticView> {
-  final TextEditingController controller = TextEditingController();
-  int index = 0;
-  String? message;
-  bool locked = false;
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  void _keepWesternDigits(String input) {
-    final normalized = ArithmeticAnswerMatcher.normalize(input);
-    if (normalized == input) return;
-    controller.value = controller.value.copyWith(
-      text: normalized,
-      selection: TextSelection.collapsed(offset: normalized.length),
-      composing: TextRange.empty,
-    );
-  }
-
-  bool _matches(ArithmeticQuestion question, String rawInput) =>
-      ArithmeticAnswerMatcher.matches(question, rawInput);
-
-  void submit() {
-    if (locked) return;
-    final question = widget.config.questions[index];
-    if (_matches(question, controller.text)) {
-      setState(() {
-        locked = true;
-        message = 'أحسنت! إجابة صحيحة';
-      });
-      Future.delayed(const Duration(milliseconds: 650), () {
-        if (!mounted) return;
-        if (index == widget.config.questions.length - 1) {
-          widget.onComplete();
-        } else {
-          setState(() {
-            index++;
-            locked = false;
-            message = null;
-            controller.clear();
-          });
-        }
-      });
-    } else {
-      widget.onWrong();
-      setState(() => message = question.hintAr ?? 'راجع العملية وحاول مرة أخرى');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final question = widget.config.questions[index];
-    final children = <Widget>[
-      Text(question.questionAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 24),
-      TextField(
-        controller: controller,
-        enabled: !locked,
-        keyboardType: question.correctAnswerText != null
-            ? TextInputType.text
-            : const TextInputType.numberWithOptions(decimal: true),
-        onChanged: _keepWesternDigits,
-        textAlign: TextAlign.center,
-        textDirection: question.correctAnswerText != null
-            ? TextDirection.rtl
-            : TextDirection.ltr,
-        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-        decoration: InputDecoration(
-          labelText: 'اكتب الإجابة',
-          helperText: question.correctAnswerText != null
-              ? 'اكتب العدد ثم "والباقي" ثم الباقي'
-              : null,
-          border: const OutlineInputBorder(),
-        ),
-      ),
-      const SizedBox(height: 16),
-      SizedBox(height: 54, child: ElevatedButton(onPressed: submit, child: const Text('تحقق', style: TextStyle(fontSize: 18)))),
-    ];
-    if (message != null) {
-      children.add(const SizedBox(height: 12));
-      children.add(
-        Text(
-          message!,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.w700, color: message!.startsWith('أحسنت') ? AppColors.teal : AppColors.terracotta),
-        ),
-      );
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(22),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
-      ),
-    );
-  }
-}
-
-class _ActivityProgress extends StatelessWidget {
-  final int current;
-  final int total;
-  final double value;
-  const _ActivityProgress({required this.current, required this.total, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('خطوة التعلّم', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
-            Text('$current من $total', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.teal)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(99),
-          child: LinearProgressIndicator(
-            value: value,
-            minHeight: 8,
-            backgroundColor: AppColors.teal.withValues(alpha: 0.12),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.teal),
-          ),
-        ),
-      ],
-    );
-  }
-}
