@@ -25,10 +25,8 @@ void main() {
       expect(unit.sourceActivityCount, greaterThanOrEqualTo(4), reason: 'unit ${unit.order}');
     }
   });
-}
 
-
-test('curriculum activity planner executes a non-empty ordered plan for all 52 units', () {
+  test('curriculum activity planner executes a non-empty ordered plan for all 52 units', () {
     for (final unit in UnitsData.units) {
       final planned = CurriculumActivityPlanner.plan(unit);
       expect(planned, isNotEmpty, reason: 'unit ${unit.order}');
@@ -40,8 +38,11 @@ test('curriculum activity planner executes a non-empty ordered plan for all 52 u
 
       final assessments = planned.whereType<AssessmentActivityConfig>().toList();
       if (assessments.isNotEmpty) {
-        expect(planned.last, isA<AssessmentActivityConfig>(),
-            reason: 'assessment must remain the final gate for unit ${unit.order}');
+        expect(
+          planned.last,
+          isA<AssessmentActivityConfig>(),
+          reason: 'assessment must remain the final gate for unit ${unit.order}',
+        );
       }
     }
   });
