@@ -30,4 +30,20 @@ void main() {
     expect(assessments.single.questions, hasLength(2));
     expect(assessments.single.questions.first.questionAr, '18 = ؟');
   });
+
+  test('unit 41 does not use ambiguous multiplication matching', () {
+    final unit = UnitsData.units[40];
+
+    expect(unit.activities.whereType<MatchingActivityConfig>(), isEmpty);
+    final arithmetic = unit.activities.whereType<ArithmeticActivityConfig>().single;
+    expect(arithmetic.questions.map((q) => q.correctAnswer), [12, 20, 12]);
+  });
+
+  test('unit 44 does not use ambiguous division matching', () {
+    final unit = UnitsData.units[43];
+
+    expect(unit.activities.whereType<MatchingActivityConfig>(), isEmpty);
+    final arithmetic = unit.activities.whereType<ArithmeticActivityConfig>().single;
+    expect(arithmetic.questions.map((q) => q.correctAnswer), [4, 4, 4, 12]);
+  });
 }
