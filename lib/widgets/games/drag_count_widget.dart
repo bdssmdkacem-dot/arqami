@@ -139,10 +139,10 @@ class DragCountWidgetState extends State<DragCountWidget> {
                   alignment: Alignment.center,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: [
+                    children: const [
                       Icon(Icons.shopping_basket_rounded, size: 42, color: GameTheme.mango),
-                      const SizedBox(height: 4),
-                      const Text(
+                      SizedBox(height: 4),
+                      Text(
                         'السلة',
                         style: TextStyle(color: GameTheme.inkSoft, fontWeight: FontWeight.w700),
                       ),
