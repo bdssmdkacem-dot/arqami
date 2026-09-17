@@ -1,28 +1,23 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-/// خدمة موحّدة لتشغيل كل أصوات التطبيق — **بدون أي ملف صوتي خارجي**.
+/// خدمة الصوت الموحدة في أرقامي.
 ///
-/// الاستراتيجية:
-///   - نطق الأرقام والعبارات: عبر flutter_tts (TTS حي)
-///   - النقرات السريعة (سحب عنصر، اختيار): عبر SystemSound المدمجة
-///     فـ Flutter (بلا أي asset)
-///   - التغذية الراجعة (صحيح/حاول مرة أخرى/إكمال): مزيج من SystemSound
-///     فوري + عبارة TTS قصيرة بعدها مباشرة
-///
-/// هاد المقاربة كتخلي التطبيق قابل للتشغيل والاختبار الكامل من اليوم
-/// الأول بلا انتظار أي تسجيل صوتي احترافي. إذا بغيتي تبدّل لاحقاً
-/// لأصوات مسجّلة احترافية (بدل SystemSound)، يكفي تبدّل _playChime()
-/// بمشغّل audioplayers بلا ما تمس باقي الملف.
+/// - الأرقام والعبارات التعليمية: TTS عربي.
+/// - النقرات والنجاح وإكمال الوحدة: أصوات Kenney UI المحلية.
+/// - إذا تعذر تحميل ملف صوتي، تبقى التجربة الصوتية الأساسية عبر TTS/SystemSound.
 class AudioService {
   AudioService._internal();
   static final AudioService instance = AudioService._internal();
 
   final FlutterTts _tts = FlutterTts();
+  final AudioPlayer _uiPlayer = AudioPlayer();
   bool _muted = false;
+  bool _initialized = false;
+
   bool get isMuted => _muted;
 
-  /// كلمات الأرقام بالعربية الفصحى (0-12، حتى 12 لدعم أرقام الساعة)
   static const Map<int, String> _numberWords = {
     0: 'صفر',
     1: 'واحد',
@@ -39,8 +34,6 @@ class AudioService {
     12: 'اثنا عشر',
   };
 
-  /// عبارات تشجيعية متنوعة (تُختار عشوائياً باش ما يبقاش نفس الكلمة
-  /// مكررة فكل مرة، وهذا يخلي التجربة أكثر حيوية للطفل)
   static const List<String> _correctPhrases = [
     'أحسنت',
     'ممتاز',
@@ -52,17 +45,31 @@ class AudioService {
 
   Future<void> init() async {
     await _tts.setLanguage('ar-SA');
-    await _tts.setSpeechRate(0.42); // أبطأ من الافتراضي لوضوح أكبر للطفل
+    await _tts.setSpeechRate(0.42);
     await _tts.setVolume(1.0);
-    await _tts.setPitch(1.05); // نبرة أعلى قليلاً، أقرب لصوت مرح
+    await _tts.setPitch(1.05);
+    await _uiPlayer.setReleaseMode(ReleaseMode.stop);
+    _initialized = true;
   }
 
   void setMuted(bool muted) {
     _muted = muted;
-    if (muted) _tts.stop();
+    if (muted) {
+      _tts.stop();
+      _uiPlayer.stop();
+    }
   }
 
-  /// ينطق رقماً معيناً (0-10) بالعربية الفصحى
+  Future<void> _playUi(String asset) async {
+    if (_muted || !_initialized) return;
+    try {
+      await _uiPlayer.stop();
+      await _uiPlayer.play(AssetSource(asset));
+    } catch (_) {
+      // الصوت التجميلي ليس سبباً لتعطيل النشاط التعليمي.
+    }
+  }
+
   Future<void> playNumber(int digit) async {
     if (_muted) return;
     final word = _numberWords[digit];
@@ -71,46 +78,48 @@ class AudioService {
     await _tts.speak(word);
   }
 
-  /// ينطق أي نص عربي مخصص (تعليمات، عناوين وحدات...)
   Future<void> speak(String text) async {
     if (_muted) return;
     await _tts.stop();
     await _tts.speak(text);
   }
 
-  /// نقرة فورية خفيفة (سحب عنصر، لمس) — صوت نظام مدمج، بلا أي asset
   void playTick() {
     if (_muted) return;
     SystemSound.play(SystemSoundType.click);
+    _playUi('assets/game/sounds/tap.wav');
   }
 
-  /// إجابة صحيحة: نقرة فورية + عبارة تشجيعية منطوقة (تتناوب بين
-  /// عدة عبارات باش ما تبقاش رتيبة)
   Future<void> playCorrect() async {
     if (_muted) return;
-    SystemSound.play(SystemSoundType.click);
+    await _playUi('assets/game/sounds/success.wav');
     final phrase = _correctPhrases[_correctPhraseIndex % _correctPhrases.length];
     _correctPhraseIndex++;
     await _tts.stop();
     await _tts.speak(phrase);
   }
 
-  /// إعادة محاولة: نبرة لطيفة غير مخيفة، بلا "خطأ" صريح
   Future<void> playTryAgain() async {
     if (_muted) return;
+    await _playUi('assets/game/sounds/tap.wav');
     await _tts.stop();
     await _tts.speak('حاول مرة أخرى');
   }
 
-  /// إكمال وحدة كاملة: عبارة احتفالية أطول
   Future<void> playUnitComplete() async {
     if (_muted) return;
-    SystemSound.play(SystemSoundType.click);
+    await _playUi('assets/game/sounds/success.wav');
     await _tts.stop();
     await _tts.speak('أحسنت! أكملت الوحدة بنجاح');
   }
 
+  Future<void> playUnlock() async {
+    if (_muted) return;
+    await _playUi('assets/game/sounds/success.wav');
+  }
+
   Future<void> dispose() async {
     await _tts.stop();
+    await _uiPlayer.dispose();
   }
 }
