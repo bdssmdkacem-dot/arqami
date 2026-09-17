@@ -9,7 +9,7 @@ void main() {
 
   test('unit 15 matching pairs have unique pedagogical targets', () {
     final unit = UnitsData.units[14];
-    final matching = unit.activities.whereType<MatchingActivityConfig>().single;
+    final matching = unit.sourceActivities.whereType<MatchingActivityConfig>().single;
 
     final targets = matching.pairs.map((pair) => pair.rightValue).toList();
 
@@ -22,8 +22,8 @@ void main() {
 
   test('unit 15 keeps assessment separate from training quiz', () {
     final unit = UnitsData.units[14];
-    final quizzes = unit.activities.whereType<MultipleChoiceActivityConfig>().toList();
-    final assessments = unit.activities.whereType<AssessmentActivityConfig>().toList();
+    final quizzes = unit.sourceActivities.whereType<MultipleChoiceActivityConfig>().toList();
+    final assessments = unit.sourceActivities.whereType<AssessmentActivityConfig>().toList();
 
     expect(quizzes, hasLength(1));
     expect(assessments, hasLength(1));
@@ -34,16 +34,16 @@ void main() {
   test('unit 41 does not use ambiguous multiplication matching', () {
     final unit = UnitsData.units[40];
 
-    expect(unit.activities.whereType<MatchingActivityConfig>(), isEmpty);
-    final arithmetic = unit.activities.whereType<ArithmeticActivityConfig>().single;
+    expect(unit.sourceActivities.whereType<MatchingActivityConfig>(), isEmpty);
+    final arithmetic = unit.sourceActivities.whereType<ArithmeticActivityConfig>().single;
     expect(arithmetic.questions.map((q) => q.correctAnswer), [12, 20, 12]);
   });
 
   test('unit 44 does not use ambiguous division matching', () {
     final unit = UnitsData.units[43];
 
-    expect(unit.activities.whereType<MatchingActivityConfig>(), isEmpty);
-    final arithmetic = unit.activities.whereType<ArithmeticActivityConfig>().single;
+    expect(unit.sourceActivities.whereType<MatchingActivityConfig>(), isEmpty);
+    final arithmetic = unit.sourceActivities.whereType<ArithmeticActivityConfig>().single;
     expect(arithmetic.questions.map((q) => q.correctAnswer), [4, 4, 4, 12]);
   });
 }
