@@ -201,7 +201,7 @@ class AgeActivityPlan {
     return _selectByDifficulty<ArithmeticQuestion>(questions, arithmeticQuestionLimit);
   }
 
-  List<T> _selectByDifficulty<T>(List<T> questions, int limit) {
+  List<T> _selectByDifficulty<T extends Object>(List<T> questions, int limit) {
     final indexed = questions.asMap().entries.toList();
     indexed.sort((a, b) {
       final da = _questionDifficulty(a.value);
