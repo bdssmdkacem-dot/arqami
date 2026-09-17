@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/game_theme.dart';
 
-/// زوج عناصر يجب على الطفل مطابقتهم (نفس id يعني أنهم متطابقان).
 class MatchPair {
   final String id;
   final Widget leftContent;
@@ -15,10 +14,6 @@ class MatchPair {
   });
 }
 
-/// لعبة المطابقة في حديقة الأعداد.
-///
-/// يحافظ المكوّن على منطق المطابقة الأصلي، بينما يمنحه سطحًا بصريًا مرحًا
-/// ومتناسقًا مع هوية أرقامي الجديدة.
 class MatchingWidget extends StatefulWidget {
   final List<MatchPair> pairs;
   final VoidCallback onAllMatched;
@@ -268,9 +263,9 @@ class MatchingWidgetState extends State<MatchingWidget> {
                   accentColor: isMatched
                       ? widget.matchedColor
                       : (isLeft ? GameTheme.ocean : GameTheme.mint),
-                  child: pair.leftContent,
-                  rightChild: pair.rightContent,
                   isLeft: isLeft,
+                  rightChild: pair.rightContent,
+                  child: pair.leftContent,
                 ),
               ),
             ),
