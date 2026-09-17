@@ -8,6 +8,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/responsive.dart';
 import '../models/unit_model.dart';
 import '../models/units_data.dart';
+import '../widgets/game/journey_world_decoration.dart';
 import '../widgets/shared/banner_ad_widget.dart';
 import 'certificate_screen.dart';
 import 'unit_player_screen.dart';
@@ -84,32 +85,38 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
             ),
             Expanded(
               child: Responsive.constrainedCenter(
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(18, 12, 18, 30),
-                  itemCount: _units.length,
-                  itemBuilder: (context, index) {
-                    final unit = _units[index];
-                    final unlocked = _isUnitUnlocked(index);
-                    final progress =
-                        ProgressTracker.instance.getUnitProgress(unit.id);
-                    final previousCompleted = index == 0 ||
-                        ProgressTracker.instance
-                            .getUnitProgress(_units[index - 1].id)
-                            .completed;
-                    final nextUnlocked = index + 1 < _units.length &&
-                        ProgressTracker.instance.isUnitUnlocked(
-                          _units[index + 1].id,
-                        );
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    const JourneyWorldDecoration(),
+                    ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(18, 12, 18, 30),
+                      itemCount: _units.length,
+                      itemBuilder: (context, index) {
+                        final unit = _units[index];
+                        final unlocked = _isUnitUnlocked(index);
+                        final progress =
+                            ProgressTracker.instance.getUnitProgress(unit.id);
+                        final previousCompleted = index == 0 ||
+                            ProgressTracker.instance
+                                .getUnitProgress(_units[index - 1].id)
+                                .completed;
+                        final nextUnlocked = index + 1 < _units.length &&
+                            ProgressTracker.instance.isUnitUnlocked(
+                              _units[index + 1].id,
+                            );
 
-                    return _MapLevel(
-                      unit: unit,
-                      progress: progress,
-                      unlocked: unlocked,
-                      previousCompleted: previousCompleted,
-                      nextUnlocked: nextUnlocked,
-                      onTap: unlocked ? () => _openUnit(unit) : null,
-                    );
-                  },
+                        return _MapLevel(
+                          unit: unit,
+                          progress: progress,
+                          unlocked: unlocked,
+                          previousCompleted: previousCompleted,
+                          nextUnlocked: nextUnlocked,
+                          onTap: unlocked ? () => _openUnit(unit) : null,
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -264,9 +271,7 @@ class _MapLevel extends StatelessWidget {
             ),
           ),
           Align(
-            alignment: isRight
-                ? AlignmentDirectional.centerEnd
-                : AlignmentDirectional.centerStart,
+            alignment: Alignment(isRight ? 0.78 : -0.78, 0),
             child: Semantics(
               button: unlocked,
               label: 'المستوى ${unit.order}: ${unit.titleAr}',
@@ -281,10 +286,10 @@ class _MapLevel extends StatelessWidget {
             ),
           ),
           if (unit.order == 1 || _isStageStart(unit.order))
-            PositionedDirectional(
+            Positioned(
               top: 4,
-              start: isRight ? 10 : null,
-              end: isRight ? null : 10,
+              left: isRight ? null : 10,
+              right: isRight ? 10 : null,
               child: _StageChip(label: stage),
             ),
         ],
@@ -323,89 +328,80 @@ class _LevelNode extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(28),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (unit.order.isEven) const Spacer(),
-            Flexible(
-              child: Container(
-                constraints: const BoxConstraints(minWidth: 170, maxWidth: 250),
-                padding: const EdgeInsetsDirectional.fromSTEB(10, 8, 14, 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor.withValues(
-                    alpha: locked ? 0.70 : 1,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: current
-                        ? AppColors.gold
-                        : nodeColor.withValues(alpha: 0.22),
-                    width: current ? 2.5 : 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: current ? 12 : 6,
-                      offset: const Offset(0, 3),
-                      color: Colors.black.withValues(
-                        alpha: current ? 0.12 : 0.06,
-                      ),
-                    ),
-                  ],
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 170, maxWidth: 250),
+          padding: const EdgeInsetsDirectional.fromSTEB(10, 8, 14, 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor.withValues(
+              alpha: locked ? 0.70 : 1,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: current
+                  ? AppColors.gold
+                  : nodeColor.withValues(alpha: 0.22),
+              width: current ? 2.5 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: current ? 12 : 6,
+                offset: const Offset(0, 3),
+                color: Colors.black.withValues(
+                  alpha: current ? 0.12 : 0.06,
                 ),
-                child: Row(
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              _CircularNode(
+                order: unit.order,
+                color: nodeColor,
+                completed: progress.completed,
+                locked: locked,
+                current: current,
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _CircularNode(
-                      order: unit.order,
-                      color: nodeColor,
-                      completed: progress.completed,
-                      locked: locked,
-                      current: current,
+                    Text(
+                      'المستوى ${unit.order}',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: nodeColor,
+                            fontWeight: FontWeight.w900,
+                          ),
                     ),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'المستوى ${unit.order}',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: nodeColor,
-                                  fontWeight: FontWeight.w900,
-                                ),
+                    const SizedBox(height: 1),
+                    Text(
+                      unit.titleAr,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: locked ? AppColors.locked : null,
                           ),
-                          const SizedBox(height: 1),
-                          Text(
-                            unit.titleAr,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: locked ? AppColors.locked : null,
-                                ),
-                          ),
-                          if (progress.completed) ...[
-                            const SizedBox(height: 2),
-                            _StarsRow(stars: progress.stars),
-                          ] else if (current) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              'ابدأ الآن',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: AppColors.gold,
-                                    fontWeight: FontWeight.w900,
-                                  ),
+                    ),
+                    if (progress.completed) ...[
+                      const SizedBox(height: 2),
+                      _StarsRow(stars: progress.stars),
+                    ] else if (current) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'ابدأ الآن',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: AppColors.gold,
+                              fontWeight: FontWeight.w900,
                             ),
-                          ],
-                        ],
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
-            ),
-            if (unit.order.isOdd) const Spacer(),
-          ],
+            ],
+          ),
         ),
       ),
     );
