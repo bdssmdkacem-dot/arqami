@@ -43,12 +43,12 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'اختر عمر المتعلم لنضبط حجم العناصر وطريقة عرض التحديات.',
+                'اختر عمر المتعلم لنضبط الأنشطة والتحديات المناسبة له.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
-                value: selectedAge,
+                initialValue: selectedAge,
                 decoration: const InputDecoration(labelText: 'العمر'),
                 items: [
                   for (var age = 3; age <= 16; age++)
