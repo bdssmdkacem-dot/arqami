@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:arqami/core/progress/progress_tracker.dart';
@@ -5,14 +7,24 @@ import 'package:arqami/models/units_data.dart';
 
 void main() {
   final tracker = ProgressTracker.instance;
+  late Directory hiveDirectory;
 
   setUpAll(() async {
-    await tracker.init();
+    hiveDirectory = await Directory.systemTemp.createTemp('arqami_progress_test_');
+    await tracker.init(hivePath: hiveDirectory.path);
     await tracker.resetAll();
   });
 
   tearDown(() async {
     await tracker.resetAll();
+  });
+
+  tearDownAll(() async {
+    await tracker.resetAll();
+    await tracker.close();
+    if (await hiveDirectory.exists()) {
+      await hiveDirectory.delete(recursive: true);
+    }
   });
 
   test('first unit is unlocked and next unit starts at unit 1', () {
@@ -64,7 +76,10 @@ void main() {
     await tracker.markUnitComplete('unit_03', stars: 1);
 
     expect(tracker.getCompletedUnitIds().length, 3);
-    expect(tracker.getOverallProgress(UnitsData.units.length), closeTo(3 / 52, 0.000001));
+    expect(
+      tracker.getOverallProgress(UnitsData.units.length),
+      closeTo(3 / 52, 0.000001),
+    );
   });
 
   test('getNextUnit returns null only after all 52 units are completed', () async {
