@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 
-/// نوع السؤال: أيهما أكثر، أو أيهما أقل.
+/// نوع السؤال: أيهما أكثر، أيهما أقل، أو هل هما متساويان.
 enum ComparisonQuestion {
   more,
   fewer,
+  equal,
 }
 
-/// مكون المقارنة البصرية — يعرض كومتين من عناصر مختلفة العدد،
-/// ويسأل الطفل "أيهما أكثر؟" أو "أيهما أقل؟" بدون أي رموز رياضية
-/// (< أو >)، فقط مقارنة بصرية مباشرة بالعد والمقارنة.
+/// مكون المقارنة البصرية — يعرض كومتين من عناصر مختلفة أو متساوية العدد.
+/// لا يعتمد على الرموز الرياضية، بل على المقارنة البصرية المباشرة.
 class ComparisonWidget extends StatefulWidget {
   final int leftCount;
   final int rightCount;
@@ -27,10 +27,7 @@ class ComparisonWidget extends StatefulWidget {
     this.question = ComparisonQuestion.more,
     this.onWrongAttempt,
     this.itemIcon = Icons.circle,
-  }) : assert(
-          leftCount != rightCount,
-          'يجب أن تختلف الكومتان لتفادي تعادل غير قابل للحل',
-        );
+  }) : assert(leftCount >= 0 && rightCount >= 0);
 
   @override
   State<ComparisonWidget> createState() => ComparisonWidgetState();
@@ -42,17 +39,25 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
   bool _wrongRight = false;
 
   bool get _leftIsCorrect {
-    if (widget.question == ComparisonQuestion.more) {
-      return widget.leftCount > widget.rightCount;
+    switch (widget.question) {
+      case ComparisonQuestion.more:
+        return widget.leftCount > widget.rightCount;
+      case ComparisonQuestion.fewer:
+        return widget.leftCount < widget.rightCount;
+      case ComparisonQuestion.equal:
+        return widget.leftCount == widget.rightCount;
     }
-
-    return widget.leftCount < widget.rightCount;
   }
 
   String get _questionLabel {
-    return widget.question == ComparisonQuestion.more
-        ? 'أيّ كومة فيها أكثر؟'
-        : 'أيّ كومة فيها أقل؟';
+    switch (widget.question) {
+      case ComparisonQuestion.more:
+        return 'أيّ كومة فيها أكثر؟';
+      case ComparisonQuestion.fewer:
+        return 'أيّ كومة فيها أقل؟';
+      case ComparisonQuestion.equal:
+        return 'هل الكومتان متساويتان؟';
+    }
   }
 
   void _handleTap(bool tappedLeft) {
@@ -60,7 +65,11 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
       return;
     }
 
-    final tappedIsCorrect = tappedLeft ? _leftIsCorrect : !_leftIsCorrect;
+    // في سؤال التساوي لا توجد إجابة "يسار/يمين"؛ الضغط على أي كومة
+    // يعني اختيار أن الكومتين متساويتان.
+    final tappedIsCorrect = widget.question == ComparisonQuestion.equal
+        ? widget.leftCount == widget.rightCount
+        : (tappedLeft ? _leftIsCorrect : !_leftIsCorrect);
 
     if (tappedIsCorrect) {
       setState(() {
@@ -93,7 +102,6 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
     );
   }
 
-  /// يعيد المكون لحالته الأولية.
   void reset() {
     if (!mounted) {
       return;
@@ -108,15 +116,14 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final equalQuestion = widget.question == ComparisonQuestion.equal;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           _questionLabel,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
@@ -131,16 +138,21 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
               isWrong: _wrongLeft,
               isCorrectAndCompleted: _completed && _leftIsCorrect,
               onTap: () => _handleTap(true),
-              semanticLabel: 'مجموعة فيها ${widget.leftCount} عناصر، اليسار',
+              semanticLabel: equalQuestion
+                  ? 'مجموعة فيها ${widget.leftCount} عناصر، اختر للتأكيد على التساوي'
+                  : 'مجموعة فيها ${widget.leftCount} عناصر، اليسار',
             ),
             _GroupCard(
               count: widget.rightCount,
               icon: widget.itemIcon,
               color: AppColors.terracotta,
               isWrong: _wrongRight,
-              isCorrectAndCompleted: _completed && !_leftIsCorrect,
+              isCorrectAndCompleted: _completed &&
+                  (equalQuestion ? _leftIsCorrect : !_leftIsCorrect),
               onTap: () => _handleTap(false),
-              semanticLabel: 'مجموعة فيها ${widget.rightCount} عناصر، اليمين',
+              semanticLabel: equalQuestion
+                  ? 'مجموعة فيها ${widget.rightCount} عناصر، اختر للتأكيد على التساوي'
+                  : 'مجموعة فيها ${widget.rightCount} عناصر، اليمين',
             ),
           ],
         ),
