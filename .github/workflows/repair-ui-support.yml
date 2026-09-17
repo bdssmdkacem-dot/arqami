@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   repair:
-    if: ${{ !contains(github.event.head_commit.message, 'chore(ui): apply UI support repairs') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,65 +23,55 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
-
           root = Path('.')
 
           matcher = root / 'lib/core/answer/arithmetic_answer_matcher.dart'
           matcher.parent.mkdir(parents=True, exist_ok=True)
-          matcher.write_text('''import '../../models/unit_model.dart';\n\nclass ArithmeticAnswerMatcher {\n  const ArithmeticAnswerMatcher._();\n\n  static String normalize(String input) {\n    const arabic = '٠١٢٣٤٥٦٧٨٩';\n    const eastern = '۰۱۲۳۴۵۶۷۸۹';\n    var value = input.trim();\n\n    for (var i = 0; i < 10; i++) {\n      value = value.replaceAll(arabic[i], '$i').replaceAll(eastern[i], '$i');\n    }\n\n    value = value.replaceAll('٫', '.').replaceAll(',', '.').replaceAll('،', '.');\n    value = value.replaceAll(RegExp(r'\\s+'), ' ').trim();\n    value = value.replaceAll(RegExp(r'\\s*و\\s*الباقي\\s*'), ' والباقي ');\n    return value;\n  }\n\n  static num? parseNumber(String input) {\n    final normalized = normalize(input);\n    if (normalized.isEmpty) return null;\n    return num.tryParse(normalized);\n  }\n\n  static bool matches(ArithmeticQuestion question, String rawInput) {\n    if (question.correctAnswerText != null) {\n      return normalize(rawInput) == normalize(question.correctAnswerText!);\n    }\n\n    final value = parseNumber(rawInput);\n    final expected = question.correctAnswer;\n    if (value == null || expected == null) return false;\n    return (value - expected).abs() < 0.000001;\n  }\n}\n''', encoding='utf-8')
+          matcher.write_text('''import '../../models/unit_model.dart';\n\nclass ArithmeticAnswerMatcher {\n  const ArithmeticAnswerMatcher._();\n\n  static String normalize(String input) {\n    const arabic = '٠١٢٣٤٥٦٧٨٩';\n    const eastern = '۰۱۲۳۴۵۶۷۸۹';\n    var value = input.trim();\n    for (var i = 0; i < 10; i++) {\n      value = value.replaceAll(arabic[i], '$i').replaceAll(eastern[i], '$i');\n    }\n    value = value.replaceAll('٫', '.').replaceAll(',', '.').replaceAll('،', '.');\n    value = value.replaceAll(RegExp(r'\\s+'), ' ').trim();\n    value = value.replaceAll(RegExp(r'\\s*و\\s*الباقي\\s*'), ' والباقي ');\n    return value;\n  }\n\n  static num? parseNumber(String input) {\n    final normalized = normalize(input);\n    if (normalized.isEmpty) return null;\n    return num.tryParse(normalized);\n  }\n\n  static bool matches(ArithmeticQuestion question, String rawInput) {\n    if (question.correctAnswerText != null) {\n      return normalize(rawInput) == normalize(question.correctAnswerText!);\n    }\n    final value = parseNumber(rawInput);\n    final expected = question.correctAnswer;\n    if (value == null || expected == null) return false;\n    return (value - expected).abs() < 0.000001;\n  }\n}\n''', encoding='utf-8')
 
           player = root / 'lib/screens/unit_player_screen.dart'
           text = player.read_text(encoding='utf-8')
-          old_import = "import '../core/assessment/assessment_engine.dart';\n"
-          new_import = old_import + "import '../core/answer/arithmetic_answer_matcher.dart';\n"
-          if new_import not in text:
-              text = text.replace(old_import, new_import, 1)
-
+          text = text.replace(
+              "import '../core/assessment/assessment_engine.dart';\n",
+              "import '../core/assessment/assessment_engine.dart';\nimport '../core/answer/arithmetic_answer_matcher.dart';\n", 1)
           old_helpers = '''  String _normalizeDigits(String input) {\n    const arabic = '٠١٢٣٤٥٦٧٨٩';\n    const eastern = '۰۱۲۳۴۵۶۷۸۹';\n    var value = input.trim();\n    for (var i = 0; i < 10; i++) {\n      value = value.replaceAll(arabic[i], '$i').replaceAll(eastern[i], '$i');\n    }\n    return value.replaceAll('٫', '.').replaceAll(',', '.').replaceAll('،', '.');\n  }\n\n  void _keepWesternDigits(String input) {\n    final normalized = _normalizeDigits(input);\n    if (normalized == input) return;\n    controller.value = controller.value.copyWith(\n      text: normalized,\n      selection: TextSelection.collapsed(offset: normalized.length),\n      composing: TextRange.empty,\n    );\n  }\n\n  num? _parseNumber(String input) {\n    final normalized = _normalizeDigits(input);\n    if (normalized.isEmpty) return null;\n    return num.tryParse(normalized);\n  }\n\n  bool _matches(ArithmeticQuestion question, String rawInput) {\n    if (question.correctAnswerText != null) {\n      return _normalizeDigits(rawInput) == _normalizeDigits(question.correctAnswerText!);\n    }\n    final value = _parseNumber(rawInput);\n    final expected = question.correctAnswer;\n    if (value == null || expected == null) return false;\n    return (value - expected).abs() < 0.000001;\n  }\n'''
           new_helpers = '''  void _keepWesternDigits(String input) {\n    final normalized = ArithmeticAnswerMatcher.normalize(input);\n    if (normalized == input) return;\n    controller.value = controller.value.copyWith(\n      text: normalized,\n      selection: TextSelection.collapsed(offset: normalized.length),\n      composing: TextRange.empty,\n    );\n  }\n\n  bool _matches(ArithmeticQuestion question, String rawInput) =>\n      ArithmeticAnswerMatcher.matches(question, rawInput);\n'''
-          if old_helpers not in text:
-              raise SystemExit('Arithmetic helper block not found')
+          if old_helpers not in text: raise SystemExit('Arithmetic helper block not found')
           text = text.replace(old_helpers, new_helpers, 1)
 
           old_field = '''        keyboardType: const TextInputType.numberWithOptions(decimal: true),\n        onChanged: _keepWesternDigits,\n        textAlign: TextAlign.center,\n        textDirection: TextDirection.ltr,\n        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),\n        decoration: const InputDecoration(labelText: 'اكتب الإجابة', border: OutlineInputBorder()),\n'''
           new_field = '''        keyboardType: question.correctAnswerText != null\n            ? TextInputType.text\n            : const TextInputType.numberWithOptions(decimal: true),\n        onChanged: _keepWesternDigits,\n        textAlign: TextAlign.center,\n        textDirection: question.correctAnswerText != null\n            ? TextDirection.rtl\n            : TextDirection.ltr,\n        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),\n        decoration: InputDecoration(\n          labelText: 'اكتب الإجابة',\n          helperText: question.correctAnswerText != null\n              ? 'اكتب العدد ثم "والباقي" ثم الباقي'\n              : null,\n          border: const OutlineInputBorder(),\n        ),\n'''
-          if old_field not in text:
-              raise SystemExit('Arithmetic TextField block not found')
+          if old_field not in text: raise SystemExit('Arithmetic TextField block not found')
           text = text.replace(old_field, new_field, 1)
 
-          old_comparison = """        question: config.question == ComparisonQuestionType.more ? ComparisonQuestion.more : ComparisonQuestion.fewer,\n"""
+          old_comparison = "        question: config.question == ComparisonQuestionType.more ? ComparisonQuestion.more : ComparisonQuestion.fewer,\n"
           new_comparison = """        question: switch (config.question) {\n          ComparisonQuestionType.more => ComparisonQuestion.more,\n          ComparisonQuestionType.fewer => ComparisonQuestion.fewer,\n          ComparisonQuestionType.equal => ComparisonQuestion.equal,\n        },\n"""
-          if old_comparison not in text:
-              raise SystemExit('Comparison mapping block not found')
-          text = text.replace(old_comparison, new_comparison, 1)
-          player.write_text(text, encoding='utf-8')
+          if old_comparison not in text: raise SystemExit('Comparison mapping block not found')
+          player.write_text(text.replace(old_comparison, new_comparison, 1), encoding='utf-8')
 
           number_display = root / 'lib/widgets/shared/number_display.dart'
           text = number_display.read_text(encoding='utf-8')
           old = """    return Text(\n      '$value',\n      style: TextStyle(\n        fontSize: fontSize,\n        fontWeight: fontWeight,\n        color: color,\n      ),\n    );\n"""
           new = """    return FittedBox(\n      fit: BoxFit.scaleDown,\n      child: Text(\n        '$value',\n        style: TextStyle(\n          fontSize: fontSize,\n          fontWeight: fontWeight,\n          color: color,\n        ),\n      ),\n    );\n"""
-          if old not in text:
-              raise SystemExit('NumberDisplay block not found')
+          if old not in text: raise SystemExit('NumberDisplay block not found')
           number_display.write_text(text.replace(old, new, 1), encoding='utf-8')
 
           quantity = root / 'lib/widgets/shared/quantity_row.dart'
           text = quantity.read_text(encoding='utf-8')
           old = """    return Wrap(\n      spacing: 3,\n      runSpacing: 3,\n      alignment: WrapAlignment.center,\n      children: List.generate(\n        count,\n        (_) => Icon(icon, size: iconSize, color: color),\n      ),\n    );\n"""
           new = """    if (count == 0) {\n      return Text(\n        '0',\n        style: TextStyle(\n          fontSize: 32,\n          fontWeight: FontWeight.bold,\n          color: color,\n        ),\n      );\n    }\n\n    return Wrap(\n      spacing: 3,\n      runSpacing: 3,\n      alignment: WrapAlignment.center,\n      children: List.generate(\n        count,\n        (_) => Icon(icon, size: iconSize, color: color),\n      ),\n    );\n"""
-          if old not in text:
-              raise SystemExit('QuantityRow block not found')
+          if old not in text: raise SystemExit('QuantityRow block not found')
           quantity.write_text(text.replace(old, new, 1), encoding='utf-8')
 
           validation = root / 'test/curriculum_semantic_validation_test.dart'
           text = validation.read_text(encoding='utf-8')
-          marker = """  test('all choice-based questions have valid answer indexes and usable options', () {\n"""
+          marker = "  test('all choice-based questions have valid answer indexes and usable options', () {\n"
           addition = """  test('all interactive activity lists are non-empty', () {\n    for (final unit in UnitsData.units) {\n      expect(unit.activities, isNotEmpty, reason: 'unit ${unit.order} has no activities');\n      for (final activity in unit.activities) {\n        switch (activity) {\n          case MultipleChoiceActivityConfig a:\n            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty quiz');\n          case ReviewActivityConfig a:\n            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty review');\n          case AssessmentActivityConfig a:\n            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty assessment');\n          case ArithmeticActivityConfig a:\n            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty arithmetic activity');\n          case WordProblemActivityConfig a:\n            expect(a.questions, isNotEmpty, reason: 'unit ${unit.order} has an empty word-problem activity');\n          case MatchingActivityConfig a:\n            expect(a.pairs, isNotEmpty, reason: 'unit ${unit.order} has an empty matching activity');\n          case LessonActivityConfig _:\n          case TraceActivityConfig _:\n          case DragCountActivityConfig _:\n          case ComparisonActivityConfig _:\n          case SceneExploreActivityConfig _:\n            break;\n        }\n      }\n    }\n  });\n\n"""
-          if addition not in text:
-              text = text.replace(marker, addition + marker, 1)
+          if addition not in text: text = text.replace(marker, addition + marker, 1)
           validation.write_text(text, encoding='utf-8')
 
           test = root / 'test/arithmetic_answer_matcher_test.dart'
-          test.write_text('''import 'package:flutter_test/flutter_test.dart';\n\nimport 'package:arqami/core/answer/arithmetic_answer_matcher.dart';\nimport 'package:arqami/models/unit_model.dart';\n\nvoid main() {\n  test('matches integer and decimal answers using Arabic and Western digits', () {\n    expect(ArithmeticAnswerMatcher.matches(\n      const ArithmeticQuestion(questionAr: '4 + 0 = ؟', correctAnswer: 4),\n      '٤',\n    ), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(\n      const ArithmeticQuestion(questionAr: '0.5 = ؟', correctAnswer: 0.5),\n      '٠٫٥',\n    ), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(\n      const ArithmeticQuestion(questionAr: '1.5 = ؟', correctAnswer: 1.5),\n      '1,5',\n    ), isTrue);\n  });\n\n  test('matches textual remainder answers despite spacing and digit variants', () {\n    const question = ArithmeticQuestion(\n      questionAr: '14 ÷ 3 = ؟',\n      correctAnswerText: '4 والباقي 2',\n    );\n\n    expect(ArithmeticAnswerMatcher.matches(question, '٤ والباقي ٢'), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(question, '4 و الباقي 2'), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(question, '4  والباقي   2'), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(question, '4 والباقي 1'), isFalse);\n  });\n\n  test('does not accept invalid numeric answers', () {\n    const question = ArithmeticQuestion(questionAr: '8 = ؟', correctAnswer: 8);\n    expect(ArithmeticAnswerMatcher.matches(question, ''), isFalse);\n    expect(ArithmeticAnswerMatcher.matches(question, '9'), isFalse);\n  });\n}\n''', encoding='utf-8')
+          test.write_text('''import 'package:flutter_test/flutter_test.dart';\n\nimport 'package:arqami/core/answer/arithmetic_answer_matcher.dart';\nimport 'package:arqami/models/unit_model.dart';\n\nvoid main() {\n  test('matches integer and decimal answers using Arabic and Western digits', () {\n    expect(ArithmeticAnswerMatcher.matches(\n      const ArithmeticQuestion(questionAr: '4 + 0 = ؟', correctAnswer: 4),\n      '٤',\n    ), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(\n      const ArithmeticQuestion(questionAr: '0.5 = ؟', correctAnswer: 0.5),\n      '٠٫٥',\n    ), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(\n      const ArithmeticQuestion(questionAr: '1.5 = ؟', correctAnswer: 1.5),\n      '1,5',\n    ), isTrue);\n  });\n\n  test('matches textual remainder answers despite spacing and digit variants', () {\n    const question = ArithmeticQuestion(\n      questionAr: '14 ÷ 3 = ؟',\n      correctAnswerText: '4 والباقي 2',\n    );\n    expect(ArithmeticAnswerMatcher.matches(question, '٤ والباقي ٢'), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(question, '4 و الباقي 2'), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(question, '4  والباقي   2'), isTrue);\n    expect(ArithmeticAnswerMatcher.matches(question, '4 والباقي 1'), isFalse);\n  });\n\n  test('does not accept invalid numeric answers', () {\n    const question = ArithmeticQuestion(questionAr: '8 = ؟', correctAnswer: 8);\n    expect(ArithmeticAnswerMatcher.matches(question, ''), isFalse);\n    expect(ArithmeticAnswerMatcher.matches(question, '9'), isFalse);\n  });\n}\n''', encoding='utf-8')
           PY
 
       - name: Analyze and test repaired UI
@@ -95,9 +84,7 @@ jobs:
       - run: flutter analyze
       - run: flutter test
 
-      - name: Commit repairs and trigger normal Android build
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Commit repairs
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
@@ -105,6 +92,3 @@ jobs:
           git add lib/core/answer/arithmetic_answer_matcher.dart lib/screens/unit_player_screen.dart lib/widgets/shared/number_display.dart lib/widgets/shared/quantity_row.dart test/curriculum_semantic_validation_test.dart test/arithmetic_answer_matcher_test.dart
           git commit -m 'chore(ui): apply UI support repairs'
           git push origin HEAD:main
-          gh workflow run 'Arqami Android Build' --ref main
-
-# Trigger-only update for the repair workflow.
