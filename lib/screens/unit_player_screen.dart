@@ -40,7 +40,6 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
 
   CurriculumSpec get _spec => CurriculumSpecs.forUnit(widget.unit);
   List<ActivityConfig> get _activities => CurriculumActivityPlanner.plan(widget.unit);
-  ActivityConfig get _currentActivity => widget.unit.activities[_activityIndex];
   AgeActivityPresentation get _age => AgeActivityPresentation.current();
 
   void _showFeedback(_AnswerFeedback feedback) {
