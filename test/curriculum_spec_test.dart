@@ -27,6 +27,7 @@ void main() {
   });
 }
 
+
 test('curriculum activity planner executes a non-empty ordered plan for all 52 units', () {
     for (final unit in UnitsData.units) {
       final planned = CurriculumActivityPlanner.plan(unit);
@@ -44,3 +45,4 @@ test('curriculum activity planner executes a non-empty ordered plan for all 52 u
       }
     }
   });
+}
