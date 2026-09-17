@@ -1,0 +1,58 @@
+name: Patch Arithmetic Input Mode
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Patch arithmetic answer field
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('lib/screens/unit_player_screen.dart')
+          text = path.read_text(encoding='utf-8')
+
+          old = """        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        onChanged: _keepWesternDigits,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+"""
+          new = """        keyboardType: question.correctAnswerText != null
+            ? TextInputType.text
+            : const TextInputType.numberWithOptions(decimal: true),
+        onChanged: _keepWesternDigits,
+        textAlign: TextAlign.center,
+        textDirection: question.correctAnswerText != null ? TextDirection.rtl : TextDirection.ltr,
+"""
+
+          if old not in text:
+              raise SystemExit('Expected arithmetic input block was not found')
+
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Commit patch and remove one-time workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/patch-arithmetic-input.yml
+          git add lib/screens/unit_player_screen.dart .github/workflows/patch-arithmetic-input.yml
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "fix(arithmetic): use text keyboard for textual answers"
+          git push
