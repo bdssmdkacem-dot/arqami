@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/progress/player_xp.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/achievement.dart';
 
@@ -103,11 +102,6 @@ class ProgressCelebration extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                '${PlayerXp.xpToNextLevel(PlayerXp.totalXp(_TrackerProxy()))} XP متبقية للمستوى التالي',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
-              ),
             ],
             const SizedBox(height: 18),
             SizedBox(
@@ -122,10 +116,4 @@ class ProgressCelebration extends StatelessWidget {
       ),
     );
   }
-}
-
-// Placeholder tracker adapter is intentionally private; the dialog only needs
-// the XP presentation and does not own persistence.
-class _TrackerProxy extends ProgressTracker {
-  _TrackerProxy() : super.testOnly();
 }
