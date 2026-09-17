@@ -19,9 +19,9 @@ void main() {
     );
 
     expect(find.text('كم عنصراً؟ لا توجد عناصر.'), findsOneWidget);
-    expect(find.text('0'), findsOneWidget);
+    expect(find.byKey(const ValueKey('drag-count-choice-0')), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(GestureDetector, '0'));
+    await tester.tap(find.byKey(const ValueKey('drag-count-choice-0')));
     await tester.pump();
 
     expect(completed, isTrue);
