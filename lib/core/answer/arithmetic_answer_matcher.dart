@@ -12,7 +12,8 @@ class ArithmeticAnswerMatcher {
     }
     value = value
         .replaceAll('٫', '.')
-        .replaceAll('٬', ',')
+        // In answer fields a comma is treated as a decimal separator.
+        .replaceAll('٬', '.')
         .replaceAll('،', ',')
         .replaceAll('؛', ';')
         .replaceAll('؟', '?');
@@ -23,8 +24,6 @@ class ArithmeticAnswerMatcher {
 
   static String normalizeText(String input) {
     var value = normalize(input).toLowerCase();
-    // Remove Arabic diacritics so an answer such as "ثَلَاثَة" matches
-    // "ثلاثة". This is intentionally limited to answer comparison.
     value = value.replaceAll(RegExp(r'[\u0610-\u061A\u064B-\u065F\u0670]'), '');
     value = value
         .replaceAll('أ', 'ا')
