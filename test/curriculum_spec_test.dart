@@ -14,6 +14,12 @@ void main() {
       expect(spec.objectivesAr.length, greaterThanOrEqualTo(2), reason: 'unit ${unit.order}');
       expect(spec.skillsAr.length, greaterThanOrEqualTo(2), reason: 'unit ${unit.order}');
       expect(spec.activityPlanAr.length, inInclusiveRange(4, 6), reason: 'unit ${unit.order}');
+      expect(spec.activityKinds, isNotEmpty, reason: 'unit ${unit.order}');
+      expect(
+        spec.activityKinds.length,
+        greaterThanOrEqualTo(3),
+        reason: 'unit ${unit.order}',
+      );
       expect(spec.finalChallengeAr.trim(), isNotEmpty, reason: 'unit ${unit.order}');
       expect(spec.estimatedMinutes, greaterThanOrEqualTo(7), reason: 'unit ${unit.order}');
       expect(spec.masteryTarget, inInclusiveRange(.7, 1.0), reason: 'unit ${unit.order}');
@@ -29,8 +35,14 @@ void main() {
 
   test('curriculum activity planner executes a non-empty ordered plan for all 52 units', () {
     for (final unit in UnitsData.units) {
+      final spec = CurriculumSpecs.forUnit(unit);
       final planned = CurriculumActivityPlanner.plan(unit);
       expect(planned, isNotEmpty, reason: 'unit ${unit.order}');
+      expect(
+        CurriculumSpecs.activityKindsForUnit(unit),
+        orderedEquals(spec.activityKinds),
+        reason: 'structured plan must be the source of the executable activity plan for unit ${unit.order}',
+      );
       expect(
         planned.length,
         lessThanOrEqualTo(unit.activities.length),
