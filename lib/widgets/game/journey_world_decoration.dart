@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 /// طبقة العالم البصرية للخريطة.
@@ -43,42 +45,78 @@ class JourneyWorldDecoration extends StatelessWidget {
   }
 }
 
-class _CompanionSprite extends StatelessWidget {
+class _CompanionSprite extends StatefulWidget {
   const _CompanionSprite();
 
   @override
+  State<_CompanionSprite> createState() => _CompanionSpriteState();
+}
+
+class _CompanionSpriteState extends State<_CompanionSprite>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 76,
-      height: 76,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.78),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: const Color(0xFFD4A017).withValues(alpha: 0.65),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final phase = _controller.value * math.pi * 2;
+        final dx = math.sin(phase) * 7;
+        final dy = math.sin(phase * 2) * 3;
+        final angle = math.sin(phase) * 0.035;
+        return Transform.translate(
+          offset: Offset(dx, dy),
+          child: Transform.rotate(angle: angle, child: child),
+        );
+      },
+      child: Container(
+        width: 76,
+        height: 76,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.78),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: const Color(0xFFD4A017).withValues(alpha: 0.65),
+            width: 2,
           ),
-        ],
-      ),
-      child: ClipRect(
-        child: Align(
-          alignment: Alignment.topLeft,
-          widthFactor: 16 / 918,
-          heightFactor: 16 / 203,
-          child: Image.asset(
-            JourneyWorldDecoration._characterAsset,
-            width: 918 * 4,
-            height: 203 * 4,
-            fit: BoxFit.none,
-            filterQuality: FilterQuality.none,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ClipRect(
+          child: Align(
             alignment: Alignment.topLeft,
+            widthFactor: 16 / 918,
+            heightFactor: 16 / 203,
+            child: Image.asset(
+              JourneyWorldDecoration._characterAsset,
+              width: 918 * 4,
+              height: 203 * 4,
+              fit: BoxFit.none,
+              filterQuality: FilterQuality.none,
+              alignment: Alignment.topLeft,
+            ),
           ),
         ),
       ),
