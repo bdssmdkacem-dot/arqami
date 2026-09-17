@@ -8,6 +8,7 @@ import '../core/profile/age_activity_presentation.dart';
 import '../core/progress/progress_tracker.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/responsive.dart';
+import '../models/curriculum_spec.dart';
 import '../models/unit_model.dart';
 import '../models/units_data.dart';
 import 'certificate_screen.dart';
@@ -37,6 +38,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   _AnswerFeedback? _feedback;
   int _feedbackToken = 0;
 
+  CurriculumSpec get _spec => CurriculumSpecs.forUnit(widget.unit);
   ActivityConfig get _currentActivity => widget.unit.activities[_activityIndex];
   AgeActivityPresentation get _age => AgeActivityPresentation.current();
 
@@ -141,6 +143,8 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
           activityTotal: total,
           progress: progress,
           ageBandLabel: _age.band.labelAr,
+          learningGoal: _spec.learningGoalAr,
+          estimatedMinutes: _spec.estimatedMinutes,
         ),
         const SizedBox(height: 10),
         Expanded(child: _buildActivity(_currentActivity)),
@@ -170,6 +174,12 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
                 ),
+                const SizedBox(height: 12),
+                Text(
+                  'هدف التعلم: ' + _spec.learningGoalAr,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+                ),
                 const SizedBox(height: 18),
                 _AnimatedStars(stars: progress.stars),
                 const SizedBox(height: 12),
@@ -187,6 +197,17 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
                             : 'تمت الوحدة. أعد المحاولة لتحسن نتيجتك.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(color: AppColors.tealSoft, borderRadius: BorderRadius.circular(18)),
+                  child: Text(
+                    'التحدي النهائي: ' + _spec.finalChallengeAr,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.w800, height: 1.4),
                   ),
                 ),
                 const SizedBox(height: 22),
@@ -227,7 +248,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
     Widget activity;
 
     if (config is LessonActivityConfig) {
-      activity = _LessonView(config: config, onContinue: _onActivityComplete, age: _age);
+      activity = _LessonView(config: config, spec: _spec, onContinue: _onActivityComplete, age: _age);
     } else if (config is MultipleChoiceActivityConfig) {
       activity = _ChoiceQuizView(
         title: widget.unit.titleAr,
@@ -406,6 +427,8 @@ class _PlayerHud extends StatelessWidget {
   final int activityTotal;
   final double progress;
   final String ageBandLabel;
+  final String learningGoal;
+  final int estimatedMinutes;
 
   const _PlayerHud({
     required this.stageLabel,
@@ -414,6 +437,8 @@ class _PlayerHud extends StatelessWidget {
     required this.activityTotal,
     required this.progress,
     required this.ageBandLabel,
+    required this.learningGoal,
+    required this.estimatedMinutes,
   });
 
   @override
@@ -465,6 +490,14 @@ class _PlayerHud extends StatelessWidget {
                   ],
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: Text(learningGoal, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary))),
+              const SizedBox(width: 8),
+              Text('$estimatedMinutes د', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.gold)),
             ],
           ),
           const SizedBox(height: 9),
@@ -558,10 +591,11 @@ class _AnimatedStars extends StatelessWidget {
 
 class _LessonView extends StatelessWidget {
   final LessonActivityConfig config;
+  final CurriculumSpec spec;
   final VoidCallback onContinue;
   final AgeActivityPresentation age;
 
-  const _LessonView({required this.config, required this.onContinue, required this.age});
+  const _LessonView({required this.config, required this.spec, required this.onContinue, required this.age});
 
   @override
   Widget build(BuildContext context) {
@@ -588,6 +622,8 @@ class _LessonView extends StatelessWidget {
             const SizedBox(height: 14),
             Text(config.titleAr, textAlign: TextAlign.center, style: TextStyle(fontSize: age.questionTextSize + 2, fontWeight: FontWeight.w900)),
             const SizedBox(height: 14),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11), decoration: BoxDecoration(color: AppColors.goldSoft, borderRadius: BorderRadius.circular(16)), child: Text('هدف التعلم: ' + spec.learningGoalAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800))),
+            const SizedBox(height: 12),
             Text(config.explanationAr, textAlign: TextAlign.center, style: TextStyle(fontSize: age.questionTextSize - 1, height: 1.65, color: AppColors.textSecondary)),
             if (config.examplesAr.isNotEmpty) ...[
               const SizedBox(height: 20),
