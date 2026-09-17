@@ -66,8 +66,8 @@ class AgeActivityPlan {
         AgeBand.fromAge(LearnerProfile.age ?? 6),
       );
 
-  /// يعيد ترتيب الأنشطة فقط عندما توجد أنشطة متعددة من أنواع مختلفة.
-  /// المحتوى نفسه يبقى كما هو، والتقييم النهائي يبقى في النهاية.
+  /// يعيد ترتيب الأنشطة بحسب طريقة التعلم الأنسب للفئة العمرية.
+  /// التقييم النهائي يبقى دائماً في النهاية.
   List<ActivityConfig> orderActivities(List<ActivityConfig> activities) {
     final indexed = activities.asMap().entries.toList();
     indexed.sort((a, b) {
@@ -77,6 +77,34 @@ class AgeActivityPlan {
       return a.key.compareTo(b.key);
     });
     return indexed.map((entry) => entry.value).toList(growable: false);
+  }
+
+  /// يطبق مستوى التدريب فقط على الأنشطة غير التقييمية.
+  /// لا نختصر Assessment حتى لا نغيّر معيار إتقان الوحدة.
+  List<ActivityConfig> adaptActivities(List<ActivityConfig> source) {
+    final ordered = orderActivities(source);
+    return ordered.map((activity) {
+      if (activity is AssessmentActivityConfig) return activity;
+      if (activity is MultipleChoiceActivityConfig) {
+        return MultipleChoiceActivityConfig(practiceChoices(activity.questions));
+      }
+      if (activity is ReviewActivityConfig) {
+        return ReviewActivityConfig(
+          titleAr: activity.titleAr,
+          questions: practiceChoices(activity.questions),
+        );
+      }
+      if (activity is ArithmeticActivityConfig) {
+        return ArithmeticActivityConfig(
+          operation: activity.operation,
+          questions: practiceArithmetic(activity.questions),
+        );
+      }
+      if (activity is WordProblemActivityConfig) {
+        return WordProblemActivityConfig(practiceArithmetic(activity.questions));
+      }
+      return activity;
+    }).toList(growable: false);
   }
 
   int _priority(ActivityConfig activity) {
