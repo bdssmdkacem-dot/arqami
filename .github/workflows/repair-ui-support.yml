@@ -24,15 +24,11 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
-          import re
 
           root = Path('.')
 
           matcher = root / 'lib/core/answer/arithmetic_answer_matcher.dart'
           matcher.parent.mkdir(parents=True, exist_ok=True)
-          matcher.write_text('''class ArithmeticAnswerMatcher {\n  const ArithmeticAnswerMatcher._();\n\n  static String normalize(String input) {\n    const arabic = '٠١٢٣٤٥٦٧٨٩';\n    const eastern = '۰۱۲۳۴۵۶۷۸۹';\n    var value = input.trim();\n\n    for (var i = 0; i < 10; i++) {\n      value = value.replaceAll(arabic[i], '$i').replaceAll(eastern[i], '$i');\n    }\n\n    value = value.replaceAll('٫', '.').replaceAll(',', '.').replaceAll('،', '.');\n    value = value.replaceAll(RegExp(r'\\s+'), ' ').trim();\n    value = value.replaceAll(RegExp(r'\\s*و\\s*الباقي\\s*'), ' والباقي ');\n    return value;\n  }\n\n  static num? parseNumber(String input) {\n    final normalized = normalize(input);\n    if (normalized.isEmpty) return null;\n    return num.tryParse(normalized);\n  }\n\n  static bool matches(\n    Object question,\n    String rawInput,\n  ) {\n    // This overload is intentionally kept private to the model shape through\n    // the typed helper below; Object avoids importing the curriculum model here.\n    throw UnsupportedError('Use matchesQuestion instead');\n  }\n}\n''', encoding='utf-8')
-
-          # Replace the temporary Object-only API with the typed production API.
           matcher.write_text('''import '../../models/unit_model.dart';\n\nclass ArithmeticAnswerMatcher {\n  const ArithmeticAnswerMatcher._();\n\n  static String normalize(String input) {\n    const arabic = '٠١٢٣٤٥٦٧٨٩';\n    const eastern = '۰۱۲۳۴۵۶۷۸۹';\n    var value = input.trim();\n\n    for (var i = 0; i < 10; i++) {\n      value = value.replaceAll(arabic[i], '$i').replaceAll(eastern[i], '$i');\n    }\n\n    value = value.replaceAll('٫', '.').replaceAll(',', '.').replaceAll('،', '.');\n    value = value.replaceAll(RegExp(r'\\s+'), ' ').trim();\n    value = value.replaceAll(RegExp(r'\\s*و\\s*الباقي\\s*'), ' والباقي ');\n    return value;\n  }\n\n  static num? parseNumber(String input) {\n    final normalized = normalize(input);\n    if (normalized.isEmpty) return null;\n    return num.tryParse(normalized);\n  }\n\n  static bool matches(ArithmeticQuestion question, String rawInput) {\n    if (question.correctAnswerText != null) {\n      return normalize(rawInput) == normalize(question.correctAnswerText!);\n    }\n\n    final value = parseNumber(rawInput);\n    final expected = question.correctAnswer;\n    if (value == null || expected == null) return false;\n    return (value - expected).abs() < 0.000001;\n  }\n}\n''', encoding='utf-8')
 
           player = root / 'lib/screens/unit_player_screen.dart'
@@ -110,3 +106,5 @@ jobs:
           git commit -m 'chore(ui): apply UI support repairs'
           git push origin HEAD:main
           gh workflow run 'Arqami Android Build' --ref main
+
+# Trigger-only update for the repair workflow.
