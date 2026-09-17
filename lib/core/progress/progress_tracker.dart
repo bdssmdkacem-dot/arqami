@@ -19,10 +19,19 @@ class ProgressTracker {
   late Box<UnitProgress> _box;
   bool _initialized = false;
 
-  Future<void> init() async {
+  /// يهيئ Hive.
+  ///
+  /// في التطبيق الحقيقي نستخدم Hive.initFlutter()، بينما تسمح [hivePath]
+  /// للاختبارات بتمرير مجلد مؤقت وتجنب الاعتماد على path_provider/plugin.
+  Future<void> init({String? hivePath}) async {
     if (_initialized) return;
 
-    await Hive.initFlutter();
+    if (hivePath == null) {
+      await Hive.initFlutter();
+    } else {
+      Hive.init(hivePath);
+    }
+
     if (!Hive.isAdapterRegistered(UnitProgressAdapter().typeId)) {
       Hive.registerAdapter(UnitProgressAdapter());
     }
