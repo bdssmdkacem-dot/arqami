@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/ads/ad_service.dart';
+import '../core/assessment/assessment_engine.dart';
 import '../core/audio/audio_service.dart';
 import '../core/progress/progress_tracker.dart';
 import '../core/theme/app_colors.dart';
@@ -35,6 +36,10 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   void _onWrongAttempt() {
     _wrongAttemptsInUnit++;
     AudioService.instance.playTryAgain();
+  }
+
+  Future<void> _onAssessmentFailed(AssessmentResult result) async {
+    await ProgressTracker.instance.recordAttempt(widget.unit.id);
   }
 
   void _onActivityComplete() {
@@ -127,7 +132,15 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
     } else if (config is MultipleChoiceActivityConfig) {
       activity = _ChoiceQuizView(title: widget.unit.titleAr, questions: config.questions, onWrong: _onWrongAttempt, onComplete: _onActivityComplete);
     } else if (config is AssessmentActivityConfig) {
-      activity = _ChoiceQuizView(title: config.titleAr, questions: config.questions, onWrong: _onWrongAttempt, onComplete: _onActivityComplete);
+      activity = _ChoiceQuizView(
+        key: ValueKey('assessment_${widget.unit.id}_$_activityIndex'),
+        title: config.titleAr,
+        questions: config.questions,
+        onWrong: _onWrongAttempt,
+        onComplete: _onActivityComplete,
+        isAssessment: true,
+        onAssessmentFailed: _onAssessmentFailed,
+      );
     } else if (config is ReviewActivityConfig) {
       activity = _ChoiceQuizView(title: config.titleAr, questions: config.questions, onWrong: _onWrongAttempt, onComplete: _onActivityComplete);
     } else if (config is ArithmeticActivityConfig) {
@@ -280,7 +293,18 @@ class _ChoiceQuizView extends StatefulWidget {
   final List<ChoiceQuestion> questions;
   final VoidCallback onWrong;
   final VoidCallback onComplete;
-  const _ChoiceQuizView({required this.title, required this.questions, required this.onWrong, required this.onComplete});
+  final bool isAssessment;
+  final Future<void> Function(AssessmentResult result)? onAssessmentFailed;
+
+  const _ChoiceQuizView({
+    super.key,
+    required this.title,
+    required this.questions,
+    required this.onWrong,
+    required this.onComplete,
+    this.isAssessment = false,
+    this.onAssessmentFailed,
+  });
 
   @override
   State<_ChoiceQuizView> createState() => _ChoiceQuizViewState();
@@ -290,11 +314,19 @@ class _ChoiceQuizViewState extends State<_ChoiceQuizView> {
   int index = 0;
   bool answered = false;
   String? message;
+  final List<int> _selectedAnswers = [];
+  static const AssessmentEngine _assessmentEngine = AssessmentEngine();
 
   ChoiceQuestion get question => widget.questions[index];
 
   void choose(int selected) {
-    if (answered) return;
+    if (answered || widget.questions.isEmpty) return;
+
+    if (widget.isAssessment) {
+      _chooseAssessment(selected);
+      return;
+    }
+
     if (selected == question.correctIndex) {
       setState(() {
         answered = true;
@@ -318,11 +350,74 @@ class _ChoiceQuizViewState extends State<_ChoiceQuizView> {
     }
   }
 
+  void _chooseAssessment(int selected) {
+    final isCorrect = selected == question.correctIndex;
+    _selectedAnswers.add(selected);
+
+    if (!isCorrect) {
+      widget.onWrong();
+    }
+
+    setState(() {
+      answered = true;
+      message = isCorrect ? 'أحسنت! إجابة صحيحة' : 'تم تسجيل الإجابة';
+    });
+
+    Future.delayed(const Duration(milliseconds: 650), () async {
+      if (!mounted) return;
+
+      if (index == widget.questions.length - 1) {
+        final result = _assessmentEngine.evaluate(
+          questions: widget.questions,
+          selectedAnswers: _selectedAnswers,
+        );
+
+        if (result.passed) {
+          widget.onComplete();
+          return;
+        }
+
+        await widget.onAssessmentFailed?.call(result);
+        if (!mounted) return;
+        final percentage = (result.score * 100).round();
+        setState(() {
+          index = 0;
+          _selectedAnswers.clear();
+          answered = false;
+          message = 'نتيجتك $percentage٪ — تحتاج إلى 70٪ على الأقل. حاول مرة أخرى.';
+        });
+        return;
+      }
+
+      setState(() {
+        index++;
+        answered = false;
+        message = null;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.questions.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(22),
+          child: Center(child: Text('لا توجد أسئلة في هذا النشاط.')),
+        ),
+      );
+    }
+
     final children = <Widget>[
       Text(widget.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
       const SizedBox(height: 24),
+      if (widget.isAssessment)
+        Text(
+          'السؤال ${index + 1} من ${widget.questions.length}',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+        ),
+      if (widget.isAssessment) const SizedBox(height: 10),
       Text(question.questionAr, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, height: 1.5)),
       const SizedBox(height: 22),
     ];
