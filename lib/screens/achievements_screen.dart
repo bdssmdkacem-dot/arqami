@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/progress/player_xp.dart';
 import '../core/progress/progress_tracker.dart';
 import '../core/theme/app_colors.dart';
 import '../models/achievement.dart';
@@ -22,6 +23,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     final stars = tracker.getTotalStars();
     final stages = tracker.getCompletedStages();
     final rewards = tracker.getClaimedStageRewards().length;
+    final xp = PlayerXp.totalXp(tracker);
+    final level = PlayerXp.levelFromXp(xp);
+    final levelProgress = PlayerXp.levelProgress(xp);
     final visible = Achievements.all.where((achievement) {
       return _filter == null || achievement.category == _filter;
     }).toList();
@@ -44,6 +48,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               stars: stars,
               stages: stages,
               rewards: rewards,
+              xp: xp,
+              level: level,
+              levelProgress: levelProgress,
             ),
             const SizedBox(height: 16),
             _FilterBar(
@@ -69,6 +76,9 @@ class _SummaryCard extends StatelessWidget {
     required this.stars,
     required this.stages,
     required this.rewards,
+    required this.xp,
+    required this.level,
+    required this.levelProgress,
   });
 
   final int unlocked;
@@ -76,6 +86,9 @@ class _SummaryCard extends StatelessWidget {
   final int stars;
   final int stages;
   final int rewards;
+  final int xp;
+  final int level;
+  final double levelProgress;
 
   @override
   Widget build(BuildContext context) {
@@ -128,6 +141,56 @@ class _SummaryCard extends StatelessWidget {
                 backgroundColor: Colors.white24,
                 valueColor:
                     const AlwaysStoppedAnimation<Color>(AppColors.goldLight),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.bolt_rounded,
+                          color: AppColors.goldLight, size: 24),
+                      const SizedBox(width: 6),
+                      Text('المستوى $level',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16)),
+                      const Spacer(),
+                      Text('$xp XP',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                  const SizedBox(height: 7),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: levelProgress,
+                      minHeight: 8,
+                      backgroundColor: Colors.white24,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.goldLight,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '${PlayerXp.xpToNextLevel(xp)} XP للمستوى التالي',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
