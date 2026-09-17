@@ -1,64 +1,76 @@
 import 'package:flutter/material.dart';
 
-/// لوحة الألوان الموحدة لأرقامي.
-/// الهوية تجمع بين الزليج المغربي والذهبي مع ألوان حالة واضحة،
-/// وتبقى هادئة بما يكفي لتناسب التعلم ولا تتحول إلى واجهة مزدحمة.
+/// ألوان الهوية المرحة لأرقامي.
+///
+/// الهوية الجديدة مبنية على عالم ألعاب تعليمي مشرق: سماء، نعناع، شمسي،
+/// مرجاني وبنفسجي. الألوان القديمة لا تُستخدم كهوية رئيسية حتى لا تبدو
+/// الواجهة كلوحة تطبيق تقليدية.
 class AppColors {
   AppColors._();
 
-  // الهوية الأساسية
-  static const Color teal = Color(0xFF00695C);
-  static const Color tealDark = Color(0xFF004D40);
-  static const Color tealLight = Color(0xFF4DB6AC);
-  static const Color tealSoft = Color(0xFFE0F2F1);
-  static const Color gold = Color(0xFFD4A017);
-  static const Color goldLight = Color(0xFFFFD54F);
-  static const Color goldSoft = Color(0xFFFFF3C4);
-  static const Color terracotta = Color(0xFFD2691E);
-  static const Color terracottaSoft = Color(0xFFFCE8D8);
+  // الهوية الرئيسية.
+  static const Color primary = Color(0xFF3CA7E8);
+  static const Color primaryDark = Color(0xFF247EBA);
+  static const Color secondary = Color(0xFF54D6B2);
+  static const Color accent = Color(0xFFFFA62B);
+  static const Color sunshine = Color(0xFFFFD447);
+  static const Color coral = Color(0xFFFF6F61);
+  static const Color berry = Color(0xFFEA5B9A);
+  static const Color violet = Color(0xFF8067D9);
 
-  // خلفيات
-  static const Color background = Color(0xFFFFF8E1);
-  static const Color backgroundAlt = Color(0xFFFFFDF6);
-  static const Color cardBackground = Color(0xFFFFFFFF);
-  static const Color surfaceSoft = Color(0xFFF7F1DD);
+  // الخلفيات.
+  static const Color background = Color(0xFFEAF8FF);
+  static const Color backgroundAlt = Color(0xFFFFF7E8);
+  static const Color cardBackground = Color(0xFFFFFEF9);
+  static const Color surfaceSoft = Color(0xFFE0F6EF);
 
-  // حالات الوحدات والخريطة
-  static const Color locked = Color(0xFF9E9E9E);
-  static const Color lockedSoft = Color(0xFFE9E9E9);
-  static const Color inProgress = gold;
-  static const Color completed = teal;
-  static const Color completedSoft = tealSoft;
+  // حالات الوحدات والخريطة.
+  static const Color locked = Color(0xFF9BA8B8);
+  static const Color lockedSoft = Color(0xFFE6EBF0);
+  static const Color inProgress = sunshine;
+  static const Color completed = secondary;
+  static const Color completedSoft = Color(0xFFDDF8EF);
 
-  // تغذية راجعة
-  static const Color correct = Color(0xFF2E7D32);
-  static const Color correctSoft = Color(0xFFE8F5E9);
-  static const Color incorrect = Color(0xFFD32F2F);
-  static const Color incorrectSoft = Color(0xFFFFEBEE);
+  // تغذية راجعة.
+  static const Color correct = Color(0xFF35B875);
+  static const Color correctSoft = Color(0xFFE1F7EB);
+  static const Color incorrect = Color(0xFFEF625F);
+  static const Color incorrectSoft = Color(0xFFFFE9E7);
 
-  // النصوص
-  static const Color textPrimary = Color(0xFF3E2723);
-  static const Color textSecondary = Color(0xFF6D4C41);
-  static const Color textMuted = Color(0xFF8D7B72);
+  // النصوص.
+  static const Color textPrimary = Color(0xFF24334A);
+  static const Color textSecondary = Color(0xFF63738A);
+  static const Color textMuted = Color(0xFF91A0B2);
 
-  // ألوان العوالم — تستعمل لاحقاً للخريطة والوحدات.
+  // توافق اسمي محدود مع الشاشات القديمة.
+  static const Color teal = primary;
+  static const Color tealDark = primaryDark;
+  static const Color tealLight = Color(0xFF7DD9FF);
+  static const Color tealSoft = Color(0xFFDFF4FF);
+  static const Color gold = accent;
+  static const Color goldLight = sunshine;
+  static const Color goldSoft = Color(0xFFFFF3CF);
+  static const Color terracotta = coral;
+  static const Color terracottaSoft = Color(0xFFFFE8E4);
+
   static const List<Color> worldPalette = [
-    teal,
-    gold,
-    terracotta,
-    Color(0xFF5E6AB4),
-    Color(0xFF7B5E8E),
-    Color(0xFF3F7D68),
-    Color(0xFFB06B3C),
+    primary,
+    secondary,
+    sunshine,
+    accent,
+    coral,
+    violet,
+    berry,
   ];
 
-  /// مجموعة ألوان للعناصر القابلة للعد/المقارنة.
   static const List<Color> itemPalette = [
-    gold,
-    teal,
-    terracotta,
-    tealLight,
-    goldLight,
+    primary,
+    secondary,
+    sunshine,
+    accent,
+    coral,
+    violet,
+    berry,
   ];
 
   static Color itemColorFor(int index) =>
