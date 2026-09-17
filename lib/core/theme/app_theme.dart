@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'game_theme.dart';
 
-/// Design system واحد لأرقامي: مرح، واضح، متماسك، وقابل للتكييف مع العمر.
+/// Design system موحد لأرقامي: لعبة تعليمية مرحة، واضحة، وحيوية.
 class AppTheme {
   AppTheme._();
 
@@ -11,18 +12,20 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.teal,
+        seedColor: AppColors.primary,
         brightness: Brightness.light,
       ).copyWith(
-        primary: AppColors.teal,
+        primary: AppColors.primary,
         onPrimary: Colors.white,
-        primaryContainer: AppColors.tealSoft,
-        onPrimaryContainer: AppColors.tealDark,
-        secondary: AppColors.gold,
+        primaryContainer: const Color(0xFFDFF4FF),
+        onPrimaryContainer: AppColors.primaryDark,
+        secondary: AppColors.secondary,
         onSecondary: AppColors.textPrimary,
-        secondaryContainer: AppColors.goldSoft,
+        secondaryContainer: const Color(0xFFDDF8EF),
         onSecondaryContainer: AppColors.textPrimary,
-        surface: AppColors.cardBackground,
+        tertiary: AppColors.violet,
+        onTertiary: Colors.white,
+        surface: GameTheme.paper,
         onSurface: AppColors.textPrimary,
         error: AppColors.incorrect,
         errorContainer: AppColors.incorrectSoft,
@@ -38,31 +41,38 @@ class AppTheme {
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
       textTheme: text.copyWith(
+        displayLarge: text.displayLarge?.copyWith(
+          fontWeight: FontWeight.w900,
+          height: 1.05,
+        ),
         displaySmall: text.displaySmall?.copyWith(
+          fontWeight: FontWeight.w900,
+          height: 1.08,
+        ),
+        headlineSmall: text.headlineSmall?.copyWith(
           fontWeight: FontWeight.w900,
           height: 1.12,
         ),
-        headlineSmall: text.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-          height: 1.2,
-        ),
         titleLarge: text.titleLarge?.copyWith(
-          fontWeight: FontWeight.w800,
-          height: 1.2,
+          fontWeight: FontWeight.w900,
+          height: 1.15,
         ),
         titleMedium: text.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-          height: 1.25,
+          fontWeight: FontWeight.w800,
+          height: 1.2,
         ),
-        bodyLarge: text.bodyLarge?.copyWith(height: 1.45),
+        bodyLarge: text.bodyLarge?.copyWith(height: 1.4),
         bodyMedium: text.bodyMedium?.copyWith(
           color: AppColors.textSecondary,
-          height: 1.4,
+          height: 1.35,
         ),
-        labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+        labelLarge: text.labelLarge?.copyWith(
+          fontWeight: FontWeight.w900,
+          letterSpacing: .1,
+        ),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -70,95 +80,96 @@ class AppTheme {
         titleTextStyle: TextStyle(
           fontFamily: 'sans-serif',
           fontSize: 21,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w900,
           color: AppColors.textPrimary,
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.cardBackground,
-        elevation: 1,
-        shadowColor: AppColors.textPrimary.withValues(alpha: .08),
+        color: GameTheme.paper,
+        elevation: 4,
+        shadowColor: AppColors.primary.withValues(alpha: .13),
         margin: EdgeInsets.zero,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(GameTheme.cardRadius),
           side: const BorderSide(color: Color(0x12000000)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.teal,
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          minimumSize: const Size(0, 54),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          elevation: 2,
-          shadowColor: AppColors.teal.withValues(alpha: .24),
+          minimumSize: const Size(0, 58),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
+          elevation: 4,
+          shadowColor: AppColors.primary.withValues(alpha: .28),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(17),
+            borderRadius: BorderRadius.circular(GameTheme.buttonRadius),
           ),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.teal,
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          minimumSize: const Size(0, 54),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          elevation: 1,
+          minimumSize: const Size(0, 58),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
+          elevation: 3,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(17),
+            borderRadius: BorderRadius.circular(GameTheme.buttonRadius),
           ),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.teal,
-          minimumSize: const Size(0, 50),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
-          side: const BorderSide(color: AppColors.teal, width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          foregroundColor: AppColors.primaryDark,
+          minimumSize: const Size(0, 54),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          side: const BorderSide(color: AppColors.primary, width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(GameTheme.buttonRadius),
+          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
           foregroundColor: AppColors.textPrimary,
+          backgroundColor: GameTheme.paper,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.backgroundAlt,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 15,
-        ),
+        fillColor: GameTheme.paper,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 17, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           borderSide: const BorderSide(color: Color(0x18000000)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           borderSide: const BorderSide(color: Color(0x18000000)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.teal, width: 2),
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2.5),
         ),
       ),
       dividerTheme: const DividerThemeData(
-        color: Color(0x14000000),
+        color: Color(0x12000000),
         thickness: 1,
         space: 1,
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.teal,
-        linearTrackColor: Color(0x1A00695C),
+        color: AppColors.secondary,
+        linearTrackColor: Color(0x1A54D6B2),
       ),
+      splashFactory: InkSparkle.splashFactory,
     );
   }
 }
