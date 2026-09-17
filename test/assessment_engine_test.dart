@@ -17,7 +17,6 @@ void main() {
       questions: questions,
       selectedAnswers: const [0, 1, 2, 1],
     );
-
     expect(result.totalQuestions, 4);
     expect(result.correctAnswers, 3);
     expect(result.score, 0.75);
@@ -29,18 +28,16 @@ void main() {
       questions: questions,
       selectedAnswers: const [0, 1, 1, 1],
     );
-
     expect(result.correctAnswers, 2);
     expect(result.score, 0.5);
     expect(result.passed, isFalse);
   });
 
-  test('an incomplete assessment cannot pass', () {
+  test('an incomplete long assessment cannot pass', () {
     final result = engine.evaluate(
       questions: questions,
       selectedAnswers: const [0, 1],
     );
-
     expect(result.correctAnswers, 2);
     expect(result.score, 0.5);
     expect(result.passed, isFalse);
@@ -55,10 +52,19 @@ void main() {
       questions: questions,
       selectedAnswers: const [0, 1, 2, 0],
     );
-
     expect(failed.passed, isFalse);
     expect(retried.passed, isTrue);
     expect(retried.correctAnswers, 4);
+  });
+
+  test('one correct answer is enough for a two-question early unit', () {
+    final result = engine.evaluate(
+      questions: [question(0), question(1)],
+      selectedAnswers: const [0, 0],
+    );
+    expect(result.correctAnswers, 1);
+    expect(result.score, 0.5);
+    expect(result.passed, isTrue);
   });
 
   test('empty assessments never pass', () {
@@ -66,7 +72,6 @@ void main() {
       questions: const [],
       selectedAnswers: const [],
     );
-
     expect(result.passed, isFalse);
     expect(result.score, 0);
   });
