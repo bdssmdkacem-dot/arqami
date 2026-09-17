@@ -142,7 +142,10 @@ class DragCountWidgetState extends State<DragCountWidget> {
                     children: [
                       Icon(Icons.shopping_basket_rounded, size: 42, color: GameTheme.mango),
                       const SizedBox(height: 4),
-                      Text('السلة', style: TextStyle(color: GameTheme.inkSoft, fontWeight: FontWeight.w700)),
+                      const Text(
+                        'السلة',
+                        style: TextStyle(color: GameTheme.inkSoft, fontWeight: FontWeight.w700),
+                      ),
                     ],
                   ),
                 );
