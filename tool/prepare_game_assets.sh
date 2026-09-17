@@ -12,36 +12,44 @@ fetch_zip() {
   curl -fsSL --retry 3 --retry-delay 2 "$url" -o "$out"
 }
 
+first_match() {
+  find "$1" -type f ${2:-} -print -quit
+}
+
 # All selected packs are Kenney CC0 assets.
 fetch_zip "https://opengameart.org/sites/default/files/kenney_tiny-town.zip" "$TMP/tiny-town.zip"
 unzip -q "$TMP/tiny-town.zip" -d "$TMP/tiny-town"
-TILE="$(find "$TMP/tiny-town" -type f -iname 'tile_0001.png' | head -n 1)"
+TILE="$(find "$TMP/tiny-town" -type f -iname 'tile_0001.png' -print -quit)"
 [[ -n "$TILE" ]] || { echo "Tiny Town tile_0001.png was not found" >&2; exit 1; }
 cp "$TILE" "$ROOT/assets/game/backgrounds/tile_0001.png"
 
 fetch_zip "https://opengameart.org/sites/default/files/Roguelike%20Characters%20pack.zip" "$TMP/characters.zip"
 unzip -q "$TMP/characters.zip" -d "$TMP/characters"
-CHARACTER="$(find "$TMP/characters" -type f -iname 'roguelikeChar_transparent.png' | head -n 1)"
+CHARACTER="$(find "$TMP/characters" -type f -iname 'roguelikeChar_transparent.png' -print -quit)"
 [[ -n "$CHARACTER" ]] || { echo "Roguelike character spritesheet was not found" >&2; exit 1; }
 cp "$CHARACTER" "$ROOT/assets/game/characters/roguelikeChar_transparent.png"
 
 fetch_zip "https://opengameart.org/sites/default/files/kenney_ui-pack.zip" "$TMP/ui.zip"
 unzip -q "$TMP/ui.zip" -d "$TMP/ui"
-UI_BUTTON="$(find "$TMP/ui" -type f -iname '*button*' -iname '*.png' | sort | head -n 1)"
-# The current Kenney UI Pack contains 430+ separate PNG elements, but its
-# filenames do not reliably contain "panel" or "window". Prefer those names
-# when present, then fall back to a deterministic UI PNG instead of failing CI.
-UI_PANEL="$(find "$TMP/ui" -type f -iname '*panel*' -iname '*.png' | sort | head -n 1)"
-if [[ -z "$UI_PANEL" ]]; then
-  UI_PANEL="$(find "$TMP/ui" -type f -iname '*window*' -iname '*.png' | sort | head -n 1)"
-fi
-if [[ -z "$UI_PANEL" ]]; then
-  UI_PANEL="$(find "$TMP/ui" -type f -iname '*.png' | sort | grep -Ei '/(ui|panel|window|bar|square|button)[^/]*\.png$' | head -n 1 || true)"
-fi
-if [[ -z "$UI_PANEL" ]]; then
-  UI_PANEL="$(find "$TMP/ui" -type f -iname '*.png' | sort | head -n 1)"
-fi
+UI_BUTTON="$(find "$TMP/ui" -type f -iname '*button*' -iname '*.png' -print -quit)"
 [[ -n "$UI_BUTTON" ]] || { echo "Kenney UI button PNG was not found" >&2; exit 1; }
+
+# The current UI Pack does not guarantee semantic panel/window filenames.
+# Prefer those names, then use a deterministic UI sprite as the panel texture.
+UI_PANEL="$(find "$TMP/ui" -type f -iname '*panel*' -iname '*.png' -print -quit)"
+if [[ -z "$UI_PANEL" ]]; then
+  UI_PANEL="$(find "$TMP/ui" -type f -iname '*window*' -iname '*.png' -print -quit)"
+fi
+if [[ -z "$UI_PANEL" ]]; then
+  UI_PANEL="$(find "$TMP/ui" -type f -iname '*.png' -print | while IFS= read -r f; do
+    case "$(basename "$f")" in
+      *bar*|*square*|*button*) printf '%s\n' "$f"; break ;;
+    esac
+  done)"
+fi
+if [[ -z "$UI_PANEL" ]]; then
+  UI_PANEL="$(find "$TMP/ui" -type f -iname '*.png' -print -quit)"
+fi
 [[ -n "$UI_PANEL" ]] || { echo "Kenney UI sprite for panel background was not found" >&2; exit 1; }
 cp "$UI_BUTTON" "$ROOT/assets/game/ui/kenney_button.png"
 cp "$UI_PANEL" "$ROOT/assets/game/ui/kenney_panel.png"
@@ -52,8 +60,11 @@ unzip -q "$TMP/icons.zip" -d "$TMP/icons"
 copy_icon() {
   local name="$1" target="$2"
   local found
-  found="$(find "$TMP/icons" -type f -iname "$name.png" | head -n 1)"
-  [[ -n "$found" ]] || { echo "Kenney icon $name.png was not found" >&2; exit 1; }
+  found="$(find "$TMP/icons" -type f -iname "${name}*.png" -print -quit)"
+  if [[ -z "$found" ]]; then
+    found="$(find "$TMP/icons" -type f -iname "*${name}*.png" -print -quit)"
+  fi
+  [[ -n "$found" ]] || { echo "Kenney icon matching ${name}*.png was not found" >&2; exit 1; }
   cp "$found" "$target"
 }
 copy_icon "star" "$ROOT/assets/game/rewards/star.png"
@@ -65,10 +76,10 @@ copy_icon "checkmark" "$ROOT/assets/game/rewards/checkmark.png"
 # the original UI pack as individual WAV files, which is deterministic in CI.
 fetch_zip "https://github.com/Calinou/kenney-ui-audio/archive/refs/heads/master.zip" "$TMP/audio.zip"
 unzip -q "$TMP/audio.zip" -d "$TMP/audio"
-CLICK="$(find "$TMP/audio" -type f -iname '*.wav' | sort | head -n 1)"
+CLICK="$(find "$TMP/audio" -type f -iname '*.wav' -print -quit)"
 [[ -n "$CLICK" ]] || { echo "Kenney UI Audio WAV was not found" >&2; exit 1; }
 cp "$CLICK" "$ROOT/assets/game/sounds/tap.wav"
-SECOND="$(find "$TMP/audio" -type f -iname '*.wav' | sort | sed -n '2p')"
+SECOND="$(find "$TMP/audio" -type f -iname '*.wav' -print | sed -n '2p')"
 [[ -n "$SECOND" ]] && cp "$SECOND" "$ROOT/assets/game/sounds/success.wav" || cp "$CLICK" "$ROOT/assets/game/sounds/success.wav"
 
 printf 'Prepared Arqami game assets:\n'
