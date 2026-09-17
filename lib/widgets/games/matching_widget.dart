@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// زوج عناصر يجب على الطفل مطابقتهم (نفس id يعني أنهم متطابقان)
+import '../../core/theme/game_theme.dart';
+
+/// زوج عناصر يجب على الطفل مطابقتهم (نفس id يعني أنهم متطابقان).
 class MatchPair {
   final String id;
   final Widget leftContent;
@@ -13,29 +15,15 @@ class MatchPair {
   });
 }
 
-/// مكون المطابقة بالسحب — الطفل يسحب من عنصر باليسار لنظيره المطابق
-/// باليمين (مثلاً: الرقم 5 ↔ خمس تفاحات، أو رقم↔رقم في لعبة ميموري).
+/// لعبة المطابقة في حديقة الأعداد.
 ///
-/// الاستخدام:
-/// ```dart
-/// MatchingWidget(
-///   pairs: [
-///     MatchPair(id: '5', leftContent: NumberDisplay(5), rightContent: AppleRow(5)),
-///     MatchPair(id: '3', leftContent: NumberDisplay(3), rightContent: AppleRow(3)),
-///   ],
-///   onAllMatched: () => print('أحسنت! كل الأزواج صحيحة'),
-/// )
-/// ```
+/// يحافظ المكوّن على منطق المطابقة الأصلي، بينما يمنحه سطحًا بصريًا مرحًا
+/// ومتناسقًا مع هوية أرقامي الجديدة.
 class MatchingWidget extends StatefulWidget {
   final List<MatchPair> pairs;
   final VoidCallback onAllMatched;
-
-  /// يُستدعى عند كل مطابقة صحيحة (مفيد لتشغيل صوت تشجيعي فوري)
   final void Function(String id)? onCorrectMatch;
-
-  /// يُستدعى عند محاولة خاطئة (مفيد لصوت "حاول مرة أخرى" لطيف)
   final VoidCallback? onWrongAttempt;
-
   final Color lineColor;
   final Color matchedColor;
 
@@ -45,8 +33,8 @@ class MatchingWidget extends StatefulWidget {
     required this.onAllMatched,
     this.onCorrectMatch,
     this.onWrongAttempt,
-    this.lineColor = const Color(0xFF90A4AE),
-    this.matchedColor = const Color(0xFF66BB6A),
+    this.lineColor = GameTheme.ocean,
+    this.matchedColor = GameTheme.success,
   });
 
   @override
@@ -93,7 +81,6 @@ class MatchingWidgetState extends State<MatchingWidget> {
     return true;
   }
 
-  /// يمسح كل المطابقات ويعيد الترتيب العشوائي (لزر "حاول مرة أخرى")
   void reset({bool reshuffleAndRebuildKeys = false}) {
     setState(() {
       _matchedIds.clear();
@@ -182,106 +169,230 @@ class MatchingWidgetState extends State<MatchingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      key: _stackKey,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.pairs.length, (i) {
-                final pair = widget.pairs[i];
-                final isMatched = _matchedIds.contains(pair.id);
-                return Padding(
-                  key: _leftKeys[i],
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: GestureDetector(
-                    onPanStart: isMatched
-                        ? null
-                        : (d) => _onPanStart(pair.id, d),
-                    onPanUpdate: isMatched ? null : _onPanUpdate,
-                    onPanEnd: isMatched ? null : _onPanEnd,
-                    child: AnimatedOpacity(
-                      opacity: isMatched ? 0.35 : 1.0,
-                      duration: const Duration(milliseconds: 250),
-                      child: _ItemCard(
-                        borderColor:
-                            isMatched ? widget.matchedColor : Colors.white,
-                        child: pair.leftContent,
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_rightOrder.length, (i) {
-                final id = _rightOrder[i];
-                final pair = widget.pairs.firstWhere((p) => p.id == id);
-                final isMatched = _matchedIds.contains(id);
-                final isFlashingWrong = _flashWrongRightId == id;
-                return Padding(
-                  key: _rightKeys[i],
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: AnimatedOpacity(
-                    opacity: isMatched ? 0.35 : 1.0,
-                    duration: const Duration(milliseconds: 250),
-                    child: _ItemCard(
-                      borderColor: isFlashingWrong
-                          ? const Color(0xFFE57373)
-                          : (isMatched ? widget.matchedColor : Colors.white),
-                      child: pair.rightContent,
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [GameTheme.sky, GameTheme.paperWarm],
         ),
-        if (_activeDragLeftId != null && _dragPosition != null)
-          IgnorePointer(
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: _DragLinePainter(
-                start: _centerOfKey(
-                      _leftKeys[
-                          widget.pairs.indexWhere((p) => p.id == _activeDragLeftId)],
-                    ) ??
-                    _dragPosition!,
-                end: _dragPosition!,
-                color: widget.lineColor,
+        borderRadius: BorderRadius.circular(GameTheme.cardRadius),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        key: _stackKey,
+        children: [
+          const Positioned(
+            top: 12,
+            left: 18,
+            child: _GardenCloud(size: 34),
+          ),
+          const Positioned(
+            top: 28,
+            right: 24,
+            child: _GardenCloud(size: 24),
+          ),
+          const Positioned(
+            bottom: 8,
+            left: 12,
+            child: _GardenFlower(color: GameTheme.berry),
+          ),
+          const Positioned(
+            bottom: 12,
+            right: 12,
+            child: _GardenFlower(color: GameTheme.sunshine),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildColumn(isLeft: true),
+                const _MatchBridge(),
+                _buildColumn(isLeft: false),
+              ],
+            ),
+          ),
+          if (_activeDragLeftId != null && _dragPosition != null)
+            IgnorePointer(
+              child: CustomPaint(
+                size: Size.infinite,
+                painter: _DragLinePainter(
+                  start: _centerOfKey(
+                        _leftKeys[widget.pairs.indexWhere(
+                            (p) => p.id == _activeDragLeftId)],
+                      ) ??
+                      _dragPosition!,
+                  end: _dragPosition!,
+                  color: widget.lineColor,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColumn({required bool isLeft}) {
+    final count = isLeft ? widget.pairs.length : _rightOrder.length;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (i) {
+        final pair = isLeft
+            ? widget.pairs[i]
+            : widget.pairs.firstWhere((p) => p.id == _rightOrder[i]);
+        final id = pair.id;
+        final isMatched = _matchedIds.contains(id);
+        final isFlashingWrong = !isLeft && _flashWrongRightId == id;
+        final key = isLeft ? _leftKeys[i] : _rightKeys[i];
+
+        return Padding(
+          key: key,
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          child: GestureDetector(
+            onPanStart: isLeft && !isMatched
+                ? (details) => _onPanStart(id, details)
+                : null,
+            onPanUpdate: isLeft && !isMatched ? _onPanUpdate : null,
+            onPanEnd: isLeft && !isMatched ? _onPanEnd : null,
+            child: AnimatedScale(
+              scale: isMatched ? 0.94 : 1,
+              duration: GameTheme.popMotion,
+              child: AnimatedOpacity(
+                opacity: isMatched ? 0.42 : 1,
+                duration: GameTheme.popMotion,
+                child: _ItemCard(
+                  borderColor: isFlashingWrong
+                      ? GameTheme.danger
+                      : (isMatched ? widget.matchedColor : GameTheme.cloud),
+                  accentColor: isMatched
+                      ? widget.matchedColor
+                      : (isLeft ? GameTheme.ocean : GameTheme.mint),
+                  child: pair.leftContent,
+                  rightChild: pair.rightContent,
+                  isLeft: isLeft,
+                ),
               ),
             ),
           ),
-      ],
+        );
+      }),
     );
   }
 }
 
 class _ItemCard extends StatelessWidget {
   final Widget child;
+  final Widget rightChild;
+  final bool isLeft;
   final Color borderColor;
+  final Color accentColor;
 
-  const _ItemCard({required this.child, required this.borderColor});
+  const _ItemCard({
+    required this.child,
+    required this.rightChild,
+    required this.isLeft,
+    required this.borderColor,
+    required this.accentColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 84,
-      height: 84,
+      width: 88,
+      height: 88,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: GameTheme.paper,
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: borderColor, width: 3),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.18),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
-      child: child,
+      child: Stack(
+        children: [
+          Positioned(
+            top: 5,
+            left: 8,
+            child: Icon(
+              isLeft ? Icons.touch_app_rounded : Icons.flag_rounded,
+              size: 16,
+              color: accentColor.withValues(alpha: 0.75),
+            ),
+          ),
+          Center(child: isLeft ? child : rightChild),
+        ],
+      ),
     );
+  }
+}
+
+class _MatchBridge extends StatelessWidget {
+  const _MatchBridge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: const BoxDecoration(
+            color: GameTheme.sunshine,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.swap_horiz_rounded,
+            size: 20,
+            color: GameTheme.ink,
+          ),
+        ),
+        const SizedBox(height: 5),
+        const Text(
+          'طابِق',
+          style: TextStyle(
+            color: GameTheme.inkSoft,
+            fontWeight: FontWeight.w800,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GardenCloud extends StatelessWidget {
+  final double size;
+
+  const _GardenCloud({required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size * 1.6,
+      height: size * 0.72,
+      decoration: BoxDecoration(
+        color: GameTheme.cloud.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(size),
+      ),
+    );
+  }
+}
+
+class _GardenFlower extends StatelessWidget {
+  final Color color;
+
+  const _GardenFlower({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(Icons.local_florist_rounded, color: color, size: 24);
   }
 }
 
@@ -290,7 +401,11 @@ class _DragLinePainter extends CustomPainter {
   final Offset end;
   final Color color;
 
-  _DragLinePainter({required this.start, required this.end, required this.color});
+  _DragLinePainter({
+    required this.start,
+    required this.end,
+    required this.color,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
