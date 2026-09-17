@@ -1,6 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../../core/audio/audio_service.dart';
 import '../../models/unit_model.dart';
 import '../../models/units_data.dart';
 import 'unit_progress.dart';
@@ -10,8 +9,11 @@ import 'unit_progress.dart';
 /// قاعدة التقدم:
 /// - الوحدة الأولى متاحة دائماً.
 /// - كل وحدة لاحقة تحتاج إكمال الوحدة السابقة.
-/// - إكمال الوحدة لا يحدث إلا بعد المرور بكل أنشطتها واجتياز الـAssessment.
+/// - إكمال الوحدة لا يحدث إلا بعد المرور بكل أنشطتها والـAssessment النهائي.
 /// - النجوم تحفظ أفضل نتيجة للوحدة.
+///
+/// هذه الطبقة لا تعتمد على Flutter UI أو الصوت حتى تبقى قابلة للاختبار
+/// في بيئة Dart/Hive مستقلة.
 class ProgressTracker {
   ProgressTracker._internal();
   static final ProgressTracker instance = ProgressTracker._internal();
@@ -76,7 +78,6 @@ class ProgressTracker {
   }
 
   /// تسجيل إكمال وحدة بعد اجتياز جميع أنشطتها والـAssessment النهائي.
-  /// بعد الحفظ، تُطلق إشارة فتح للوحدة التالية فقط إذا أصبحت متاحة فعلاً.
   Future<void> markUnitComplete(String unitId, {int stars = 1}) async {
     _ensureInitialized();
 
@@ -97,12 +98,6 @@ class ProgressTracker {
       attemptsCount: current.attemptsCount + 1,
     );
     await _box.put(unitId, updated);
-
-    final nextIndex = unitIndex + 1;
-    if (nextIndex < UnitsData.units.length &&
-        isUnitUnlocked(UnitsData.units[nextIndex].id)) {
-      await AudioService.instance.playUnlock();
-    }
   }
 
   Future<void> recordAttempt(String unitId) async {
