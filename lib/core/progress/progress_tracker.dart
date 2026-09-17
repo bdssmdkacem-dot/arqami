@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../models/stage_reward.dart';
 import '../../models/unit_model.dart';
 import '../../models/units_data.dart';
 import 'unit_progress.dart';
@@ -11,15 +12,15 @@ import 'unit_progress.dart';
 /// - كل وحدة لاحقة تحتاج إكمال الوحدة السابقة.
 /// - إكمال الوحدة لا يحدث إلا بعد المرور بكل أنشطتها والـAssessment النهائي.
 /// - النجوم تحفظ أفضل نتيجة للوحدة.
-///
-/// هذه الطبقة لا تعتمد على Flutter UI أو الصوت حتى تبقى قابلة للاختبار
-/// في بيئة Dart/Hive مستقلة.
+/// - مكافآت المراحل وAchievements تحفظ بشكل مستقل عن UI والصوت.
 class ProgressTracker {
   ProgressTracker._internal();
   static final ProgressTracker instance = ProgressTracker._internal();
 
   static const String _boxName = 'arqami_progress';
+  static const String _rewardsBoxName = 'arqami_stage_rewards';
   late Box<UnitProgress> _box;
+  late Box<dynamic> _rewardsBox;
   bool _initialized = false;
 
   Future<void> init({String? hivePath}) async {
@@ -36,6 +37,7 @@ class ProgressTracker {
     }
 
     _box = await Hive.openBox<UnitProgress>(_boxName);
+    _rewardsBox = await Hive.openBox<dynamic>(_rewardsBoxName);
     _initialized = true;
   }
 
@@ -67,6 +69,53 @@ class ProgressTracker {
     );
     return stageUnits.isNotEmpty &&
         stageUnits.every((unit) => getUnitProgress(unit.id).completed);
+  }
+
+  StageRewardStatus getStageRewardStatus(int stage) {
+    _ensureInitialized();
+    final reward = StageRewards.forStage(stage);
+    final claimed = isStageRewardClaimed(stage);
+    final complete = isStageComplete(reward.startOrder, reward.endOrder);
+    return reward.status(stageComplete: complete, claimed: claimed);
+  }
+
+  bool isStageRewardClaimed(int stage) {
+    _ensureInitialized();
+    final reward = StageRewards.forStage(stage);
+    return _rewardsBox.get(reward.id) == true;
+  }
+
+  bool isAchievementUnlocked(String achievementId) {
+    _ensureInitialized();
+    return _rewardsBox.get('achievement:$achievementId') == true;
+  }
+
+  /// يجمع مكافأة المرحلة مرة واحدة فقط.
+  /// يعيد true عند الجمع الفعلي، وfalse إذا كانت مقفلة أو جُمعت سابقاً.
+  Future<bool> claimStageReward(int stage) async {
+    _ensureInitialized();
+    final reward = StageRewards.forStage(stage);
+    if (getStageRewardStatus(stage) != StageRewardStatus.available) return false;
+
+    await _rewardsBox.put(reward.id, true);
+    await _rewardsBox.put('achievement:${reward.achievementId}', true);
+    return true;
+  }
+
+  List<int> getClaimedStageRewards() {
+    _ensureInitialized();
+    return StageRewards.all
+        .where(isStageRewardClaimed)
+        .map((reward) => reward.stage)
+        .toList();
+  }
+
+  List<String> getUnlockedAchievementIds() {
+    _ensureInitialized();
+    return StageRewards.all
+        .map((reward) => reward.achievementId)
+        .where(isAchievementUnlocked)
+        .toList();
   }
 
   UnitModel? getNextUnit() {
@@ -127,5 +176,6 @@ class ProgressTracker {
   Future<void> resetAll() async {
     _ensureInitialized();
     await _box.clear();
+    await _rewardsBox.clear();
   }
 }
