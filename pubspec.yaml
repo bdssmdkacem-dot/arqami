@@ -24,6 +24,9 @@ dependencies:
   # نطق الأرقام والعبارات بالعربية عبر Text-to-Speech
   flutter_tts: ^4.2.0
 
+  # تشغيل أصوات واجهة Kenney المحلية
+  audioplayers: ^6.5.0
+
   # AdMob
   google_mobile_ads: ^5.2.0
 
@@ -65,4 +68,3 @@ flutter:
   #     fonts:
   #       - asset: assets/fonts/Cairo-Regular.ttf
   #       - asset: assets/fonts/Cairo-Bold.ttf
-  #         weight: 700
