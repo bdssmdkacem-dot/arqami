@@ -1,0 +1,63 @@
+{
+  "policy": {
+    "primary_license": "CC0",
+    "attribution_required": false,
+    "commercial_use": true,
+    "rule": "Keep curriculum data independent from visual assets and copy only files actually used."
+  },
+  "sources": [
+    {
+      "pack": "Roguelike Characters",
+      "source": "Kenney",
+      "url": "https://kenney.nl/assets/roguelike-characters",
+      "license": "CC0",
+      "folder": "assets/game/characters/",
+      "use": ["map companion", "achievement moments", "activity feedback"]
+    },
+    {
+      "pack": "Tiny Town",
+      "source": "Kenney",
+      "url": "https://kenney.nl/assets/tiny-town",
+      "license": "CC0",
+      "folder": "assets/game/backgrounds/",
+      "use": ["journey map environment", "stage landmarks"]
+    },
+    {
+      "pack": "UI Pack",
+      "source": "Kenney",
+      "url": "https://kenney.nl/assets/ui-pack",
+      "license": "CC0",
+      "folder": "assets/game/ui/",
+      "use": ["map panels", "buttons", "level states"]
+    },
+    {
+      "pack": "UI Audio",
+      "source": "Kenney",
+      "url": "https://kenney.nl/assets/ui-audio",
+      "license": "CC0",
+      "folder": "assets/game/sounds/",
+      "use": ["tap", "unlock", "success", "reward"]
+    },
+    {
+      "pack": "2d-assets",
+      "source": "Tiddybub",
+      "url": "https://github.com/Tiddybub/2d-assets",
+      "license": "CC0",
+      "folder": "assets/game/effects/",
+      "use": ["selected 2D effects only"]
+    }
+  ],
+  "integration_order": [
+    "map_environment",
+    "level_node_states",
+    "character_companion",
+    "rewards_and_effects",
+    "ui_audio"
+  ],
+  "age_strategy": {
+    "3-5": "large numbers, simple controls, strong visual feedback",
+    "6-9": "stars, XP, shorter challenges and clearer progression",
+    "10-12": "denser layouts, multiplication/division and multi-step tasks",
+    "13-16": "more restrained presentation and applied mathematics"
+  }
+}
