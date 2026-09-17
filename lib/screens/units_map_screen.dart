@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../core/audio/audio_service.dart';
 import '../core/progress/progress_tracker.dart';
 import '../core/progress/unit_progress.dart';
 import '../core/theme/app_colors.dart';
@@ -22,15 +23,47 @@ class UnitsMapScreen extends StatefulWidget {
 
 class _UnitsMapScreenState extends State<UnitsMapScreen> {
   final List<UnitModel> _units = UnitsData.units;
+  String? _newlyUnlockedUnitId;
 
   bool _isUnitUnlocked(int index) =>
       ProgressTracker.instance.isUnitUnlocked(_units[index].id);
 
   Future<void> _openUnit(UnitModel unit) async {
+    final completedBefore = ProgressTracker.instance
+        .getCompletedUnitIds()
+        .toSet();
+
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => UnitPlayerScreen(unit: unit)),
     );
-    if (mounted) setState(() {});
+
+    if (!mounted) return;
+
+    final completedAfter =
+        ProgressTracker.instance.getCompletedUnitIds().toSet();
+    final newlyCompleted = completedAfter.difference(completedBefore);
+    UnitModel? newlyUnlocked;
+
+    for (final completedId in newlyCompleted) {
+      final index = _units.indexWhere((candidate) => candidate.id == completedId);
+      if (index >= 0 && index + 1 < _units.length) {
+        newlyUnlocked = _units[index + 1];
+        break;
+      }
+    }
+
+    setState(() {
+      _newlyUnlockedUnitId = newlyUnlocked?.id;
+    });
+
+    if (newlyUnlocked != null) {
+      await AudioService.instance.playUnlock();
+      Future<void>.delayed(const Duration(milliseconds: 2200), () {
+        if (mounted && _newlyUnlockedUnitId == newlyUnlocked!.id) {
+          setState(() => _newlyUnlockedUnitId = null);
+        }
+      });
+    }
   }
 
   void _openNextUnit() {
@@ -98,10 +131,12 @@ class _UnitsMapScreenState extends State<UnitsMapScreen> {
                                 .getUnitProgress(_units[index - 1].id)
                                 .completed;
                         return _MapLevel(
+                          key: ValueKey('map_level_${unit.id}'),
                           unit: unit,
                           progress: unitProgress,
                           unlocked: unlocked,
                           previousCompleted: previousCompleted,
+                          highlight: unit.id == _newlyUnlockedUnitId,
                           onTap: unlocked ? () => _openUnit(unit) : null,
                         );
                       },
@@ -218,13 +253,16 @@ class _MapLevel extends StatelessWidget {
   final UnitProgress progress;
   final bool unlocked;
   final bool previousCompleted;
+  final bool highlight;
   final VoidCallback? onTap;
 
   const _MapLevel({
+    super.key,
     required this.unit,
     required this.progress,
     required this.unlocked,
     required this.previousCompleted,
+    required this.highlight,
     required this.onTap,
   });
 
@@ -259,10 +297,17 @@ class _MapLevel extends StatelessWidget {
                 unlocked: unlocked,
                 current: _current,
                 locked: _locked,
+                highlight: highlight,
                 onTap: onTap,
               ),
             ),
           ),
+          if (highlight)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: _UnlockBurst(),
+              ),
+            ),
           if (unit.order == 1 || _isStageStart(unit.order))
             Positioned(
               top: 4,
@@ -282,6 +327,7 @@ class _LevelNode extends StatelessWidget {
   final bool unlocked;
   final bool current;
   final bool locked;
+  final bool highlight;
   final VoidCallback? onTap;
 
   const _LevelNode({
@@ -290,6 +336,7 @@ class _LevelNode extends StatelessWidget {
     required this.unlocked,
     required this.current,
     required this.locked,
+    required this.highlight,
     required this.onTap,
   });
 
@@ -301,97 +348,161 @@ class _LevelNode extends StatelessWidget {
             ? AppColors.completed
             : AppColors.teal;
 
-    return SizedBox(
-      width: math.min(MediaQuery.sizeOf(context).width * 0.72, 310),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          constraints: const BoxConstraints(minWidth: 170, maxWidth: 250),
-          padding: const EdgeInsetsDirectional.fromSTEB(9, 8, 14, 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: current ? AppColors.gold : nodeColor.withValues(alpha: 0.28),
-              width: current ? 2.5 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                blurRadius: current ? 12 : 6,
-                offset: const Offset(0, 3),
-                color: Colors.black.withValues(alpha: current ? 0.12 : 0.06),
+    final width = math.min(MediaQuery.sizeOf(context).width * 0.72, 310.0);
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: highlight ? 0.86 : 1, end: 1),
+      duration: const Duration(milliseconds: 550),
+      curve: Curves.elasticOut,
+      builder: (context, scale, child) => Transform.scale(
+        scale: scale,
+        child: child,
+      ),
+      child: SizedBox(
+        width: width,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Container(
+            constraints: const BoxConstraints(minWidth: 170, maxWidth: 250),
+            padding: const EdgeInsetsDirectional.fromSTEB(9, 8, 14, 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: highlight
+                    ? AppColors.gold
+                    : current
+                        ? AppColors.gold
+                        : nodeColor.withValues(alpha: 0.28),
+                width: highlight ? 3 : (current ? 2.5 : 1),
               ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: highlight ? 22 : (current ? 12 : 6),
+                  spreadRadius: highlight ? 3 : 0,
+                  offset: const Offset(0, 3),
+                  color: highlight
+                      ? AppColors.gold.withValues(alpha: 0.34)
+                      : Colors.black.withValues(alpha: current ? 0.12 : 0.06),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: Opacity(
+                      opacity: locked ? 0.32 : 0.90,
+                      child: Image.asset(
+                        'assets/game/ui/kenney_button.png',
+                        fit: BoxFit.fill,
+                        filterQuality: FilterQuality.medium,
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    _CircularNode(
+                      order: unit.order,
+                      color: nodeColor,
+                      completed: progress.completed,
+                      locked: locked,
+                      current: current,
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'المستوى ${unit.order}',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: nodeColor,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            unit.titleAr,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: locked ? AppColors.locked : null,
+                                ),
+                          ),
+                          if (progress.completed) ...[
+                            const SizedBox(height: 2),
+                            _StarsRow(stars: progress.stars),
+                          ] else if (current) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              'ابدأ الآن',
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: AppColors.gold,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(22),
-                  child: Opacity(
-                    opacity: locked ? 0.32 : 0.90,
-                    child: Image.asset(
-                      'assets/game/ui/kenney_button.png',
-                      fit: BoxFit.fill,
-                      filterQuality: FilterQuality.medium,
+        ),
+      ),
+    );
+  }
+}
+
+class _UnlockBurst extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.15, end: 1),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeOut,
+      builder: (context, value, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            Transform.scale(
+              scale: 0.45 + value * 0.9,
+              child: Opacity(
+                opacity: (1 - value) * 0.75,
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.gold,
+                      width: 3,
                     ),
                   ),
                 ),
               ),
-              Row(
-                children: [
-                  _CircularNode(
-                    order: unit.order,
-                    color: nodeColor,
-                    completed: progress.completed,
-                    locked: locked,
-                    current: current,
-                  ),
-                  const SizedBox(width: 9),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'المستوى ${unit.order}',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: nodeColor,
-                                fontWeight: FontWeight.w900,
-                              ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          unit.titleAr,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: locked ? AppColors.locked : null,
-                              ),
-                        ),
-                        if (progress.completed) ...[
-                          const SizedBox(height: 2),
-                          _StarsRow(stars: progress.stars),
-                        ] else if (current) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            'ابدأ الآن',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: AppColors.gold,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
+            ),
+            Transform.rotate(
+              angle: value * math.pi * 0.12,
+              child: Opacity(
+                opacity: 1 - value,
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 48,
+                  color: AppColors.gold,
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
