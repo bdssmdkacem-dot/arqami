@@ -12,9 +12,10 @@ class ArithmeticAnswerMatcher {
     }
     value = value
         .replaceAll('٫', '.')
-        // In answer fields a comma is treated as a decimal separator.
+        // In answer fields commas are accepted as decimal separators.
+        .replaceAll(',', '.')
+        .replaceAll('،', '.')
         .replaceAll('٬', '.')
-        .replaceAll('،', ',')
         .replaceAll('؛', ';')
         .replaceAll('؟', '?');
     value = value.replaceAll(RegExp(r'\s+'), ' ').trim();
