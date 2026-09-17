@@ -70,6 +70,8 @@ class _JourneyWorldPainter extends CustomPainter {
       );
     }
 
+    _drawWorldLandmarks(canvas, width, zoneHeight);
+
     final sunCenter = Offset(width * .84, 58);
     canvas.drawCircle(
       sunCenter,
@@ -103,6 +105,82 @@ class _JourneyWorldPainter extends CustomPainter {
 
     _drawFlowers(canvas, width, height);
     _drawSparkles(canvas, width, height);
+  }
+
+  void _drawWorldLandmarks(Canvas canvas, double width, double zoneHeight) {
+    const worlds = <String>[
+      'عالم الأعداد',
+      'وادي العشرات',
+      'مدينة المئات',
+      'جزيرة الجمع والطرح',
+      'كوكب الضرب والقسمة',
+      'مجرة الكسور والنسب',
+      'مملكة الجبر',
+    ];
+    final colors = <Color>[
+      GameTheme.ocean,
+      GameTheme.mint,
+      GameTheme.sunshine,
+      GameTheme.mango,
+      GameTheme.coral,
+      GameTheme.violet,
+      GameTheme.berry,
+    ];
+
+    for (var i = 0; i < worlds.length; i++) {
+      final center = Offset(
+        i.isEven ? width * .27 : width * .73,
+        zoneHeight * i + zoneHeight * .30,
+      );
+      final color = colors[i];
+      final pulse = .92 + math.sin(progress * math.pi * 2 + i) * .035;
+
+      canvas.drawCircle(
+        center,
+        34 * pulse,
+        Paint()..color = color.withValues(alpha: .12),
+      );
+      canvas.drawCircle(
+        center,
+        24 * pulse,
+        Paint()..color = color.withValues(alpha: .20),
+      );
+
+      final icon = _worldIcon(i);
+      final iconPainter = TextPainter(
+        text: TextSpan(
+          text: icon,
+          style: const TextStyle(fontSize: 22),
+        ),
+        textDirection: TextDirection.rtl,
+      )..layout();
+      iconPainter.paint(
+        canvas,
+        center - Offset(iconPainter.width / 2, iconPainter.height / 2),
+      );
+
+      final label = TextPainter(
+        text: TextSpan(
+          text: worlds[i],
+          style: TextStyle(
+            color: GameTheme.ink.withValues(alpha: .72),
+            fontSize: math.min(15, width * .038),
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.center,
+      )..layout(maxWidth: math.min(width * .40, 170));
+      label.paint(
+        canvas,
+        Offset(center.dx - label.width / 2, center.dy + 30),
+      );
+    }
+  }
+
+  String _worldIcon(int index) {
+    const icons = ['٠١٢', '١٠', '💯', '＋−', '×÷', '½', '＝'];
+    return icons[index];
   }
 
   void _drawCloud(Canvas canvas, Offset center, double scale) {
