@@ -31,6 +31,15 @@ void main() {
     expect(tracker.getNextUnit()?.id, 'unit_02');
   });
 
+  test('skipping a unit is rejected by the progress layer', () async {
+    expect(
+      () => tracker.markUnitComplete('unit_02', stars: 3),
+      throwsA(isA<StateError>()),
+    );
+    expect(tracker.getUnitProgress('unit_02').completed, isFalse);
+    expect(tracker.getNextUnit()?.id, 'unit_01');
+  });
+
   test('best stars are preserved and never downgraded', () async {
     await tracker.markUnitComplete('unit_01', stars: 3);
     await tracker.markUnitComplete('unit_01', stars: 1);
