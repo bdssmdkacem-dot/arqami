@@ -113,13 +113,13 @@ class AgeActivityPlan {
     if (prioritizeConcreteActivities) {
       if (activity is LessonActivityConfig) return 0;
       if (activity is TraceActivityConfig) return 1;
-      if (activity is DragCountActivityConfig) return 2;
-      if (activity is MatchingActivityConfig) return 3;
-      if (activity is ComparisonActivityConfig) return 4;
-      if (activity is SceneExploreActivityConfig) return 5;
-      if (activity is MultipleChoiceActivityConfig) return 6;
-      if (activity is ReviewActivityConfig) return 7;
-      if (activity is ArithmeticActivityConfig) return 8;
+      if (activity is ArithmeticActivityConfig) return 2;
+      if (activity is DragCountActivityConfig) return 3;
+      if (activity is MatchingActivityConfig) return 4;
+      if (activity is ComparisonActivityConfig) return 5;
+      if (activity is SceneExploreActivityConfig) return 6;
+      if (activity is MultipleChoiceActivityConfig) return 7;
+      if (activity is ReviewActivityConfig) return 8;
       if (activity is WordProblemActivityConfig) return 9;
     }
 
