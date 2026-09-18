@@ -129,7 +129,7 @@ class UnitsData {
       ]));
     }
 
-if (n >= 47 && !has<ReviewActivityConfig>()) {
+if (n >= 46 && !has<ReviewActivityConfig>()) {
       final questions = switch (n) {
         47 => [
           _q('أي كسر يمثل نصفاً؟', ['1/2', '1/3', '1/4'], 0),
