@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/game_theme.dart';
 
 /// نوع السؤال: أيهما أكثر، أيهما أقل، أو هل هما متساويان.
 enum ComparisonQuestion {
