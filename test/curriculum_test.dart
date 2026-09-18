@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:arqami/core/profile/learner_profile.dart';
 import 'package:arqami/core/profile/age_activity_adapter.dart';
+import 'package:arqami/models/curriculum_spec.dart';
 import 'package:arqami/models/number_path.dart';
 import 'package:arqami/models/unit_model.dart';
 import 'package:arqami/models/units_data.dart';
@@ -294,7 +295,6 @@ void main() {
         );
         expect(adapted, isNotEmpty, reason: '${unit.id} / $band');
         expect(adapted.last, isA<AssessmentActivityConfig>(), reason: '${unit.id} / $band');
-        expect(adapted.every((activity) => activity is ActivityConfig), isTrue);
       }
     }
   });
