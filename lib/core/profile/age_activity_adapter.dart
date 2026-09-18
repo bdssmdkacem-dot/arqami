@@ -7,6 +7,7 @@ enum CurriculumDomain {
   additionSubtraction,
   multiplicationDivision,
   fractionsDecimals,
+  ratioProportion,
   algebra,
 }
 
@@ -16,6 +17,7 @@ CurriculumDomain curriculumDomainForUnit(int order) {
   if (order <= 40) return CurriculumDomain.additionSubtraction;
   if (order <= 46) return CurriculumDomain.multiplicationDivision;
   if (order <= 50) return CurriculumDomain.fractionsDecimals;
+  if (order == 51) return CurriculumDomain.ratioProportion;
   return CurriculumDomain.algebra;
 }
 
@@ -26,7 +28,8 @@ int curriculumDifficultyForUnit(int order) {
   if (order <= 40) return 4;
   if (order <= 46) return 5;
   if (order <= 50) return 6;
-  return 7;
+  if (order == 51) return 7;
+  return 8;
 }
 
 class AgeActivityPlan {
