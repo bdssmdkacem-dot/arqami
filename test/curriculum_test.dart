@@ -140,6 +140,81 @@ void main() {
     );
   });
 
+
+  test('each unit has real practice beyond lesson, quiz and assessment', () {
+    for (final unit in UnitsData.units) {
+      final practice = unit.sourceActivities.where((activity) =>
+          activity is! LessonActivityConfig &&
+          activity is! MultipleChoiceActivityConfig &&
+          activity is! AssessmentActivityConfig);
+      expect(practice, isNotEmpty, reason: '${unit.id} needs an interactive practice activity');
+    }
+  });
+
+  test('assessments are separate from quizzes, not copied question-for-question', () {
+    for (final unit in UnitsData.units) {
+      final quizQuestions = unit.sourceActivities
+          .whereType<MultipleChoiceActivityConfig>()
+          .expand((quiz) => quiz.questions)
+          .map((q) => q.questionAr)
+          .toSet();
+      final assessment = unit.sourceActivities.whereType<AssessmentActivityConfig>().single;
+      final assessmentQuestions = assessment.questions.map((q) => q.questionAr).toSet();
+
+      expect(
+        assessmentQuestions.intersection(quizQuestions),
+        isEmpty,
+        reason: '${unit.id} assessment must measure transfer, not duplicate the quiz',
+      );
+    }
+  });
+
+  test('review exists at the major curriculum transition gates', () {
+    const gates = [7, 13, 21, 34, 46, 50, 51, 52];
+    for (final order in gates) {
+      final unit = UnitsData.units[order - 1];
+      expect(
+        unit.sourceActivities.whereType<ReviewActivityConfig>(),
+        isNotEmpty,
+        reason: unit.id,
+      );
+    }
+  });
+
+  test('age bands genuinely change activity sequencing and workload', () {
+    final unit = UnitsData.units[49]; // unit 50: decimals
+    final early = AgeActivityPlan.forBand(AgeBand.early).adaptUnit(unit);
+    final teen = AgeActivityPlan.forBand(AgeBand.teen).adaptUnit(unit);
+
+    expect(early, isNotEmpty);
+    expect(teen, isNotEmpty);
+    expect(early.length, lessThanOrEqualTo(teen.length));
+    expect(early.first, isA<LessonActivityConfig>());
+    expect(teen.first, isA<LessonActivityConfig>());
+    expect(
+      early.indexWhere((a) => a is MultipleChoiceActivityConfig),
+      lessThan(early.indexWhere((a) => a is ArithmeticActivityConfig)),
+    );
+    expect(
+      teen.indexWhere((a) => a is ArithmeticActivityConfig),
+      lessThan(teen.indexWhere((a) => a is MultipleChoiceActivityConfig)),
+    );
+  });
+
+  test('late curriculum follows decimal then ratio then percentage and algebra', () {
+    expect(UnitsData.units[49].titleAr, contains('العشرية'));
+    expect(UnitsData.units[50].titleAr, contains('النسبة والتناسب'));
+    expect(UnitsData.units[51].titleAr, contains('النسبة المئوية'));
+    expect(UnitsData.units[51].titleAr, contains('الجبر'));
+
+    final decimal = UnitsData.units[49].sourceActivities.expand((a) => a is LessonActivityConfig ? a.examplesAr : const <String>[]).join(' ');
+    final ratio = UnitsData.units[50].descriptionAr ?? '';
+    final algebra = UnitsData.units[51].descriptionAr ?? '';
+    expect(decimal, contains('0.5'));
+    expect(ratio, contains('تناسب'));
+    expect(algebra, contains('المعادلات'));
+  });
+
   test('all digit paths 0-9 exist and contain valid points', () {
     for (var digit = 0; digit <= 9; digit++) {
       expect(NumberPathData.hasPath(digit), isTrue);
