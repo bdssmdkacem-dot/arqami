@@ -62,6 +62,20 @@ class UnitsData {
       result.add(_compare(left, (left + 1).clamp(0, 10)));
     }
 
+    if (n >= 14 && n <= 34 && !has<MatchingActivityConfig>()) {
+      final start = n * 10;
+      result.add(_match([
+        _pair('${n}m1', start, start),
+        _pair('${n}m2', start + 1, start + 1),
+        _pair('${n}m3', start + 2, start + 2),
+      ]));
+    }
+
+    if (n >= 14 && n <= 34 && !has<ComparisonActivityConfig>()) {
+      final left = n * 10;
+      result.add(_compare(left, left + 1));
+    }
+
     if (n >= 35 && n <= 40 && !has<ArithmeticActivityConfig>()) {
       final questions = switch (n) {
         35 => [_a('16 + 12 = ؟', 28), _a('120 + 30 = ؟', 150)],
