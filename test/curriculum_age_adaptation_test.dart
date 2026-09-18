@@ -23,7 +23,7 @@ void main() {
     expect(curriculumDomainForUnit(46), CurriculumDomain.multiplicationDivision);
     expect(curriculumDomainForUnit(47), CurriculumDomain.fractionsDecimals);
     expect(curriculumDomainForUnit(50), CurriculumDomain.fractionsDecimals);
-    expect(curriculumDomainForUnit(51), CurriculumDomain.algebra);
+    expect(curriculumDomainForUnit(51), CurriculumDomain.ratioProportion);
     expect(curriculumDomainForUnit(52), CurriculumDomain.algebra);
   });
 
