@@ -9,8 +9,27 @@ class UnitsData {
       LessonActivityConfig(titleAr: title, explanationAr: explanation, examplesAr: examples);
 
   static MultipleChoiceActivityConfig _quiz(List<ChoiceQuestion> questions) => MultipleChoiceActivityConfig(questions);
-  static AssessmentActivityConfig _assessment(int n, List<ChoiceQuestion> questions) =>
-      AssessmentActivityConfig(titleAr: 'اختبار الوحدة $n', questions: questions);
+  static AssessmentActivityConfig _assessment(int n, List<ChoiceQuestion> questions) {
+    final assessed = questions.map((question) {
+      final options = List<String>.from(question.options);
+      if (options.length > 1) {
+        final first = options.removeAt(0);
+        options.add(first);
+      }
+      final correctIndex = options.indexOf(question.options[question.correctIndex]);
+      return ChoiceQuestion(
+        questionAr: 'تطبيق جديد: ${question.questionAr}',
+        options: options,
+        correctIndex: correctIndex,
+        hintAr: question.hintAr,
+      );
+    }).toList(growable: false);
+    return AssessmentActivityConfig(
+      titleAr: 'تقييم الوحدة $n',
+      questions: assessed,
+    );
+  }
+
   static ChoiceQuestion _q(String question, List<String> options, int correct, [String? hint]) =>
       ChoiceQuestion(questionAr: question, options: options, correctIndex: correct, hintAr: hint);
   static MatchingActivityConfig _match(List<MatchPairSpec> pairs) => MatchingActivityConfig(pairs);
