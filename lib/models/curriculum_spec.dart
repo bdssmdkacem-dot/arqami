@@ -55,6 +55,12 @@ class CurriculumActivityPlanner {
         used.add(i);
         break;
       }
+      if (result.length == kinds.indexOf(kind) + 1) {
+        continue;
+      }
+      throw StateError(
+        'Unit ${unit.order} is missing executable curriculum activity kind: $kind',
+      );
     }
 
     // Keep all remaining training activities before the assessment gate.
