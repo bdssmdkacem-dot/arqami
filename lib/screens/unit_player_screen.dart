@@ -185,88 +185,101 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
         Center(
           child: SingleChildScrollView(
             child: Card(
-          elevation: 5,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 28, 22, 22),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const ArqamiCompanion(mood: 'celebrate', size: 86),
-                const SizedBox(height: 4),
-                const Text('أحسنت! 🎉', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900)),
-                const SizedBox(height: 6),
-                Text(
-                  'أنهيت ${widget.unit.titleAr}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'هدف التعلم: ${_spec.learningGoalAr}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 18),
-                _AnimatedStars(stars: progress.stars),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.goldSoft,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Text(
-                    progress.stars == 3
-                        ? 'ممتاز! أنهيت الوحدة بدون أخطاء.'
-                        : progress.stars == 2
-                            ? 'رائع! نجمتان — يمكنك إعادة اللعب لتحصل على 3.'
-                            : 'تمت الوحدة. أعد المحاولة لتحسن نتيجتك.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(color: AppColors.tealSoft, borderRadius: BorderRadius.circular(18)),
-                  child: Text(
-                    'التحدي النهائي: ${_spec.finalChallengeAr}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.w800, height: 1.4),
-                  ),
-                ),
-                const SizedBox(height: 22),
-                if (isFinalUnit) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const CertificateScreen()),
-                      ),
-                      icon: const Icon(Icons.workspace_premium_rounded),
-                      label: const Text('احصل على شهادتك'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        foregroundColor: AppColors.textPrimary,
+              elevation: 5,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(22, 28, 22, 22),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const ArqamiCompanion(mood: 'celebrate', size: 86),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'أحسنت! 🎉',
+                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'أنهيت ${widget.unit.titleAr}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    icon: const Icon(Icons.map_rounded),
-                    label: const Text('العودة إلى الخريطة'),
-                  ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'هدف التعلم: ${_spec.learningGoalAr}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    _AnimatedStars(stars: progress.stars),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.goldSoft,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Text(
+                        progress.stars == 3
+                            ? 'ممتاز! أنهيت الوحدة بدون أخطاء.'
+                            : progress.stars == 2
+                                ? 'رائع! نجمتان — يمكنك إعادة اللعب لتحصل على 3.'
+                                : 'تمت الوحدة. أعد المحاولة لتحسن نتيجتك.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.tealSoft,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Text(
+                        'التحدي النهائي: ${_spec.finalChallengeAr}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontWeight: FontWeight.w800, height: 1.4),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    if (isFinalUnit) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const CertificateScreen()),
+                          ),
+                          icon: const Icon(Icons.workspace_premium_rounded),
+                          label: const Text('احصل على شهادتك'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.gold,
+                            foregroundColor: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        icon: const Icon(Icons.map_rounded),
+                        label: const Text('العودة إلى الخريطة'),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ],
         ),
       ],
     );
