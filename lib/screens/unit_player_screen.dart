@@ -7,6 +7,7 @@ import '../core/audio/audio_service.dart';
 import '../core/profile/age_activity_presentation.dart';
 import '../core/progress/progress_tracker.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/game_theme.dart';
 import '../core/theme/responsive.dart';
 import '../models/curriculum_spec.dart';
 import '../models/unit_model.dart';
@@ -98,7 +99,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: GameTheme.sky,
       appBar: AppBar(
         title: Text(widget.unit.titleAr),
         centerTitle: true,
@@ -110,7 +111,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          padding: GameTheme.screenPadding,
           child: Responsive.constrainedCenter(
             child: Stack(
               children: [
