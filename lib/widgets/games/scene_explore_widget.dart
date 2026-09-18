@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/game_theme.dart';
 
 /// أنواع المشاهد المتاحة لوحدة "الأرقام حولي". كل مشهد مبني بالكامل
 /// برسم متجهي (CustomPainter) وأيقونات Material — بدون أي صورة خارجية.
