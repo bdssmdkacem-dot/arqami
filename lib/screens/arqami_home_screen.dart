@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/profile/learner_profile.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/game_theme.dart';
+import '../core/theme/game_shapes.dart';
 import 'achievements_screen.dart';
 import 'units_map_screen.dart';
 import 'settings_screen.dart';
@@ -96,17 +97,18 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
   Widget build(BuildContext context) {
     final age = LearnerProfile.age;
     return Scaffold(
+      backgroundColor: GameTheme.sky,
       appBar: AppBar(
         titleSpacing: 16,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
                 color: AppColors.sunshine,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.accent.withValues(alpha: .25),
