@@ -4,6 +4,7 @@ import '../core/ads/ad_service.dart';
 import '../core/assessment/assessment_engine.dart';
 import '../core/answer/arithmetic_answer_matcher.dart';
 import '../core/audio/audio_service.dart';
+import '../core/profile/age_activity_adapter.dart';
 import '../core/profile/age_activity_presentation.dart';
 import '../core/progress/progress_tracker.dart';
 import '../core/theme/app_colors.dart';
@@ -41,7 +42,10 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   int _feedbackToken = 0;
 
   CurriculumSpec get _spec => CurriculumSpecs.forUnit(widget.unit);
-  List<ActivityConfig> get _activities => CurriculumActivityPlanner.plan(widget.unit);
+  List<ActivityConfig> get _activities => AgeActivityPlan.current().adaptActivities(
+        CurriculumActivityPlanner.plan(widget.unit),
+        domain: curriculumDomainForUnit(widget.unit.order),
+      );
   AgeActivityPresentation get _age => AgeActivityPresentation.current();
 
   void _showFeedback(_AnswerFeedback feedback) {
@@ -765,12 +769,13 @@ class _ChoiceQuizViewState extends State<_ChoiceQuizView> {
         await widget.onAssessmentFailed?.call(result);
         if (!mounted) return;
         final percentage = (result.score * 100).round();
+        final requiredPercentage = (_assessmentEngine.thresholdFor(result.totalQuestions) * 100).round();
         setState(() {
           index = 0;
           _selectedAnswers.clear();
           answered = false;
           selectedIndex = null;
-          message = 'نتيجتك $percentage٪ — تحتاج إلى 70٪ على الأقل. حاول مرة أخرى.';
+          message = 'نتيجتك $percentage٪ — تحتاج إلى $requiredPercentage٪ على الأقل. حاول مرة أخرى.';
         });
         return;
       }
