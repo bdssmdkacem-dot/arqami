@@ -33,6 +33,104 @@ class UnitsData {
   static ArithmeticQuestion _at(String question, String answer, [String? hint]) =>
       ArithmeticQuestion(questionAr: question, correctAnswerText: answer, hintAr: hint);
 
+  /// يضمن أن الأنواع المعلنة في CurriculumSpec موجودة فعلياً في مصدر الوحدة.
+  /// الأنشطة المضافة هنا ليست fallback في الـPlanner؛ بل جزء من المنهج المصدر.
+  static List<ActivityConfig> _requiredActivities(
+    int n,
+    List<ActivityConfig> existing,
+  ) {
+    final result = <ActivityConfig>[];
+
+    bool has<T extends ActivityConfig>() => existing.any((a) => a is T);
+
+    if (n <= 13 && !has<MatchingActivityConfig>()) {
+      final start = n == 7 || n == 13 ? 0 : (n - 1).clamp(0, 10);
+      final values = <int>[
+        start,
+        (start + 1).clamp(0, 10),
+        (start + 2).clamp(0, 10),
+      ];
+      result.add(_match([
+        _pair('${n}m1', values[0], values[0]),
+        _pair('${n}m2', values[1], values[1]),
+        _pair('${n}m3', values[2], values[2]),
+      ]));
+    }
+
+    if (n <= 13 && n != 7 && n != 13 && !has<ComparisonActivityConfig>()) {
+      final left = n.clamp(0, 9);
+      result.add(_compare(left, (left + 1).clamp(0, 10)));
+    }
+
+    if (n >= 35 && n <= 40 && !has<ArithmeticActivityConfig>()) {
+      final questions = switch (n) {
+        35 => [_a('16 + 12 = ؟', 28), _a('120 + 30 = ؟', 150)],
+        36 => [_a('28 + 17 = ؟', 45), _a('46 + 28 = ؟', 74)],
+        37 => [_a('9 + 6 = ؟', 15), _a('14 + 8 = ؟', 22)],
+        38 => [_a('57 − 24 = ؟', 33), _a('90 − 40 = ؟', 50)],
+        39 => [_a('63 − 28 = ؟', 35), _a('72 − 39 = ؟', 33)],
+        _ => [_a('30 − 12 = ؟', 18), _a('45 − 17 = ؟', 28)],
+      };
+      result.add(_arithmetic('تطبيق العملية', questions));
+    }
+
+    if (n >= 35 && n <= 40 && !has<WordProblemActivityConfig>()) {
+      final questions = switch (n) {
+        35 => [_a('لدى أحمد 12 كرة واشترى 8 أخرى. كم لديه؟', 20)],
+        36 => [_a('في السلة 27 تفاحة أضيفت 15. كم أصبحت؟', 42)],
+        37 => [_a('مع ليلى 9 أقلام وأعطتها المعلمة 6. كم أصبح لديها؟', 15)],
+        38 => [_a('لدى سامي 50 قطعة أخذ منها 18. كم بقي؟', 32)],
+        39 => [_a('لدى متجر 63 قطعة باع 28. كم بقي؟', 35)],
+        _ => [_a('لدى خالد 45 درهماً أنفق 17. كم بقي؟', 28)],
+      };
+      result.add(_wordProblems(questions));
+    }
+
+    if (n >= 41 && n <= 46 && !has<MatchingActivityConfig>()) {
+      final pairs = switch (n) {
+        41 => [_pair('41m1', 2, 8), _pair('41m2', 3, 12), _pair('41m3', 4, 16)],
+        42 => [_pair('42m1', 2, 14), _pair('42m2', 5, 40), _pair('42m3', 7, 56)],
+        43 => [_pair('43m1', 4, 92), _pair('43m2', 5, 60), _pair('43m3', 13, 312)],
+        44 => [_pair('44m1', 12, 4), _pair('44m2', 20, 4), _pair('44m3', 24, 4)],
+        45 => [_pair('45m1', 14, 2), _pair('45m2', 84, 21), _pair('45m3', 96, 12)],
+        _ => [_pair('46m1', 24, 42), _pair('46m2', 6, 48), _pair('46m3', 48, 8)],
+      };
+      result.add(_match(pairs));
+    }
+
+    if (n >= 47 && !has<ReviewActivityConfig>()) {
+      final questions = switch (n) {
+        47 => [
+          _q('أي كسر يمثل نصفاً؟', ['1/2', '1/3', '1/4'], 0),
+          _q('في 3/4 ما المقام؟', ['3', '4', '7'], 1),
+        ],
+        48 => [
+          _q('أي كسر يكافئ 1/2؟', ['1/3', '2/4', '3/4'], 1),
+          _q('أي كسر أكبر من 1/4؟', ['1/8', '3/4', '1/5'], 1),
+        ],
+        49 => [
+          _q('1/4 + 1/4 = ؟', ['1/2', '1/4', '3/4'], 0),
+          _q('2/4 بعد التبسيط؟', ['1/2', '1/3', '2'], 0),
+        ],
+        50 => [
+          _q('0.5 يساوي أي كسر؟', ['1/2', '1/5', '5/100'], 0),
+          _q('1.2 + 0.3 = ؟', ['1.3', '1.5', '1.7'], 1),
+        ],
+        51 => [
+          _q('2.5 − 0.5 = ؟', ['1', '2', '3'], 1),
+          _q('1.5 × 2 = ؟', ['2', '3', '4'], 1),
+        ],
+        _ => [
+          _q('50% يساوي؟', ['1/2', '1/4', '2/5'], 0),
+          _q('x + 3 = 7، x = ؟', ['3', '4', '5'], 1),
+        ],
+      };
+      result.add(_review('مراجعة الوحدة $n', questions));
+    }
+
+    return result;
+  }
+
   static UnitModel _unit({
     required int n,
     required String title,
@@ -53,6 +151,7 @@ class UnitsData {
         activities: [
           _learn(learnTitle, explanation, examples),
           ...extra,
+          ..._requiredActivities(n, extra),
           _quiz(quiz),
           _assessment(n, assessment ?? quiz),
         ],
