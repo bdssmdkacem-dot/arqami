@@ -168,6 +168,45 @@ void main() {
   });
 
 
+  test('late-stage assessments use independent scenarios', () {
+    for (final order in [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]) {
+      final unit = UnitsData.units.singleWhere((item) => item.order == order);
+      final quiz = unit.sourceActivities
+          .whereType<MultipleChoiceActivityConfig>()
+          .expand((item) => item.questions)
+          .map((item) => item.questionAr)
+          .toSet();
+      final assessment = unit.sourceActivities
+          .whereType<AssessmentActivityConfig>()
+          .single;
+
+      expect(
+        assessment.questions.any((item) => !quiz.contains(item.questionAr)),
+        isTrue,
+        reason: '${unit.id} assessment needs an independent scenario',
+      );
+    }
+  });
+
+  test('ratio and percentage stages contain executable domain practice', () {
+    final ratio = UnitsData.units.singleWhere((unit) => unit.order == 51);
+    final ratioArithmetic =
+        ratio.sourceActivities.whereType<ArithmeticActivityConfig>().single;
+    expect(ratioArithmetic.questions.length, greaterThanOrEqualTo(4));
+    expect(
+      ratio.sourceActivities.whereType<WordProblemActivityConfig>(),
+      isNotEmpty,
+    );
+
+    final percentage = UnitsData.units.singleWhere((unit) => unit.order == 52);
+    final percentageArithmetic =
+        percentage.sourceActivities.whereType<ArithmeticActivityConfig>().single;
+    expect(percentageArithmetic.questions.length, greaterThanOrEqualTo(5));
+    expect(
+      percentage.sourceActivities.whereType<WordProblemActivityConfig>(),
+      isNotEmpty,
+    );
+  });
   test('each unit has real practice beyond lesson, quiz and assessment', () {
     for (final unit in UnitsData.units) {
       final practice = unit.sourceActivities.where((activity) =>
