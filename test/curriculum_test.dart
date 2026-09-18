@@ -358,6 +358,37 @@ void main() {
       lessThanOrEqualTo(teen.whereType<MultipleChoiceActivityConfig>().single.questions.length),
     );
   });
+  test('learner ages map to the correct learning bands', () {
+    expect(AgeBand.fromAge(3), AgeBand.early);
+    expect(AgeBand.fromAge(5), AgeBand.early);
+    expect(AgeBand.fromAge(6), AgeBand.primary);
+    expect(AgeBand.fromAge(9), AgeBand.primary);
+    expect(AgeBand.fromAge(10), AgeBand.middle);
+    expect(AgeBand.fromAge(12), AgeBand.middle);
+    expect(AgeBand.fromAge(13), AgeBand.teen);
+    expect(AgeBand.fromAge(16), AgeBand.teen);
+  });
+
+  test('age plan is explicitly derived from the selected learner age', () {
+    expect(AgeActivityPlan.forAge(3).band, AgeBand.early);
+    expect(AgeActivityPlan.forAge(6).band, AgeBand.primary);
+    expect(AgeActivityPlan.forAge(10).band, AgeBand.middle);
+    expect(AgeActivityPlan.forAge(13).band, AgeBand.teen);
+    expect(AgeActivityPlan.forAge(3).practiceQuestionLimit, 2);
+    expect(AgeActivityPlan.forAge(6).practiceQuestionLimit, 3);
+    expect(AgeActivityPlan.forAge(10).practiceQuestionLimit, 999);
+    expect(AgeActivityPlan.forAge(13).practiceQuestionLimit, 999);
+  });
+
+  test('presentation is explicitly derived from the selected learner age', () {
+    expect(AgeActivityPresentation.forAge(3).band, AgeBand.early);
+    expect(AgeActivityPresentation.forAge(6).band, AgeBand.primary);
+    expect(AgeActivityPresentation.forAge(10).band, AgeBand.middle);
+    expect(AgeActivityPresentation.forAge(13).band, AgeBand.teen);
+    expect(AgeActivityPresentation.forAge(3).showExtraGuidance, isTrue);
+    expect(AgeActivityPresentation.forAge(13).showExtraGuidance, isFalse);
+  });
+
   test('all digit paths 0-9 exist and contain valid points', () {
     for (var digit = 0; digit <= 9; digit++) {
       expect(NumberPathData.hasPath(digit), isTrue);
