@@ -99,6 +99,14 @@ class UnitsData {
     }
 
     
+    if (n == 49 && !has<ArithmeticActivityConfig>()) {
+      result.add(_arithmetic('عمليات الكسور', [
+        _a('1/4 + 1/4 = ؟', 0.5),
+        _a('2/4 = ؟', 0.5),
+        _a('1/2 × 2 = ؟', 1),
+      ]));
+    }
+
     if (n == 52 && !has<ArithmeticActivityConfig>()) {
       result.add(_arithmetic('تطبيق النسبة المئوية والجبر', [
         _a('25% من 20 = ؟', 5),
