@@ -72,9 +72,9 @@ class AgeActivityPresentation {
     }
   }
 
-  factory AgeActivityPresentation.current() {
-    return AgeActivityPresentation.forBand(
-      AgeBand.fromAge(LearnerProfile.age ?? 6),
-    );
+  factory AgeActivityPresentation.forAge(int age) {
+    return AgeActivityPresentation.forBand(AgeBand.fromAge(age));
   }
+
+  factory AgeActivityPresentation.current() => forAge(LearnerProfile.age ?? 6);
 }
