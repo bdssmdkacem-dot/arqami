@@ -34,6 +34,7 @@ class AppTheme {
 
     final text = base.textTheme.apply(
       fontFamily: 'sans-serif',
+      fontFamilyFallback: const ['Noto Sans Arabic', 'Arial'],
       bodyColor: AppColors.textPrimary,
       displayColor: AppColors.textPrimary,
     );
