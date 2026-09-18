@@ -49,18 +49,23 @@ class CurriculumActivityPlanner {
     final result = <ActivityConfig>[];
 
     for (final kind in kinds) {
+      var foundIndex = -1;
       for (var i = 0; i < source.length; i++) {
         if (used.contains(i) || !_matches(source[i], kind)) continue;
-        result.add(source[i]);
-        used.add(i);
+        foundIndex = i;
         break;
       }
-      if (result.length == kinds.indexOf(kind) + 1) {
-        continue;
+
+      if (foundIndex == -1) {
+        final availableKinds = source.map((activity) => activity.runtimeType).join(', ');
+        throw StateError(
+          'Unit ${unit.order} is missing executable curriculum activity kind: '
+          '$kind. Available source activities: $availableKinds',
+        );
       }
-      throw StateError(
-        'Unit ${unit.order} is missing executable curriculum activity kind: $kind',
-      );
+
+      used.add(foundIndex);
+      result.add(source[foundIndex]);
     }
 
     // Keep all remaining training activities before the assessment gate.
@@ -167,8 +172,8 @@ class CurriculumSpecs {
     CurriculumSpec(learningGoalAr:'القسمة المطولة', objectivesAr:['تنظيم خطوات القسمة','التحقق بالضرب'], skillsAr:['الخوارزمية','التحقق'], activityPlanAr:['درس مرحلي','قسمة','تحقق بالضرب','مسألة','تحدي'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.arithmetic, CurriculumActivityKind.matching, CurriculumActivityKind.quiz], finalChallengeAr:'حل مسار القسمة خطوة بخطوة', estimatedMinutes:15),
     CurriculumSpec(learningGoalAr:'العمليات الأربع', objectivesAr:['اختيار العملية المناسبة','حل مسائل مختلطة'], skillsAr:['المرونة الحسابية','الاستدلال'], activityPlanAr:['مراجعة','اختيار العملية','حساب','مسائل','تحدي العمليات'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.quiz, CurriculumActivityKind.review], finalChallengeAr:'أكمل مهمة تتطلب العمليات الأربع', estimatedMinutes:15),
     CurriculumSpec(learningGoalAr:'الكسور كأجزاء من كل', objectivesAr:['فهم البسط والمقام','تمثيل الكسر بصرياً'], skillsAr:['التمثيل الكسري','التقسيم'], activityPlanAr:['درس بصري','تقسيم أشكال','مطابقة','مقارنة','تحدي'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.quiz, CurriculumActivityKind.review], finalChallengeAr:'قسّم لوحة إلى أجزاء واكتب الكسر', estimatedMinutes:12),
-    CurriculumSpec(learningGoalAr:'مقارنة وجمع الكسور', objectivesAr:['مقارنة كسور مناسبة','جمع كسور بسيطة'], skillsAr:['المقارنة','الجمع الكسري'], activityPlanAr:['درس','أشرطة كسور','مقارنة','جمع بصري','تحدي'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.quiz, CurriculumActivityKind.arithmetic, CurriculumActivityKind.review], finalChallengeAr:'أكمل وصفة بجمع الكسور الصحيحة', estimatedMinutes:14),
-    CurriculumSpec(learningGoalAr:'الأعداد العشرية', objectivesAr:['فهم الأعشار والمئات','ربط العشري بالكسر'], skillsAr:['القيمة المكانية','التحويل'], activityPlanAr:['درس بالنقود','شبكة عشرية','مطابقة','مقارنة','تحدي'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.arithmetic, CurriculumActivityKind.quiz, CurriculumActivityKind.review], finalChallengeAr:'اضبط الأسعار العشرية في متجر اللعبة', estimatedMinutes:13),
+    CurriculumSpec(learningGoalAr:'الكسور المتكافئة والمقارنة', objectivesAr:['التعرف على الكسور المتكافئة','مقارنة كسور بسيطة'], skillsAr:['التكافؤ','المقارنة'], activityPlanAr:['درس','أشرطة كسور','مطابقة التكافؤ','مقارنة','مراجعة'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.quiz, CurriculumActivityKind.review], finalChallengeAr:'اختر الكسور المتكافئة ثم رتب الكسور من الأصغر إلى الأكبر', estimatedMinutes:13),
+    CurriculumSpec(learningGoalAr:'العمليات على الكسور', objectivesAr:['جمع وطرح الكسور البسيطة','تطبيق الضرب والقسمة على الكسور تدريجياً'], skillsAr:['الحساب الكسري','التبسيط','اختيار العملية'], activityPlanAr:['درس','تمثيل بصري','حساب','مراجعة','تحدي العمليات'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.arithmetic, CurriculumActivityKind.quiz, CurriculumActivityKind.review], finalChallengeAr:'حل سلسلة من عمليات الكسور ثم تحقق من النتائج', estimatedMinutes:15),
     CurriculumSpec(learningGoalAr:'النسبة والتناسب', objectivesAr:['فهم العلاقة بين كميتين','حل تناسبات بسيطة'], skillsAr:['النسبة','التناسب','الاستدلال'], activityPlanAr:['درس بصري','مطابقة نسب','جداول','مسألة واقعية','تحدي'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.arithmetic, CurriculumActivityKind.quiz, CurriculumActivityKind.review], finalChallengeAr:'اضبط وصفة بنسب مختلفة', estimatedMinutes:15),
     CurriculumSpec(learningGoalAr:'النسبة المئوية والجبر الأساسي', objectivesAr:['فهم النسبة المئوية وحساب نسب بسيطة','استخدام المتغيرات في تعبيرات ومعادلات بسيطة'], skillsAr:['النسبة المئوية','التعويض','حل المعادلات','المقارنة'], activityPlanAr:['درس شبكي ورمزي','تحويل وحساب','تعويض','حل معادلات ومتباينات','تحدي الجبر'], activityKinds: [CurriculumActivityKind.lesson, CurriculumActivityKind.quiz, CurriculumActivityKind.arithmetic, CurriculumActivityKind.review], finalChallengeAr:'حل خصماً مئوياً ثم استخدم متغيراً لفتح بوابة الجبر', estimatedMinutes:17),
   ];
