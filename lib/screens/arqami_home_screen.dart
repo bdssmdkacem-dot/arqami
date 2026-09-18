@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../core/profile/learner_profile.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/game_theme.dart';
-import '../core/theme/game_shapes.dart';
 import 'achievements_screen.dart';
 import 'units_map_screen.dart';
 import 'settings_screen.dart';
