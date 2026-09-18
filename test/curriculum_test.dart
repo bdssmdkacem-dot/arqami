@@ -125,13 +125,13 @@ void main() {
 
     final decimalPattern = RegExp(r'\d+\.\d+');
     final decimalLessons = decimalUnits
-        .expand((unit) => unit.activities)
+        .expand((unit) => unit.sourceActivities)
         .whereType<LessonActivityConfig>();
     final decimalExamples = decimalLessons.expand((lesson) => lesson.examplesAr);
     expect(decimalExamples.any(decimalPattern.hasMatch), isTrue);
 
     final decimalQuizzes = decimalUnits
-        .expand((unit) => unit.activities)
+        .expand((unit) => unit.sourceActivities)
         .whereType<MultipleChoiceActivityConfig>();
     expect(decimalQuizzes, isNotEmpty);
     expect(
