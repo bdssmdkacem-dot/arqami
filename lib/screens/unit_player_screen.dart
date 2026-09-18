@@ -25,7 +25,13 @@ import '../widgets/shared/quantity_row.dart';
 
 class UnitPlayerScreen extends StatefulWidget {
   final UnitModel unit;
-  const UnitPlayerScreen({super.key, required this.unit});
+  final int learnerAge;
+
+  const UnitPlayerScreen({
+    super.key,
+    required this.unit,
+    required this.learnerAge,
+  });
 
   @override
   State<UnitPlayerScreen> createState() => _UnitPlayerScreenState();
@@ -42,11 +48,14 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
   int _feedbackToken = 0;
 
   CurriculumSpec get _spec => CurriculumSpecs.forUnit(widget.unit);
-  List<ActivityConfig> get _activities => AgeActivityPlan.current().adaptActivities(
+  AgeActivityPlan get _agePlan => AgeActivityPlan.forAge(widget.learnerAge);
+
+  List<ActivityConfig> get _activities => _agePlan.adaptActivities(
         CurriculumActivityPlanner.plan(widget.unit),
         domain: curriculumDomainForUnit(widget.unit.order),
       );
-  AgeActivityPresentation get _age => AgeActivityPresentation.current();
+
+  AgeActivityPresentation get _age => AgeActivityPresentation.forAge(widget.learnerAge);
 
   void _showFeedback(_AnswerFeedback feedback) {
     if (!mounted) return;
