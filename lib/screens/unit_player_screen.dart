@@ -178,17 +178,21 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
     final progress = ProgressTracker.instance.getUnitProgress(widget.unit.id);
     final isFinalUnit = widget.unit.order == UnitsData.units.length;
 
-    return Center(
-      child: SingleChildScrollView(
-        child: Card(
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const GameParticleBurst(active: true, seed: 52, count: 42),
+        Center(
+          child: SingleChildScrollView(
+            child: Card(
           elevation: 5,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(22, 28, 22, 22),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const _CelebrationBadge(),
-                const SizedBox(height: 12),
+                const ArqamiCompanion(mood: 'celebrate', size: 86),
+                const SizedBox(height: 4),
                 const Text('أحسنت! 🎉', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 6),
                 Text(
@@ -262,7 +266,9 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
             ),
           ),
         ),
-      ),
+      ],
+        ),
+      ],
     );
   }
 
