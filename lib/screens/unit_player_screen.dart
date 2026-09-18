@@ -572,26 +572,6 @@ class _PlayerHud extends StatelessWidget {
   }
 }
 
-class _CelebrationBadge extends StatelessWidget {
-  const _CelebrationBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: .65, end: 1),
-      duration: const Duration(milliseconds: 700),
-      curve: Curves.elasticOut,
-      builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
-      child: Container(
-        width: 86,
-        height: 86,
-        decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.goldSoft),
-        child: const Icon(Icons.emoji_events_rounded, size: 52, color: AppColors.gold),
-      ),
-    );
-  }
-}
-
 class _AnimatedStars extends StatelessWidget {
   final int stars;
   const _AnimatedStars({required this.stars});
