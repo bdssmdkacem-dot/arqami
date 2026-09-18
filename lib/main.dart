@@ -8,13 +8,11 @@ import 'core/profile/learner_profile.dart';
 import 'core/progress/progress_tracker.dart';
 import 'core/theme/app_theme.dart';
 import 'models/deep_curriculum_fixes.dart';
-import 'models/final_curriculum_override.dart';
 import 'screens/arqami_home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  applyFinalCurriculumStageSplit();
   applyDeepCurriculumFixes();
   await ProgressTracker.instance.init();
   await LearnerProfile.init();
