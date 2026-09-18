@@ -186,6 +186,17 @@ if ((n == 7 || n == 13 || n >= 46) && !has<ReviewActivityConfig>()) {
 
 
   static UnitModel _unit({
+    required int n,
+    required String title,
+    required String age,
+    required String description,
+    required String learnTitle,
+    required String explanation,
+    List<String> examples = const [],
+    List<ActivityConfig> extra = const [],
+    required List<ChoiceQuestion> quiz,
+    List<ChoiceQuestion>? assessment,
+  }) => UnitModel(
         id: 'unit_${n.toString().padLeft(2, '0')}',
         order: n,
         titleAr: title,
