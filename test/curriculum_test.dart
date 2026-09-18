@@ -189,6 +189,29 @@ void main() {
     }
   });
 
+  test('ratio stage uses text answers for ratio forms and ratio review content', () {
+    final ratio = UnitsData.units.singleWhere((unit) => unit.order == 51);
+    final arithmetic = ratio.sourceActivities.whereType<ArithmeticActivityConfig>().single;
+
+    expect(
+      arithmetic.questions.any((question) => question.correctAnswerText == '4:6'),
+      isTrue,
+    );
+    expect(
+      arithmetic.questions.every(
+        (question) => !question.questionAr.contains('النسبة') ||
+            question.correctAnswer != 0,
+      ),
+      isTrue,
+      reason: 'ratio questions must not use a placeholder numeric answer',
+    );
+
+    final review = ratio.sourceActivities.whereType<ReviewActivityConfig>().single;
+    final reviewText = review.questions.map((question) => question.questionAr).join(' ');
+    expect(reviewText, contains('نسبة'));
+    expect(reviewText, contains('أقلام'));
+  });
+
   test('ratio and percentage stages contain executable domain practice', () {
     final ratio = UnitsData.units.singleWhere((unit) => unit.order == 51);
     final ratioArithmetic =
