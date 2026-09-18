@@ -112,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             decoration: GameShapes.softPanel(accent: GameTheme.violet),
             padding: const EdgeInsets.all(18),
-            child: const Column(
+            child: Column(
               children: [
                 Icon(Icons.auto_awesome_rounded, color: GameTheme.violet, size: 30),
                 SizedBox(height: 8),
