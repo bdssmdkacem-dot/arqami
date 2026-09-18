@@ -98,7 +98,16 @@ class UnitsData {
       result.add(_match(pairs));
     }
 
-    if (n >= 47 && !has<ReviewActivityConfig>()) {
+    
+    if (n == 52 && !has<ArithmeticActivityConfig>()) {
+      result.add(_arithmetic('تطبيق النسبة المئوية والجبر', [
+        _a('25% من 20 = ؟', 5),
+        _a('50% من 80 = ؟', 40),
+        _a('x + 3 = 7، x = ؟', 4),
+      ]));
+    }
+
+if (n >= 47 && !has<ReviewActivityConfig>()) {
       final questions = switch (n) {
         47 => [
           _q('أي كسر يمثل نصفاً؟', ['1/2', '1/3', '1/4'], 0),
