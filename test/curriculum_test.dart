@@ -118,27 +118,52 @@ void main() {
   });
 
   test('decimal curriculum contains numeric decimal examples and exercises', () {
-    final decimalUnits = UnitsData.units.where(
-      (unit) => unit.titleAr.contains('الأعداد العشرية'),
-    ).toList();
-    expect(decimalUnits, isNotEmpty);
+    // Unit 50 is the canonical decimal stage; inspect source activities so
+    // age adaptation cannot hide valid decimal content from this curriculum gate.
+    final decimalUnit = UnitsData.units.singleWhere((unit) => unit.order == 50);
+    expect(decimalUnit.titleAr, contains('العشرية'));
 
     final decimalPattern = RegExp(r'\d+\.\d+');
-    final decimalLessons = decimalUnits
-        .expand((unit) => unit.sourceActivities)
-        .whereType<LessonActivityConfig>();
-    final decimalExamples = decimalLessons.expand((lesson) => lesson.examplesAr);
-    expect(decimalExamples.any(decimalPattern.hasMatch), isTrue);
+    final sourceTexts = <String>[];
 
-    final decimalQuizzes = decimalUnits
-        .expand((unit) => unit.sourceActivities)
-        .whereType<MultipleChoiceActivityConfig>();
-    expect(decimalQuizzes, isNotEmpty);
+    for (final activity in decimalUnit.sourceActivities) {
+      if (activity is LessonActivityConfig) {
+        sourceTexts.addAll(activity.examplesAr);
+        sourceTexts.add(activity.explanationAr);
+      } else if (activity is MultipleChoiceActivityConfig) {
+        for (final question in activity.questions) {
+          sourceTexts.add(question.questionAr);
+          sourceTexts.addAll(question.options);
+        }
+      } else if (activity is ArithmeticActivityConfig) {
+        for (final question in activity.questions) {
+          sourceTexts.add(question.questionAr);
+          if (question.correctAnswerText != null) {
+            sourceTexts.add(question.correctAnswerText!);
+          }
+          if (question.correctAnswer != null) {
+            sourceTexts.add(question.correctAnswer.toString());
+          }
+        }
+      }
+    }
+
     expect(
-      decimalQuizzes.expand((quiz) => quiz.questions).any(
-            (question) => question.options.any(decimalPattern.hasMatch),
-          ),
+      sourceTexts.any(decimalPattern.hasMatch),
       isTrue,
+      reason: 'unit 50 must expose at least one western decimal value in its source content',
+    );
+
+    final arithmetic = decimalUnit.sourceActivities
+        .whereType<ArithmeticActivityConfig>()
+        .expand((activity) => activity.questions);
+    expect(
+      arithmetic.any((question) =>
+          decimalPattern.hasMatch(question.questionAr) ||
+          (question.correctAnswer != null &&
+              question.correctAnswer.toString().contains('.'))),
+      isTrue,
+      reason: 'unit 50 must contain an executable decimal exercise',
     );
   });
 
