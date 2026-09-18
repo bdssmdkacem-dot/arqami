@@ -84,7 +84,7 @@ void main() {
       );
       expect(
         planned.length,
-        lessThanOrEqualTo(unit.activities.length),
+        lessThanOrEqualTo(unit.sourceActivityCount),
         reason: 'unit ${unit.order}',
       );
 
