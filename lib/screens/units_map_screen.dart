@@ -8,6 +8,7 @@ import '../core/theme/responsive.dart';
 import '../models/stage_reward.dart';
 import '../models/unit_model.dart';
 import '../models/units_data.dart';
+import '../core/profile/learner_profile.dart';
 import '../widgets/game/journey_world_decoration.dart';
 import '../widgets/shared/banner_ad_widget.dart';
 import '../widgets/shared/game_celebration.dart';
