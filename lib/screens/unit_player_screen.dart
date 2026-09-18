@@ -19,6 +19,7 @@ import '../widgets/games/matching_widget.dart';
 import '../widgets/games/scene_explore_widget.dart';
 import '../widgets/games/trace_widget.dart';
 import '../widgets/shared/number_display.dart';
+import '../widgets/shared/game_celebration.dart';
 import '../widgets/shared/quantity_row.dart';
 
 class UnitPlayerScreen extends StatefulWidget {
@@ -148,7 +149,27 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
           estimatedMinutes: _spec.estimatedMinutes,
         ),
         const SizedBox(height: 10),
-        Expanded(child: _buildActivity(_activities[_activityIndex])),
+        Expanded(
+          child: AnimatedSwitcher(
+            duration: GameTheme.popMotion,
+            switchInCurve: GameTheme.playfulCurve,
+            switchOutCurve: GameTheme.softCurve,
+            transitionBuilder: (child, animation) {
+              final slide = Tween<Offset>(
+                begin: const Offset(.08, 0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: animation, curve: GameTheme.softCurve));
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(position: slide, child: child),
+              );
+            },
+            child: KeyedSubtree(
+              key: ValueKey(_activityIndex),
+              child: _buildActivity(_activities[_activityIndex]),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -463,7 +484,7 @@ class _PlayerHud extends StatelessWidget {
                   color: AppColors.tealSoft,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: const Icon(Icons.auto_awesome_rounded, color: AppColors.teal),
+                child: const ArqamiCompanion(size: 44),
               ),
               const SizedBox(width: 10),
               Expanded(
