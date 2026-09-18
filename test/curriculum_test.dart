@@ -193,11 +193,11 @@ void main() {
     for (var order = 14; order <= 34; order++) {
       final unit = UnitsData.units.singleWhere((item) => item.order == order);
       final arithmetic = unit.sourceActivities.whereType<ArithmeticActivityConfig>();
-      expect(arithmetic, isNotEmpty, reason: unit.id + ' needs place-value practice');
+      expect(arithmetic, isNotEmpty, reason: '${unit.id} needs place-value practice');
       expect(
         arithmetic.expand((activity) => activity.questions).length,
         greaterThanOrEqualTo(2),
-        reason: unit.id + ' needs at least two place-value exercises',
+        reason: '${unit.id} needs at least two place-value exercises',
       );
     }
   });
