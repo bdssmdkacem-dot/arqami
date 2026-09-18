@@ -281,6 +281,47 @@ void main() {
     expect(algebra, contains('المعادلات'));
   });
 
+  test('activity engine plans every unit and keeps assessment as final gate', () {
+    for (final unit in UnitsData.units) {
+      final planned = CurriculumActivityPlanner.plan(unit);
+      expect(planned, isNotEmpty, reason: unit.id);
+      expect(planned.last, isA<AssessmentActivityConfig>(), reason: unit.id);
+
+      for (final band in AgeBand.values) {
+        final adapted = AgeActivityPlan.forBand(band).adaptActivities(
+          planned,
+          domain: curriculumDomainForUnit(unit.order),
+        );
+        expect(adapted, isNotEmpty, reason: '${unit.id} / $band');
+        expect(adapted.last, isA<AssessmentActivityConfig>(), reason: '${unit.id} / $band');
+        expect(adapted.every((activity) => activity is ActivityConfig), isTrue);
+      }
+    }
+  });
+
+  test('age-adapted player plan changes workload for young learners', () {
+    final unit = UnitsData.units.singleWhere((item) => item.order == 50);
+    final planned = CurriculumActivityPlanner.plan(unit);
+
+    final early = AgeActivityPlan.forBand(AgeBand.early).adaptActivities(
+      planned,
+      domain: curriculumDomainForUnit(unit.order),
+    );
+    final teen = AgeActivityPlan.forBand(AgeBand.teen).adaptActivities(
+      planned,
+      domain: curriculumDomainForUnit(unit.order),
+    );
+
+    expect(early.length, lessThanOrEqualTo(teen.length));
+    expect(
+      early.whereType<ArithmeticActivityConfig>().single.questions.length,
+      lessThanOrEqualTo(teen.whereType<ArithmeticActivityConfig>().single.questions.length),
+    );
+    expect(
+      early.whereType<MultipleChoiceActivityConfig>().single.questions.length,
+      lessThanOrEqualTo(teen.whereType<MultipleChoiceActivityConfig>().single.questions.length),
+    );
+  });
   test('all digit paths 0-9 exist and contain valid points', () {
     for (var digit = 0; digit <= 9; digit++) {
       expect(NumberPathData.hasPath(digit), isTrue);
