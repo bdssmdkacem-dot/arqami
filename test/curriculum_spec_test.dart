@@ -33,6 +33,45 @@ void main() {
     }
   });
 
+
+  test('every declared activity kind exists in the executable source for all 52 units', () {
+    for (final unit in UnitsData.units) {
+      final source = unit.sourceActivities;
+      final kinds = CurriculumSpecs.activityKindsForUnit(unit);
+      for (final kind in kinds) {
+        final exists = source.any((activity) {
+          switch (kind) {
+            case CurriculumActivityKind.lesson:
+              return activity is LessonActivityConfig;
+            case CurriculumActivityKind.trace:
+              return activity is TraceActivityConfig;
+            case CurriculumActivityKind.dragCount:
+              return activity is DragCountActivityConfig;
+            case CurriculumActivityKind.matching:
+              return activity is MatchingActivityConfig;
+            case CurriculumActivityKind.comparison:
+              return activity is ComparisonActivityConfig;
+            case CurriculumActivityKind.sceneExplore:
+              return activity is SceneExploreActivityConfig;
+            case CurriculumActivityKind.quiz:
+              return activity is MultipleChoiceActivityConfig;
+            case CurriculumActivityKind.review:
+              return activity is ReviewActivityConfig;
+            case CurriculumActivityKind.arithmetic:
+              return activity is ArithmeticActivityConfig;
+            case CurriculumActivityKind.wordProblem:
+              return activity is WordProblemActivityConfig;
+          }
+        });
+        expect(
+          exists,
+          isTrue,
+          reason: 'unit ${unit.order} must implement $kind',
+        );
+      }
+    }
+  });
+
   test('curriculum activity planner executes a non-empty ordered plan for all 52 units', () {
     for (final unit in UnitsData.units) {
       final spec = CurriculumSpecs.forUnit(unit);
