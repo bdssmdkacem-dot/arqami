@@ -189,6 +189,19 @@ void main() {
     }
   });
 
+  test('place-value stage has executable place-value practice in every unit', () {
+    for (var order = 14; order <= 34; order++) {
+      final unit = UnitsData.units.singleWhere((item) => item.order == order);
+      final arithmetic = unit.sourceActivities.whereType<ArithmeticActivityConfig>();
+      expect(arithmetic, isNotEmpty, reason: unit.id + ' needs place-value practice');
+      expect(
+        arithmetic.expand((activity) => activity.questions).length,
+        greaterThanOrEqualTo(2),
+        reason: unit.id + ' needs at least two place-value exercises',
+      );
+    }
+  });
+
   test('ratio stage uses text answers for ratio forms and ratio review content', () {
     final ratio = UnitsData.units.singleWhere((unit) => unit.order == 51);
     final arithmetic = ratio.sourceActivities.whereType<ArithmeticActivityConfig>().single;
