@@ -123,16 +123,17 @@ class NumberPathData {
     4: const NumberPath(
       digit: 4,
       points: [
-        PathPoint(0.62, 0.10), PathPoint(0.56, 0.20), PathPoint(0.49, 0.30),
-        PathPoint(0.42, 0.40), PathPoint(0.35, 0.50), PathPoint(0.28, 0.56),
+        // الضربة الأولى: تبدأ من النقطة السفلية ثم تصعد إلى القمة.
+        PathPoint(0.62, 0.90), PathPoint(0.62, 0.78), PathPoint(0.62, 0.62),
+        PathPoint(0.62, 0.46), PathPoint(0.62, 0.28), PathPoint(0.62, 0.10),
+        // الضربة الثانية: من القمة نزولاً إلى اليسار ثم عرضياً إلى اليمين.
+        PathPoint(0.62, 0.10), PathPoint(0.55, 0.20), PathPoint(0.48, 0.30),
+        PathPoint(0.41, 0.40), PathPoint(0.34, 0.50), PathPoint(0.28, 0.56),
         PathPoint(0.40, 0.56), PathPoint(0.52, 0.56), PathPoint(0.64, 0.56),
         PathPoint(0.76, 0.56),
-        PathPoint(0.62, 0.10), PathPoint(0.62, 0.26), PathPoint(0.62, 0.44),
-        PathPoint(0.62, 0.62), PathPoint(0.62, 0.78), PathPoint(0.62, 0.90),
       ],
-      strokeBreaks: [9],
-    ),
-    5: const NumberPath(
+      strokeBreaks: [6],
+    ),    5: const NumberPath(
       digit: 5,
       points: [
         PathPoint(0.70, 0.12), PathPoint(0.56, 0.12), PathPoint(0.42, 0.12),
