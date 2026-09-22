@@ -28,8 +28,8 @@ class AgeActivityPresentation {
       case AgeBand.early:
         return const AgeActivityPresentation(
           band: AgeBand.early,
-          traceAccuracyThreshold: 0.52,
-          traceToleranceRadius: 0.09,
+          traceAccuracyThreshold: 0.50,
+          traceToleranceRadius: 0.105,
           choiceTextSize: 23,
           questionTextSize: 25,
           choiceHeight: 68,
