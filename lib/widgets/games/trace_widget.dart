@@ -49,6 +49,8 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   double _accuracy = 0;
   int _failedAttempts = 0;
 
+  int get _checkpoint => (_accuracy * 4).floor().clamp(0, 4);
+
   AgeActivityPresentation get _presentation => AgeActivityPresentation.current();
 
   double get _threshold {
@@ -233,7 +235,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _GardenHeader(number: widget.number, status: _status, statusText: _statusText, statusColor: _statusColor, onReset: reset),
+        _GardenHeader(number: widget.number, status: _status, statusText: _statusText, statusColor: _statusColor, checkpoint: _checkpoint, onReset: reset),
         const SizedBox(height: 8),
         Expanded(
           child: AspectRatio(
@@ -267,6 +269,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
                       ),
                     ),
                     Positioned.fill(child: Signature(controller: _controller, backgroundColor: Colors.transparent)),
+                    Positioned(left: 12, right: 12, bottom: 12, child: _TraceProgress(checkpoint: _checkpoint, accuracy: _accuracy, active: _status == _TraceStatus.inProgress)),
                     if (_status == _TraceStatus.complete)
                       Positioned.fill(
                         child: IgnorePointer(
@@ -300,9 +303,10 @@ class _GardenHeader extends StatelessWidget {
   final _TraceStatus status;
   final String statusText;
   final Color statusColor;
+  final int checkpoint;
   final VoidCallback onReset;
 
-  const _GardenHeader({required this.number, required this.status, required this.statusText, required this.statusColor, required this.onReset});
+  const _GardenHeader({required this.number, required this.status, required this.statusText, required this.statusColor, required this.checkpoint, required this.onReset});
 
   @override
   Widget build(BuildContext context) {
@@ -328,6 +332,8 @@ class _GardenHeader extends StatelessWidget {
             child: Text('$number', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w900, color: GameTheme.ink)),
           ),
           const SizedBox(width: 10),
+          _CheckpointDots(value: checkpoint),
+          const SizedBox(width: 6),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
@@ -557,4 +563,44 @@ class _CelebrationPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _CelebrationPainter oldDelegate) =>
       oldDelegate.value != value;
+}
+
+
+class _CheckpointDots extends StatelessWidget {
+  final int value;
+  const _CheckpointDots({required this.value});
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisSize: MainAxisSize.min, children: List.generate(4, (index) {
+      final filled = index < value;
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 220), curve: Curves.easeOut,
+        width: filled ? 9 : 7, height: filled ? 9 : 7,
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(shape: BoxShape.circle, color: filled ? GameTheme.success : GameTheme.ocean.withValues(alpha: .18)),
+      );
+    }));
+  }
+}
+
+class _TraceProgress extends StatelessWidget {
+  final int checkpoint;
+  final double accuracy;
+  final bool active;
+  const _TraceProgress({required this.checkpoint, required this.accuracy, required this.active});
+  @override
+  Widget build(BuildContext context) {
+    if (!active && checkpoint == 0) return const SizedBox.shrink();
+    return Container(
+      height: 34, padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(color: GameTheme.paper.withValues(alpha: .92), borderRadius: BorderRadius.circular(17), border: Border.all(color: active ? GameTheme.mint.withValues(alpha: .65) : GameTheme.success.withValues(alpha: .35))),
+      child: Row(children: [
+        const Icon(Icons.auto_awesome_rounded, size: 17, color: GameTheme.sunshine),
+        const SizedBox(width: 7),
+        Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(5), child: LinearProgressIndicator(value: accuracy.clamp(0.0, 1.0), minHeight: 7, backgroundColor: GameTheme.ocean.withValues(alpha: .12), valueColor: AlwaysStoppedAnimation<Color>(active ? GameTheme.mint : GameTheme.success)))),
+        const SizedBox(width: 8),
+        Text('${checkpoint * 25}٪', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: GameTheme.ink)),
+      ]),
+    );
+  }
 }
