@@ -42,6 +42,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   late SignatureController _controller;
   late NumberPath _numberPath;
   late AnimationController _guideAnimation;
+  late AnimationController _celebrationAnimation;
   int _strokeStartIndex = 0;
   final List<List<Offset>> _userStrokes = [];
   _TraceStatus _status = _TraceStatus.idle;
@@ -76,6 +77,10 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     )..repeat();
+    _celebrationAnimation = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
   }
 
   @override
@@ -89,6 +94,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
 
   @override
   void dispose() {
+    _celebrationAnimation.dispose();
     _guideAnimation.dispose();
     _controller.dispose();
     super.dispose();
@@ -149,6 +155,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     if (_accuracy >= _threshold) {
       if (!mounted) return;
       setState(() => _status = _TraceStatus.complete);
+      _celebrationAnimation.forward(from: 0);
       widget.onComplete();
     } else {
       _fail(_accuracy);
@@ -254,6 +261,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
                             startColor: widget.startPointColor,
                             animationValue: _guideAnimation.value,
                             completed: _status == _TraceStatus.complete,
+                            celebrationValue: _celebrationAnimation.value,
                           ),
                         ),
                       ),
@@ -262,13 +270,11 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
                     if (_status == _TraceStatus.complete)
                       Positioned.fill(
                         child: IgnorePointer(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: GameTheme.success.withValues(alpha: .08),
-                              border: Border.all(color: GameTheme.success.withValues(alpha: .45), width: 3),
-                              borderRadius: BorderRadius.circular(30),
+                          child: AnimatedBuilder(
+                            animation: _celebrationAnimation,
+                            builder: (context, _) => CustomPaint(
+                              painter: _CelebrationPainter(value: _celebrationAnimation.value),
                             ),
-                            child: const Center(child: Icon(Icons.check_circle_rounded, color: GameTheme.success, size: 68)),
                           ),
                         ),
                       ),
@@ -386,8 +392,9 @@ class _NumberRoadPainter extends CustomPainter {
   final Color startColor;
   final double animationValue;
   final bool completed;
+  final double celebrationValue;
 
-  const _NumberRoadPainter({required this.numberPath, required this.guideColor, required this.startColor, required this.animationValue, required this.completed});
+  const _NumberRoadPainter({required this.numberPath, required this.guideColor, required this.startColor, required this.animationValue, required this.completed, required this.celebrationValue});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -472,7 +479,8 @@ class _NumberRoadPainter extends CustomPainter {
         oldDelegate.guideColor != guideColor ||
         oldDelegate.startColor != startColor ||
         oldDelegate.animationValue != animationValue ||
-        oldDelegate.completed != completed;
+        oldDelegate.completed != completed ||
+        oldDelegate.celebrationValue != celebrationValue;
   }
 }
 
@@ -480,4 +488,73 @@ class _StrokeMatchResult {
   final int matched;
   final int expected;
   const _StrokeMatchResult(this.matched, this.expected);
+}
+
+
+class _CelebrationPainter extends CustomPainter {
+  final double value;
+
+  const _CelebrationPainter({required this.value});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final t = Curves.easeOutBack.transform(value.clamp(0.0, 1.0));
+    final center = Offset(size.width / 2, size.height / 2);
+
+    final overlay = Paint()..color = GameTheme.success.withValues(alpha: .06 * (1 - value));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        const Radius.circular(30),
+      ),
+      overlay,
+    );
+
+    final checkScale = .55 + (.45 * t);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.scale(checkScale);
+    final checkPaint = Paint()..color = GameTheme.success;
+    canvas.drawCircle(Offset.zero, 34, checkPaint);
+    final tick = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final tickPath = Path()
+      ..moveTo(-15, 1)
+      ..lineTo(-4, 12)
+      ..lineTo(17, -13);
+    canvas.drawPath(tickPath, tick);
+    canvas.restore();
+
+    final particlePaint = Paint()..style = PaintingStyle.fill;
+    const particles = <Offset>[
+      Offset(-92, -72),
+      Offset(-42, -105),
+      Offset(35, -100),
+      Offset(92, -62),
+      Offset(-112, 8),
+      Offset(112, 12),
+      Offset(-78, 76),
+      Offset(-20, 105),
+      Offset(48, 92),
+      Offset(96, 62),
+    ];
+    for (var i = 0; i < particles.length; i++) {
+      final p = particles[i];
+      final progress = ((value * 1.35) - (i * .035)).clamp(0.0, 1.0);
+      final alpha = (1 - progress).clamp(0.0, 1.0);
+      particlePaint.color = (i.isEven ? GameTheme.sunshine : GameTheme.berry)
+          .withValues(alpha: alpha);
+      final drift = Offset(p.dx * progress, p.dy * progress);
+      final radius = 4.5 * (1 - .35 * progress);
+      canvas.drawCircle(center + drift, radius, particlePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CelebrationPainter oldDelegate) =>
+      oldDelegate.value != value;
 }
