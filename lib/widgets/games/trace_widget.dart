@@ -10,8 +10,8 @@ import '../../models/number_path.dart';
 
 /// تدريب كتابة الرقم بالإصبع داخل "حديقة الأعداد".
 ///
-/// الدقة وترتيب الضربات ما زالا يعتمدان على NumberPath كما كانا، لكن العرض
-/// أصبح طريقاً واضحاً للرقم بدلاً من سلسلة نقاط صغيرة تربك الطفل.
+/// التتبع يعتمد على مسار هندسي دقيق، بينما العرض يستخدم شريطاً ناعماً
+/// ونقاط بداية واضحة حتى يبدو النشاط كلعبة لا كتمرين ورقي تقليدي.
 class TraceWidget extends StatefulWidget {
   final int number;
   final VoidCallback onComplete;
@@ -64,7 +64,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     super.initState();
     _numberPath = NumberPathData.getPath(widget.number);
     _controller = SignatureController(
-      penStrokeWidth: 12,
+      penStrokeWidth: 17,
       penColor: widget.strokeColor,
       strokeCap: StrokeCap.round,
       strokeJoin: StrokeJoin.round,
@@ -394,21 +394,28 @@ class _NumberRoadPainter extends CustomPainter {
     if (numberPath.points.isEmpty) return;
     final guidePath = numberPath.buildGuidePath(size);
 
-    final road = Paint()
-      ..color = completed ? GameTheme.success.withValues(alpha: .22) : guideColor.withValues(alpha: .18)
+    final glow = Paint()
+      ..color = completed ? GameTheme.success.withValues(alpha: .12) : guideColor.withValues(alpha: .10)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 30
+      ..strokeWidth = 38
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(guidePath, road);
+    canvas.drawPath(guidePath, glow);
 
-    final lane = Paint()
-      ..color = completed ? GameTheme.success.withValues(alpha: .72) : guideColor.withValues(alpha: .72)
+    final ribbon = Paint()
+      ..color = completed ? GameTheme.success.withValues(alpha: .68) : guideColor.withValues(alpha: .62)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 7
+      ..strokeWidth = 11
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(guidePath, lane);
+    canvas.drawPath(guidePath, ribbon);
+
+    final centerline = Paint()
+      ..color = Colors.white.withValues(alpha: completed ? .55 : .72)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(guidePath, centerline);
 
     final start = numberPath.points.first.toOffset(size);
     canvas.drawCircle(start, 22, Paint()..color = startColor.withValues(alpha: .16));
