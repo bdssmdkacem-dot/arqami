@@ -92,7 +92,7 @@ class AgeActivityPlan {
 
   factory AgeActivityPlan.forAge(int age) => AgeActivityPlan.forBand(AgeBand.fromAge(age));
 
-  factory AgeActivityPlan.current() => forAge(LearnerProfile.age ?? 6);
+  factory AgeActivityPlan.current() => AgeActivityPlan.forAge(LearnerProfile.age ?? 6);
 
   List<ActivityConfig> orderActivities(List<ActivityConfig> activities, {CurriculumDomain? domain}) {
     final indexed = activities.asMap().entries.toList();

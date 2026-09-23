@@ -10,8 +10,8 @@ import '../../models/number_path.dart';
 
 /// تدريب كتابة الرقم بالإصبع داخل "حديقة الأعداد".
 ///
-/// الدقة وترتيب الضربات ما زالا يعتمدان على NumberPath كما كانا، لكن العرض
-/// أصبح طريقاً واضحاً للرقم بدلاً من سلسلة نقاط صغيرة تربك الطفل.
+/// التتبع يعتمد على مسار هندسي دقيق، بينما العرض يستخدم شريطاً ناعماً
+/// ونقاط بداية واضحة حتى يبدو النشاط كلعبة لا كتمرين ورقي تقليدي.
 class TraceWidget extends StatefulWidget {
   final int number;
   final VoidCallback onComplete;
@@ -42,11 +42,15 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   late SignatureController _controller;
   late NumberPath _numberPath;
   late AnimationController _guideAnimation;
+  late AnimationController _celebrationAnimation;
   int _strokeStartIndex = 0;
   final List<List<Offset>> _userStrokes = [];
   _TraceStatus _status = _TraceStatus.idle;
   double _accuracy = 0;
   int _failedAttempts = 0;
+  final ValueNotifier<int> _magicInkTick = ValueNotifier<int>(0);
+
+  int get _checkpoint => (_accuracy * 4).floor().clamp(0, 4);
 
   AgeActivityPresentation get _presentation => AgeActivityPresentation.current();
 
@@ -64,18 +68,23 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     super.initState();
     _numberPath = NumberPathData.getPath(widget.number);
     _controller = SignatureController(
-      penStrokeWidth: 12,
+      penStrokeWidth: 17,
       penColor: widget.strokeColor,
       strokeCap: StrokeCap.round,
       strokeJoin: StrokeJoin.round,
       exportBackgroundColor: Colors.transparent,
       onDrawStart: _onDrawStart,
+      onDrawMove: _onDrawMove,
       onDrawEnd: _onStrokeEnd,
     );
     _guideAnimation = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     )..repeat();
+    _celebrationAnimation = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
   }
 
   @override
@@ -89,7 +98,9 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
 
   @override
   void dispose() {
+    _celebrationAnimation.dispose();
     _guideAnimation.dispose();
+    _magicInkTick.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -100,12 +111,18 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     if (mounted) setState(() => _status = _TraceStatus.inProgress);
   }
 
+  void _onDrawMove() {
+    if (_status == _TraceStatus.complete) return;
+    _magicInkTick.value++;
+  }
+
   void _onStrokeEnd() {
     if (_status == _TraceStatus.complete || _controller.isEmpty) return;
     final points = _controller.points;
     if (_strokeStartIndex >= points.length) return;
     final stroke = points.sublist(_strokeStartIndex).map((p) => p.offset).toList(growable: false);
     if (stroke.isNotEmpty) _userStrokes.add(stroke);
+    _magicInkTick.value++;
     _checkAccuracy();
   }
 
@@ -149,6 +166,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     if (_accuracy >= _threshold) {
       if (!mounted) return;
       setState(() => _status = _TraceStatus.complete);
+      _celebrationAnimation.forward(from: 0);
       widget.onComplete();
     } else {
       _fail(_accuracy);
@@ -186,6 +204,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     _controller.clear();
     _strokeStartIndex = 0;
     _userStrokes.clear();
+    _magicInkTick.value++;
     if (!mounted) return;
     setState(() {
       _accuracy = 0;
@@ -226,7 +245,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _GardenHeader(number: widget.number, status: _status, statusText: _statusText, statusColor: _statusColor, onReset: reset),
+        _GardenHeader(number: widget.number, status: _status, statusText: _statusText, statusColor: _statusColor, checkpoint: _checkpoint, onReset: reset),
         const SizedBox(height: 8),
         Expanded(
           child: AspectRatio(
@@ -254,21 +273,37 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
                             startColor: widget.startPointColor,
                             animationValue: _guideAnimation.value,
                             completed: _status == _TraceStatus.complete,
+                            celebrationValue: _celebrationAnimation.value,
                           ),
                         ),
                       ),
                     ),
-                    Positioned.fill(child: Signature(controller: _controller, backgroundColor: Colors.transparent)),
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _MagicInkPainter(
+                          controller: _controller,
+                          completedStrokes: _userStrokes,
+                          strokeStartIndex: _strokeStartIndex,
+                          repaint: _magicInkTick,
+                          active: _status == _TraceStatus.inProgress,
+                        ),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Signature(
+                        controller: _controller,
+                        backgroundColor: Colors.transparent,
+                      ),
+                    ),
+                    Positioned(left: 12, right: 12, bottom: 12, child: _TraceProgress(checkpoint: _checkpoint, accuracy: _accuracy, active: _status == _TraceStatus.inProgress)),
                     if (_status == _TraceStatus.complete)
                       Positioned.fill(
                         child: IgnorePointer(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: GameTheme.success.withValues(alpha: .08),
-                              border: Border.all(color: GameTheme.success.withValues(alpha: .45), width: 3),
-                              borderRadius: BorderRadius.circular(30),
+                          child: AnimatedBuilder(
+                            animation: _celebrationAnimation,
+                            builder: (context, _) => CustomPaint(
+                              painter: _CelebrationPainter(value: _celebrationAnimation.value),
                             ),
-                            child: const Center(child: Icon(Icons.check_circle_rounded, color: GameTheme.success, size: 68)),
                           ),
                         ),
                       ),
@@ -294,9 +329,10 @@ class _GardenHeader extends StatelessWidget {
   final _TraceStatus status;
   final String statusText;
   final Color statusColor;
+  final int checkpoint;
   final VoidCallback onReset;
 
-  const _GardenHeader({required this.number, required this.status, required this.statusText, required this.statusColor, required this.onReset});
+  const _GardenHeader({required this.number, required this.status, required this.statusText, required this.statusColor, required this.checkpoint, required this.onReset});
 
   @override
   Widget build(BuildContext context) {
@@ -322,6 +358,8 @@ class _GardenHeader extends StatelessWidget {
             child: Text('$number', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w900, color: GameTheme.ink)),
           ),
           const SizedBox(width: 10),
+          _CheckpointDots(value: checkpoint),
+          const SizedBox(width: 6),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
@@ -386,29 +424,37 @@ class _NumberRoadPainter extends CustomPainter {
   final Color startColor;
   final double animationValue;
   final bool completed;
+  final double celebrationValue;
 
-  const _NumberRoadPainter({required this.numberPath, required this.guideColor, required this.startColor, required this.animationValue, required this.completed});
+  const _NumberRoadPainter({required this.numberPath, required this.guideColor, required this.startColor, required this.animationValue, required this.completed, required this.celebrationValue});
 
   @override
   void paint(Canvas canvas, Size size) {
     if (numberPath.points.isEmpty) return;
     final guidePath = numberPath.buildGuidePath(size);
 
-    final road = Paint()
-      ..color = completed ? GameTheme.success.withValues(alpha: .22) : guideColor.withValues(alpha: .18)
+    final glow = Paint()
+      ..color = completed ? GameTheme.success.withValues(alpha: .12) : guideColor.withValues(alpha: .10)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 30
+      ..strokeWidth = 38
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(guidePath, road);
+    canvas.drawPath(guidePath, glow);
 
-    final lane = Paint()
-      ..color = completed ? GameTheme.success.withValues(alpha: .72) : guideColor.withValues(alpha: .72)
+    final ribbon = Paint()
+      ..color = completed ? GameTheme.success.withValues(alpha: .68) : guideColor.withValues(alpha: .62)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 7
+      ..strokeWidth = 11
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(guidePath, lane);
+    canvas.drawPath(guidePath, ribbon);
+
+    final centerline = Paint()
+      ..color = Colors.white.withValues(alpha: completed ? .55 : .72)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(guidePath, centerline);
 
     final start = numberPath.points.first.toOffset(size);
     canvas.drawCircle(start, 22, Paint()..color = startColor.withValues(alpha: .16));
@@ -465,7 +511,101 @@ class _NumberRoadPainter extends CustomPainter {
         oldDelegate.guideColor != guideColor ||
         oldDelegate.startColor != startColor ||
         oldDelegate.animationValue != animationValue ||
-        oldDelegate.completed != completed;
+        oldDelegate.completed != completed ||
+        oldDelegate.celebrationValue != celebrationValue;
+  }
+}
+
+class _MagicInkPainter extends CustomPainter {
+  final SignatureController controller;
+  final List<List<Offset>> completedStrokes;
+  final int strokeStartIndex;
+  final Listenable repaint;
+  final bool active;
+
+  _MagicInkPainter({
+    required this.controller,
+    required this.completedStrokes,
+    required this.strokeStartIndex,
+    required this.repaint,
+    required this.active,
+  }) : super(repaint: repaint);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final glow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 27
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..color = GameTheme.mint.withValues(alpha: .13);
+
+    final trail = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 11
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..color = GameTheme.mint.withValues(alpha: .24);
+
+    for (final stroke in completedStrokes) {
+      _drawStroke(canvas, stroke, glow, trail);
+    }
+
+    if (!active || controller.points.isEmpty) return;
+
+    final points = controller.points;
+    if (strokeStartIndex >= points.length) return;
+    final live = points
+        .sublist(strokeStartIndex)
+        .map((point) => point.offset)
+        .toList(growable: false);
+
+    if (live.isEmpty) return;
+
+    _drawStroke(canvas, live, glow, trail);
+
+    final last = live.last;
+    final pulse = 0.82 + (0.18 * ((DateTime.now().millisecondsSinceEpoch % 700) / 700));
+    canvas.drawCircle(
+      last,
+      14 * pulse,
+      Paint()..color = GameTheme.sunshine.withValues(alpha: .20),
+    );
+    canvas.drawCircle(
+      last,
+      5,
+      Paint()..color = GameTheme.sunshine,
+    );
+  }
+
+  void _drawStroke(
+    Canvas canvas,
+    List<Offset> points,
+    Paint glow,
+    Paint trail,
+  ) {
+    if (points.isEmpty) return;
+
+    if (points.length == 1) {
+      canvas.drawCircle(points.first, glow.strokeWidth / 2, glow);
+      canvas.drawCircle(points.first, trail.strokeWidth / 2, trail);
+      return;
+    }
+
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (var i = 1; i < points.length; i++) {
+      path.lineTo(points[i].dx, points[i].dy);
+    }
+    canvas.drawPath(path, glow);
+    canvas.drawPath(path, trail);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MagicInkPainter oldDelegate) {
+    return oldDelegate.controller != controller ||
+        oldDelegate.completedStrokes != completedStrokes ||
+        oldDelegate.strokeStartIndex != strokeStartIndex ||
+        oldDelegate.active != active;
   }
 }
 
@@ -473,4 +613,113 @@ class _StrokeMatchResult {
   final int matched;
   final int expected;
   const _StrokeMatchResult(this.matched, this.expected);
+}
+
+
+class _CelebrationPainter extends CustomPainter {
+  final double value;
+
+  const _CelebrationPainter({required this.value});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final t = Curves.easeOutBack.transform(value.clamp(0.0, 1.0));
+    final center = Offset(size.width / 2, size.height / 2);
+
+    final overlay = Paint()..color = GameTheme.success.withValues(alpha: .06 * (1 - value));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        const Radius.circular(30),
+      ),
+      overlay,
+    );
+
+    final checkScale = .55 + (.45 * t);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.scale(checkScale);
+    final checkPaint = Paint()..color = GameTheme.success;
+    canvas.drawCircle(Offset.zero, 34, checkPaint);
+    final tick = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final tickPath = Path()
+      ..moveTo(-15, 1)
+      ..lineTo(-4, 12)
+      ..lineTo(17, -13);
+    canvas.drawPath(tickPath, tick);
+    canvas.restore();
+
+    final particlePaint = Paint()..style = PaintingStyle.fill;
+    const particles = <Offset>[
+      Offset(-92, -72),
+      Offset(-42, -105),
+      Offset(35, -100),
+      Offset(92, -62),
+      Offset(-112, 8),
+      Offset(112, 12),
+      Offset(-78, 76),
+      Offset(-20, 105),
+      Offset(48, 92),
+      Offset(96, 62),
+    ];
+    for (var i = 0; i < particles.length; i++) {
+      final p = particles[i];
+      final progress = ((value * 1.35) - (i * .035)).clamp(0.0, 1.0);
+      final alpha = (1 - progress).clamp(0.0, 1.0);
+      particlePaint.color = (i.isEven ? GameTheme.sunshine : GameTheme.berry)
+          .withValues(alpha: alpha);
+      final drift = Offset(p.dx * progress, p.dy * progress);
+      final radius = 4.5 * (1 - .35 * progress);
+      canvas.drawCircle(center + drift, radius, particlePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CelebrationPainter oldDelegate) =>
+      oldDelegate.value != value;
+}
+
+
+class _CheckpointDots extends StatelessWidget {
+  final int value;
+  const _CheckpointDots({required this.value});
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisSize: MainAxisSize.min, children: List.generate(4, (index) {
+      final filled = index < value;
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 220), curve: Curves.easeOut,
+        width: filled ? 9 : 7, height: filled ? 9 : 7,
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(shape: BoxShape.circle, color: filled ? GameTheme.success : GameTheme.ocean.withValues(alpha: .18)),
+      );
+    }));
+  }
+}
+
+class _TraceProgress extends StatelessWidget {
+  final int checkpoint;
+  final double accuracy;
+  final bool active;
+  const _TraceProgress({required this.checkpoint, required this.accuracy, required this.active});
+  @override
+  Widget build(BuildContext context) {
+    if (!active && checkpoint == 0) return const SizedBox.shrink();
+    return Container(
+      height: 34, padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(color: GameTheme.paper.withValues(alpha: .92), borderRadius: BorderRadius.circular(17), border: Border.all(color: active ? GameTheme.mint.withValues(alpha: .65) : GameTheme.success.withValues(alpha: .35))),
+      child: Row(children: [
+        const Icon(Icons.auto_awesome_rounded, size: 17, color: GameTheme.sunshine),
+        const SizedBox(width: 7),
+        Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(5), child: LinearProgressIndicator(value: accuracy.clamp(0.0, 1.0), minHeight: 7, backgroundColor: GameTheme.ocean.withValues(alpha: .12), valueColor: AlwaysStoppedAnimation<Color>(active ? GameTheme.mint : GameTheme.success)))),
+        const SizedBox(width: 8),
+        Text('${checkpoint * 25}٪', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: GameTheme.ink)),
+      ]),
+    );
+  }
 }

@@ -411,11 +411,14 @@ void main() {
 
   test('multi-stroke paths preserve the declared stroke order', () {
     final four = NumberPathData.getPath(4);
-    expect(four.strokeBreaks, contains(3));
+    // Digit 4 starts at the bottom and uses two explicit strokes.
+    expect(four.strokeBreaks, contains(9));
     expect(four.strokeSegments, hasLength(2));
-    expect(four.strokeSegments[0], hasLength(3));
-    expect(four.strokeSegments[1], hasLength(2));
-    expect(four.strokeSegments[0].first.x, closeTo(0.60, 0.0001));
-    expect(four.strokeSegments[1].first.x, closeTo(0.60, 0.0001));
+    expect(four.strokeSegments[0], hasLength(9));
+    expect(four.strokeSegments[1], hasLength(10));
+    expect(four.strokeSegments[0].first.x, closeTo(0.62, 0.0001));
+    expect(four.strokeSegments[0].first.y, closeTo(0.90, 0.0001));
+    expect(four.strokeSegments[1].first.x, closeTo(0.62, 0.0001));
+    expect(four.strokeSegments[1].first.y, closeTo(0.10, 0.0001));
   });
 }
