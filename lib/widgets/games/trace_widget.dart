@@ -49,6 +49,9 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   double _accuracy = 0;
   int _failedAttempts = 0;
   final ValueNotifier<int> _magicInkTick = ValueNotifier<int>(0);
+  final ValueNotifier<int> _guidanceTick = ValueNotifier<int>(0);
+  double? _guidanceDistance;
+  bool _guidanceOnPath = true;
 
   int get _checkpoint => (_accuracy * 4).floor().clamp(0, 4);
 
@@ -101,6 +104,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     _celebrationAnimation.dispose();
     _guideAnimation.dispose();
     _magicInkTick.dispose();
+    _guidanceTick.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -108,12 +112,40 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   void _onDrawStart() {
     if (_status == _TraceStatus.complete) return;
     _strokeStartIndex = _controller.points.length;
+    _guidanceDistance = 0;
+    _guidanceOnPath = true;
+    _guidanceTick.value++;
     if (mounted) setState(() => _status = _TraceStatus.inProgress);
   }
 
   void _onDrawMove() {
     if (_status == _TraceStatus.complete) return;
+    _updateSmartGuidance();
     _magicInkTick.value++;
+  }
+
+  void _updateSmartGuidance() {
+    final size = context.size;
+    final points = _controller.points;
+    if (size == null || points.isEmpty) return;
+
+    final segments = _expectedStrokeSegments();
+    if (segments.isEmpty) return;
+    final segmentIndex = _userStrokes.length.clamp(0, segments.length - 1);
+    final expected = segments[segmentIndex];
+    if (expected.isEmpty) return;
+
+    final current = points.last.offset;
+    var nearest = double.infinity;
+    for (final referencePoint in expected) {
+      final distance = (current - referencePoint.toOffset(size)).distance;
+      if (distance < nearest) nearest = distance;
+    }
+
+    final tolerancePx = _tolerance * size.width;
+    _guidanceDistance = nearest;
+    _guidanceOnPath = nearest <= tolerancePx;
+    _guidanceTick.value++;
   }
 
   void _onStrokeEnd() {
@@ -205,6 +237,9 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     _strokeStartIndex = 0;
     _userStrokes.clear();
     _magicInkTick.value++;
+    _guidanceDistance = null;
+    _guidanceOnPath = true;
+    _guidanceTick.value++;
     if (!mounted) return;
     setState(() {
       _accuracy = 0;
@@ -275,6 +310,17 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
                             completed: _status == _TraceStatus.complete,
                             celebrationValue: _celebrationAnimation.value,
                           ),
+                        ),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _SmartGuidancePainter(
+                          controller: _controller,
+                          distance: _guidanceDistance,
+                          onPath: _guidanceOnPath,
+                          repaint: _guidanceTick,
+                          active: _status == _TraceStatus.inProgress,
                         ),
                       ),
                     ),
@@ -514,6 +560,69 @@ class _NumberRoadPainter extends CustomPainter {
         oldDelegate.completed != completed ||
         oldDelegate.celebrationValue != celebrationValue;
   }
+}
+
+class _SmartGuidancePainter extends CustomPainter {
+  final SignatureController controller;
+  final double? distance;
+  final bool onPath;
+  final Listenable repaint;
+  final bool active;
+
+  _SmartGuidancePainter({
+    required this.controller,
+    required this.distance,
+    required this.onPath,
+    required this.repaint,
+    required this.active,
+  }) : super(repaint: repaint);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!active || distance == null || controller.points.isEmpty) return;
+
+    final current = controller.points.last.offset;
+    final close = onPath;
+    final haloColor = close ? GameTheme.mint : GameTheme.mango;
+
+    canvas.drawCircle(
+      current,
+      close ? 19 : 23,
+      Paint()..color = haloColor.withValues(alpha: close ? .14 : .18),
+    );
+    canvas.drawCircle(
+      current,
+      close ? 8 : 10,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5
+        ..color = haloColor.withValues(alpha: .72),
+    );
+    canvas.drawCircle(
+      current,
+      3.5,
+      Paint()..color = haloColor,
+    );
+
+    if (!close) {
+      final pulse = 1 + ((DateTime.now().millisecondsSinceEpoch % 600) / 600);
+      canvas.drawCircle(
+        current,
+        13 * pulse,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..color = GameTheme.mango.withValues(alpha: .12),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SmartGuidancePainter oldDelegate) =>
+      oldDelegate.controller != controller ||
+      oldDelegate.distance != distance ||
+      oldDelegate.onPath != onPath ||
+      oldDelegate.active != active;
 }
 
 class _MagicInkPainter extends CustomPainter {
