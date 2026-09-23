@@ -48,6 +48,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   _TraceStatus _status = _TraceStatus.idle;
   double _accuracy = 0;
   int _failedAttempts = 0;
+  final ValueNotifier<int> _magicInkTick = ValueNotifier<int>(0);
 
   int get _checkpoint => (_accuracy * 4).floor().clamp(0, 4);
 
@@ -73,6 +74,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
       strokeJoin: StrokeJoin.round,
       exportBackgroundColor: Colors.transparent,
       onDrawStart: _onDrawStart,
+      onDrawMove: _onDrawMove,
       onDrawEnd: _onStrokeEnd,
     );
     _guideAnimation = AnimationController(
@@ -98,6 +100,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   void dispose() {
     _celebrationAnimation.dispose();
     _guideAnimation.dispose();
+    _magicInkTick.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -108,12 +111,18 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     if (mounted) setState(() => _status = _TraceStatus.inProgress);
   }
 
+  void _onDrawMove() {
+    if (_status == _TraceStatus.complete) return;
+    _magicInkTick.value++;
+  }
+
   void _onStrokeEnd() {
     if (_status == _TraceStatus.complete || _controller.isEmpty) return;
     final points = _controller.points;
     if (_strokeStartIndex >= points.length) return;
     final stroke = points.sublist(_strokeStartIndex).map((p) => p.offset).toList(growable: false);
     if (stroke.isNotEmpty) _userStrokes.add(stroke);
+    _magicInkTick.value++;
     _checkAccuracy();
   }
 
@@ -195,6 +204,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     _controller.clear();
     _strokeStartIndex = 0;
     _userStrokes.clear();
+    _magicInkTick.value++;
     if (!mounted) return;
     setState(() {
       _accuracy = 0;
@@ -268,7 +278,23 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
                         ),
                       ),
                     ),
-                    Positioned.fill(child: Signature(controller: _controller, backgroundColor: Colors.transparent)),
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _MagicInkPainter(
+                          controller: _controller,
+                          completedStrokes: _userStrokes,
+                          strokeStartIndex: _strokeStartIndex,
+                          repaint: _magicInkTick,
+                          active: _status == _TraceStatus.inProgress,
+                        ),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Signature(
+                        controller: _controller,
+                        backgroundColor: Colors.transparent,
+                      ),
+                    ),
                     Positioned(left: 12, right: 12, bottom: 12, child: _TraceProgress(checkpoint: _checkpoint, accuracy: _accuracy, active: _status == _TraceStatus.inProgress)),
                     if (_status == _TraceStatus.complete)
                       Positioned.fill(
@@ -487,6 +513,99 @@ class _NumberRoadPainter extends CustomPainter {
         oldDelegate.animationValue != animationValue ||
         oldDelegate.completed != completed ||
         oldDelegate.celebrationValue != celebrationValue;
+  }
+}
+
+class _MagicInkPainter extends CustomPainter {
+  final SignatureController controller;
+  final List<List<Offset>> completedStrokes;
+  final int strokeStartIndex;
+  final Listenable repaint;
+  final bool active;
+
+  _MagicInkPainter({
+    required this.controller,
+    required this.completedStrokes,
+    required this.strokeStartIndex,
+    required this.repaint,
+    required this.active,
+  }) : super(repaint: repaint);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final glow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 27
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..color = GameTheme.mint.withValues(alpha: .13);
+
+    final trail = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 11
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..color = GameTheme.mint.withValues(alpha: .24);
+
+    for (final stroke in completedStrokes) {
+      _drawStroke(canvas, stroke, glow, trail);
+    }
+
+    if (!active || controller.points.isEmpty) return;
+
+    final points = controller.points;
+    if (strokeStartIndex >= points.length) return;
+    final live = points
+        .sublist(strokeStartIndex)
+        .map((point) => point.offset)
+        .toList(growable: false);
+
+    if (live.isEmpty) return;
+
+    _drawStroke(canvas, live, glow, trail);
+
+    final last = live.last;
+    final pulse = 0.82 + (0.18 * ((DateTime.now().millisecondsSinceEpoch % 700) / 700));
+    canvas.drawCircle(
+      last,
+      14 * pulse,
+      Paint()..color = GameTheme.sunshine.withValues(alpha: .20),
+    );
+    canvas.drawCircle(
+      last,
+      5,
+      Paint()..color = GameTheme.sunshine,
+    );
+  }
+
+  void _drawStroke(
+    Canvas canvas,
+    List<Offset> points,
+    Paint glow,
+    Paint trail,
+  ) {
+    if (points.isEmpty) return;
+
+    if (points.length == 1) {
+      canvas.drawCircle(points.first, glow.strokeWidth / 2, glow);
+      canvas.drawCircle(points.first, trail.strokeWidth / 2, trail);
+      return;
+    }
+
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (var i = 1; i < points.length; i++) {
+      path.lineTo(points[i].dx, points[i].dy);
+    }
+    canvas.drawPath(path, glow);
+    canvas.drawPath(path, trail);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MagicInkPainter oldDelegate) {
+    return oldDelegate.controller != controller ||
+        oldDelegate.completedStrokes != completedStrokes ||
+        oldDelegate.strokeStartIndex != strokeStartIndex ||
+        oldDelegate.active != active;
   }
 }
 
