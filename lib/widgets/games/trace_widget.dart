@@ -43,6 +43,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   late NumberPath _numberPath;
   late AnimationController _guideAnimation;
   late AnimationController _celebrationAnimation;
+  late AnimationController _checkpointAnimation;
   int _strokeStartIndex = 0;
   final List<List<Offset>> _userStrokes = [];
   _TraceStatus _status = _TraceStatus.idle;
@@ -52,6 +53,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   final ValueNotifier<int> _guidanceTick = ValueNotifier<int>(0);
   double? _guidanceDistance;
   bool _guidanceOnPath = true;
+  int _lastCheckpoint = 0;
 
   int get _checkpoint => (_accuracy * 4).floor().clamp(0, 4);
 
@@ -88,6 +90,10 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
+    _checkpointAnimation = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
   }
 
   @override
@@ -101,6 +107,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
 
   @override
   void dispose() {
+    _checkpointAnimation.dispose();
     _celebrationAnimation.dispose();
     _guideAnimation.dispose();
     _magicInkTick.dispose();
@@ -190,6 +197,11 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     }
 
     _accuracy = total == 0 ? 0 : matched / total;
+    final checkpoint = _checkpoint;
+    if (checkpoint > _lastCheckpoint && checkpoint < 4) {
+      _lastCheckpoint = checkpoint;
+      _checkpointAnimation.forward(from: 0);
+    }
     if (_userStrokes.length < expected.length) {
       if (mounted) setState(() => _status = _TraceStatus.inProgress);
       return;
@@ -236,6 +248,8 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     _controller.clear();
     _strokeStartIndex = 0;
     _userStrokes.clear();
+    _lastCheckpoint = 0;
+    _checkpointAnimation.reset();
     _magicInkTick.value++;
     _guidanceDistance = null;
     _guidanceOnPath = true;
@@ -341,7 +355,20 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
                         backgroundColor: Colors.transparent,
                       ),
                     ),
-                    Positioned(left: 12, right: 12, bottom: 12, child: _TraceProgress(checkpoint: _checkpoint, accuracy: _accuracy, active: _status == _TraceStatus.inProgress)),
+                    Positioned(
+                      left: 12,
+                      right: 12,
+                      bottom: 12,
+                      child: AnimatedBuilder(
+                        animation: _checkpointAnimation,
+                        builder: (context, _) => _TraceProgress(
+                          checkpoint: _checkpoint,
+                          accuracy: _accuracy,
+                          active: _status == _TraceStatus.inProgress,
+                          pulse: _checkpointAnimation.value,
+                        ),
+                      ),
+                    ),
                     if (_status == _TraceStatus.complete)
                       Positioned.fill(
                         child: IgnorePointer(
@@ -815,12 +842,16 @@ class _TraceProgress extends StatelessWidget {
   final int checkpoint;
   final double accuracy;
   final bool active;
-  const _TraceProgress({required this.checkpoint, required this.accuracy, required this.active});
+  final double pulse;
+  const _TraceProgress({required this.checkpoint, required this.accuracy, required this.active, this.pulse = 0});
   @override
   Widget build(BuildContext context) {
     if (!active && checkpoint == 0) return const SizedBox.shrink();
-    return Container(
-      height: 34, padding: const EdgeInsets.symmetric(horizontal: 10),
+    final scale = 1 + (Curves.easeOutBack.transform(pulse.clamp(0.0, 1.0)) * .045);
+    return Transform.scale(
+      scale: scale,
+      child: Container(
+        height: 34, padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(color: GameTheme.paper.withValues(alpha: .92), borderRadius: BorderRadius.circular(17), border: Border.all(color: active ? GameTheme.mint.withValues(alpha: .65) : GameTheme.success.withValues(alpha: .35))),
       child: Row(children: [
         const Icon(Icons.auto_awesome_rounded, size: 17, color: GameTheme.sunshine),
@@ -829,6 +860,7 @@ class _TraceProgress extends StatelessWidget {
         const SizedBox(width: 8),
         Text('${checkpoint * 25}٪', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: GameTheme.ink)),
       ]),
+      ),
     );
   }
 }
