@@ -146,18 +146,7 @@ class _JourneyWorldPainter extends CustomPainter {
         Paint()..color = color.withValues(alpha: .20),
       );
 
-      final icon = _worldIcon(i);
-      final iconPainter = TextPainter(
-        text: TextSpan(
-          text: icon,
-          style: const TextStyle(fontSize: 22),
-        ),
-        textDirection: TextDirection.rtl,
-      )..layout();
-      iconPainter.paint(
-        canvas,
-        center - Offset(iconPainter.width / 2, iconPainter.height / 2),
-      );
+      _drawWorldEmblem(canvas, center, color, i, pulse);
 
       final label = TextPainter(
         text: TextSpan(
@@ -178,9 +167,55 @@ class _JourneyWorldPainter extends CustomPainter {
     }
   }
 
-  String _worldIcon(int index) {
-    const icons = ['٠١٢', '١٠', '💯', '＋−', '×÷', '½', '＝'];
-    return icons[index];
+  void _drawWorldEmblem(
+    Canvas canvas,
+    Offset center,
+    Color color,
+    int index,
+    double pulse,
+  ) {
+    final radius = 18 * pulse;
+    final fill = Paint()..color = color.withValues(alpha: .92);
+    final inner = Paint()..color = GameTheme.paper.withValues(alpha: .96);
+
+    canvas.drawCircle(center, radius, fill);
+    canvas.drawCircle(center, radius * .73, inner);
+
+    final symbol = switch (index) {
+      0 => '١٢٣',
+      1 => '١٠',
+      2 => '١٠٠',
+      3 => '+−',
+      4 => '×',
+      5 => '÷',
+      _ => '=',
+    };
+
+    final painter = TextPainter(
+      text: TextSpan(
+        text: symbol,
+        style: TextStyle(
+          color: color,
+          fontSize: index == 0 ? 12 : 14,
+          fontWeight: FontWeight.w900,
+          height: 1,
+        ),
+      ),
+      textDirection: TextDirection.rtl,
+      textAlign: TextAlign.center,
+    )..layout();
+
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
+    );
+
+    final start = center + Offset(-radius * .68, radius * .70);
+    canvas.drawCircle(
+      start,
+      3.5,
+      Paint()..color = GameTheme.sunshine,
+    );
   }
 
   void _drawCloud(Canvas canvas, Offset center, double scale) {
