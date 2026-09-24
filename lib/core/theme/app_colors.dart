@@ -8,7 +8,16 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // الهوية الرئيسية.
+  // هوية العلامة: أخضر زمردي + ذهبي + كريمي.
+  // تُستخدم للهوية والعناصر العامة، بينما تبقى GameTheme أكثر حيوية
+  // داخل الألعاب والعوالم.
+  static const Color brandEmerald = Color(0xFF0B3D2E);
+  static const Color brandEmeraldSoft = Color(0xFF165A45);
+  static const Color brandGold = Color(0xFFF4C430);
+  static const Color brandGoldLight = Color(0xFFFFD966);
+  static const Color brandCream = Color(0xFFFFF7E6);
+
+  // الهوية الرئيسية للألعاب.
   static const Color primary = Color(0xFF3CA7E8);
   static const Color primaryDark = Color(0xFF247EBA);
   static const Color secondary = Color(0xFF54D6B2);
