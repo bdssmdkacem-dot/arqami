@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'game_theme.dart';
 
-/// Design system موحد لأرقامي: لعبة تعليمية مرحة، واضحة، وحيوية.
+/// Design system للعلامة + طبقة الألعاب.
+/// Brand Layer تستخدم الزمردي/الذهبي/الكريمي.
+/// Game Layer تبقى داخل الألعاب والعوالم بألوانها الحيوية المستقلة.
 class AppTheme {
   AppTheme._();
 
@@ -25,7 +27,7 @@ class AppTheme {
         onSecondaryContainer: AppColors.brandEmerald,
         tertiary: AppColors.violet,
         onTertiary: Colors.white,
-        surface: GameTheme.paper,
+        surface: AppColors.brandCream,
         onSurface: AppColors.textPrimary,
         error: AppColors.incorrect,
         errorContainer: AppColors.incorrectSoft,
@@ -40,7 +42,7 @@ class AppTheme {
     );
 
     return base.copyWith(
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: AppColors.brandCream,
       textTheme: text.copyWith(
         displayLarge: text.displayLarge?.copyWith(fontWeight: FontWeight.w900, height: 1.05),
         displaySmall: text.displaySmall?.copyWith(fontWeight: FontWeight.w900, height: 1.08),
@@ -52,8 +54,8 @@ class AppTheme {
         labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: .1),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.brandCream,
+        foregroundColor: AppColors.brandEmerald,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -61,40 +63,44 @@ class AppTheme {
           fontFamily: 'sans-serif',
           fontSize: 21,
           fontWeight: FontWeight.w900,
-          color: AppColors.textPrimary,
+          color: AppColors.brandEmerald,
         ),
       ),
       cardTheme: CardThemeData(
-        color: GameTheme.paper,
-        elevation: 4,
-        shadowColor: AppColors.primary.withValues(alpha: .13),
+        color: AppColors.brandCream,
+        elevation: 2,
+        shadowColor: AppColors.brandEmerald.withValues(alpha: .12),
         margin: EdgeInsets.zero,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(GameTheme.cardRadius),
-          side: const BorderSide(color: Color(0x12000000)),
+          side: const BorderSide(color: Color(0x140B3D2E)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.brandEmerald,
           foregroundColor: Colors.white,
           minimumSize: const Size(0, 58),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
-          elevation: 4,
-          shadowColor: AppColors.primary.withValues(alpha: .28),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(GameTheme.buttonRadius)),
+          elevation: 3,
+          shadowColor: AppColors.brandEmerald.withValues(alpha: .24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(GameTheme.buttonRadius),
+          ),
           textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.brandEmerald,
           foregroundColor: Colors.white,
           minimumSize: const Size(0, 58),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
           elevation: 3,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(GameTheme.buttonRadius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(GameTheme.buttonRadius),
+          ),
           textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
         ),
       ),
@@ -103,25 +109,27 @@ class AppTheme {
           foregroundColor: AppColors.brandEmerald,
           minimumSize: const Size(0, 54),
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          side: const BorderSide(color: AppColors.primary, width: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(GameTheme.buttonRadius)),
+          side: const BorderSide(color: AppColors.brandEmerald, width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(GameTheme.buttonRadius),
+          ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          foregroundColor: AppColors.textPrimary,
-          backgroundColor: GameTheme.paper,
+          foregroundColor: AppColors.brandEmerald,
+          backgroundColor: Colors.white.withValues(alpha: .72),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 76,
-        backgroundColor: GameTheme.paper,
+        backgroundColor: AppColors.brandEmerald,
         surfaceTintColor: Colors.transparent,
         elevation: 10,
-        shadowColor: AppColors.primary.withValues(alpha: .16),
-        indicatorColor: AppColors.primary.withValues(alpha: .16),
+        shadowColor: AppColors.brandEmerald.withValues(alpha: .22),
+        indicatorColor: AppColors.brandGold,
         labelTextStyle: WidgetStatePropertyAll(
           const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
         ),
@@ -129,36 +137,56 @@ class AppTheme {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
             size: selected ? 25 : 23,
-            color: selected ? AppColors.primaryDark : AppColors.textSecondary,
+            color: selected ? AppColors.brandEmerald : AppColors.brandCream,
           );
         }),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: GameTheme.paper,
+        backgroundColor: AppColors.brandCream,
         surfaceTintColor: Colors.transparent,
         elevation: 12,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        titleTextStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+        titleTextStyle: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
+          color: AppColors.brandEmerald,
+        ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.surfaceSoft,
-        selectedColor: AppColors.primary.withValues(alpha: .16),
-        labelStyle: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+        backgroundColor: AppColors.brandCream,
+        selectedColor: AppColors.brandGoldLight,
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w800,
+          color: AppColors.brandEmerald,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        side: BorderSide.none,
+        side: const BorderSide(color: Color(0x220B3D2E)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: GameTheme.paper,
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 17, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: Color(0x18000000))),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: Color(0x18000000))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: AppColors.primary, width: 2.5)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0x180B3D2E)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0x180B3D2E)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: AppColors.brandEmerald, width: 2.5),
+        ),
       ),
-      dividerTheme: const DividerThemeData(color: Color(0x12000000), thickness: 1, space: 1),
+      dividerTheme: const DividerThemeData(
+        color: Color(0x180B3D2E),
+        thickness: 1,
+        space: 1,
+      ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.secondary,
-        linearTrackColor: Color(0x1A54D6B2),
+        color: AppColors.brandGold,
+        linearTrackColor: Color(0x260B3D2E),
       ),
       splashFactory: InkSparkle.splashFactory,
     );
