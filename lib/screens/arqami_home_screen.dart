@@ -103,9 +103,9 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
         title: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const ArqamiBrandMark(size: 44, compact: true),
-            const SizedBox(width: 10),
-            const Column(
+            ArqamiBrandMark(size: 44, compact: true),
+            SizedBox(width: 10),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
