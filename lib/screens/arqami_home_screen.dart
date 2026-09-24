@@ -100,7 +100,7 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
       backgroundColor: AppColors.brandCream,
       appBar: AppBar(
         titleSpacing: 16,
-        title: Row(
+        title: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const ArqamiBrandMark(size: 44, compact: true),
