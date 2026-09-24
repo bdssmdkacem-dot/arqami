@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/game_theme.dart';
+import '../../core/theme/app_colors.dart';
 
-/// العلامة البصرية لأرقامي:
-/// أرقام عربية + نقطة لعب + مسار، بدلاً من رمز عام أو شخصية جاهزة.
+/// العلامة البصرية الأساسية لأرقامي.
+/// تبقى مستقلة عن ألوان الألعاب حتى يمكن استخدامها في طبقة العلامة فقط.
 class ArqamiBrandMark extends StatelessWidget {
   final double size;
   final bool compact;
@@ -36,15 +36,11 @@ class _ArqamiBrandPainter extends CustomPainter {
     final center = size.center(Offset.zero);
     final r = size.shortestSide / 2;
 
-    canvas.drawCircle(
-      center,
-      r,
-      Paint()..color = GameTheme.ocean,
-    );
+    canvas.drawCircle(center, r, Paint()..color = AppColors.brandEmerald);
     canvas.drawCircle(
       center,
       r * .78,
-      Paint()..color = GameTheme.paper,
+      Paint()..color = AppColors.brandCream,
     );
 
     final path = Path()
@@ -67,15 +63,19 @@ class _ArqamiBrandPainter extends CustomPainter {
       ..strokeWidth = size.width * .075
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..color = GameTheme.mint;
+      ..color = AppColors.brandGold;
     canvas.drawPath(path, route);
 
     final dot = Offset(size.width * .23, size.height * .69);
-    canvas.drawCircle(dot, size.width * .085, Paint()..color = GameTheme.sunshine);
+    canvas.drawCircle(
+      dot,
+      size.width * .085,
+      Paint()..color = AppColors.brandGold,
+    );
     canvas.drawCircle(
       dot,
       size.width * .035,
-      Paint()..color = GameTheme.paper,
+      Paint()..color = AppColors.brandCream,
     );
 
     if (!compact) {
@@ -83,7 +83,7 @@ class _ArqamiBrandPainter extends CustomPainter {
         text: TextSpan(
           text: '١٢٣',
           style: TextStyle(
-            color: GameTheme.ink,
+            color: AppColors.brandEmerald,
             fontSize: size.width * .25,
             fontWeight: FontWeight.w900,
             height: 1,
