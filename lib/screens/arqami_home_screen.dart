@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../core/profile/learner_profile.dart';
 import '../core/theme/app_colors.dart';
-import '../core/theme/game_theme.dart';
 import '../widgets/shared/arqami_brand_mark.dart';
 import 'achievements_screen.dart';
 import 'units_map_screen.dart';
