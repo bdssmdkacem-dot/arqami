@@ -143,11 +143,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     if (expected.isEmpty) return;
 
     final current = points.last.offset;
-    var nearest = double.infinity;
-    for (final referencePoint in expected) {
-      final distance = (current - referencePoint.toOffset(size)).distance;
-      if (distance < nearest) nearest = distance;
-    }
+    final nearest = _distanceToPolyline(current, expected, size);
 
     final tolerancePx = _tolerance * size.width;
     _guidanceDistance = nearest;
@@ -217,13 +213,27 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
     }
   }
 
-  _StrokeMatchResult _matchStroke(List<PathPoint> expected, List<Offset> user, Size size) {
-    if (expected.isEmpty || user.isEmpty) return const _StrokeMatchResult(0, 0);
+  /// يقيس التتبع مقابل الطريق نفسه، لا مقابل نقاط قليلة متباعدة.
+  ///
+  /// هذا يمنع حالة يبدو فيها إصبع الطفل فوق الطريق بصرياً ثم يفشل
+  /// التقييم لأنه لم يمر حرفياً قرب كل نقطة مرجعية.
+  _StrokeMatchResult _matchStroke(
+    List<PathPoint> expected,
+    List<Offset> user,
+    Size size,
+  ) {
+    if (expected.isEmpty || user.isEmpty) {
+      return const _StrokeMatchResult(0, 0);
+    }
+
     final tolerancePx = _tolerance * size.width;
+    final targets = _densifyStroke(expected, size);
+    if (targets.isEmpty) return const _StrokeMatchResult(0, 0);
+
     var userIndex = 0;
     var matched = 0;
-    for (final referencePoint in expected) {
-      final target = referencePoint.toOffset(size);
+
+    for (final target in targets) {
       for (var i = userIndex; i < user.length; i++) {
         if ((user[i] - target).distance <= tolerancePx) {
           matched++;
@@ -232,7 +242,66 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
         }
       }
     }
-    return _StrokeMatchResult(matched, expected.length);
+
+    return _StrokeMatchResult(matched, targets.length);
+  }
+
+  List<Offset> _densifyStroke(List<PathPoint> points, Size size) {
+    if (points.length == 1) {
+      return [points.first.toOffset(size)];
+    }
+
+    final result = <Offset>[];
+    for (var i = 0; i < points.length - 1; i++) {
+      final a = points[i].toOffset(size);
+      final b = points[i + 1].toOffset(size);
+      const samplesPerSegment = 4;
+      for (var sample = 0; sample < samplesPerSegment; sample++) {
+        final t = sample / samplesPerSegment;
+        result.add(Offset(
+          a.dx + (b.dx - a.dx) * t,
+          a.dy + (b.dy - a.dy) * t,
+        ));
+      }
+    }
+    result.add(points.last.toOffset(size));
+    return result;
+  }
+
+  double _distanceToPolyline(
+    Offset point,
+    List<PathPoint> path,
+    Size size,
+  ) {
+    if (path.isEmpty) return double.infinity;
+    if (path.length == 1) {
+      return (point - path.first.toOffset(size)).distance;
+    }
+
+    var nearest = double.infinity;
+    for (var i = 0; i < path.length - 1; i++) {
+      final a = path[i].toOffset(size);
+      final b = path[i + 1].toOffset(size);
+      final distance = _distanceToSegment(point, a, b);
+      if (distance < nearest) nearest = distance;
+    }
+    return nearest;
+  }
+
+  double _distanceToSegment(Offset point, Offset a, Offset b) {
+    final dx = b.dx - a.dx;
+    final dy = b.dy - a.dy;
+    final lengthSquared = dx * dx + dy * dy;
+    if (lengthSquared == 0) return (point - a).distance;
+
+    final t = (((point.dx - a.dx) * dx) + ((point.dy - a.dy) * dy)) /
+        lengthSquared;
+    final clamped = t.clamp(0.0, 1.0);
+    final projection = Offset(
+      a.dx + dx * clamped,
+      a.dy + dy * clamped,
+    );
+    return (point - projection).distance;
   }
 
   void _fail(double accuracy) {
