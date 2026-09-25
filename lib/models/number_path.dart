@@ -123,29 +123,29 @@ class NumberPathData {
     4: const NumberPath(
       digit: 4,
       points: [
-        // الضربة الأولى: نزول قطري من أعلى اليسار إلى نقطة الالتقاء.
-        PathPoint(0.40, 0.10),
-        PathPoint(0.36, 0.20),
-        PathPoint(0.32, 0.30),
-        PathPoint(0.28, 0.40),
-        PathPoint(0.24, 0.50),
-        PathPoint(0.24, 0.56),
-        // الضربة الثانية: خط العرض الذي يثبت شكل الرقم.
-        PathPoint(0.24, 0.56),
-        PathPoint(0.36, 0.56),
-        PathPoint(0.48, 0.56),
-        PathPoint(0.60, 0.56),
+        // الضربة الأولى: تبدأ من النقطة السفلية ثم تصعد إلى القمة.
+        PathPoint(0.62, 0.90),
+        PathPoint(0.62, 0.80),
+        PathPoint(0.62, 0.70),
+        PathPoint(0.62, 0.60),
+        PathPoint(0.62, 0.50),
+        PathPoint(0.62, 0.40),
+        PathPoint(0.62, 0.30),
+        PathPoint(0.62, 0.20),
+        PathPoint(0.62, 0.10),
+        // الضربة الثانية: من القمة نزولاً إلى اليسار ثم عرضياً إلى اليمين.
+        PathPoint(0.62, 0.10),
+        PathPoint(0.55, 0.20),
+        PathPoint(0.48, 0.30),
+        PathPoint(0.41, 0.40),
+        PathPoint(0.34, 0.50),
+        PathPoint(0.28, 0.56),
+        PathPoint(0.40, 0.56),
+        PathPoint(0.52, 0.56),
+        PathPoint(0.64, 0.56),
         PathPoint(0.76, 0.56),
-        // الضربة الثالثة: العمود من أعلى إلى أسفل.
-        PathPoint(0.60, 0.10),
-        PathPoint(0.60, 0.22),
-        PathPoint(0.60, 0.36),
-        PathPoint(0.60, 0.50),
-        PathPoint(0.60, 0.64),
-        PathPoint(0.60, 0.78),
-        PathPoint(0.60, 0.90),
       ],
-      strokeBreaks: [6, 11],
+      strokeBreaks: [9],
     ),    5: const NumberPath(
       digit: 5,
       points: [
