@@ -7,7 +7,6 @@ import '../models/achievement.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
-
   @override
   State<AchievementsScreen> createState() => _AchievementsScreenState();
 }
@@ -26,15 +25,14 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     final xp = PlayerXp.totalXp(tracker);
     final level = PlayerXp.levelFromXp(xp);
     final levelProgress = PlayerXp.levelProgress(xp);
-    final visible = Achievements.all.where((achievement) {
-      return _filter == null || achievement.category == _filter;
-    }).toList();
+    final visible = Achievements.all.where((achievement) =>
+        _filter == null || achievement.category == _filter).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.brandCream,
       appBar: AppBar(
-        title: const Text('الإنجازات'),
-        backgroundColor: AppColors.teal,
+        title: const Text('تقدمي'),
+        backgroundColor: AppColors.brandEmerald,
         foregroundColor: Colors.white,
       ),
       body: RefreshIndicator(
@@ -58,10 +56,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               onChanged: (value) => setState(() => _filter = value),
             ),
             const SizedBox(height: 12),
-            ...visible.map((achievement) => _AchievementCard(
-                  achievement: achievement,
-                  tracker: tracker,
-                )),
+            ...visible.map((achievement) =>
+                _AchievementCard(achievement: achievement, tracker: tracker)),
           ],
         ),
       ),
@@ -81,13 +77,7 @@ class _SummaryCard extends StatelessWidget {
     required this.levelProgress,
   });
 
-  final int unlocked;
-  final int total;
-  final int stars;
-  final int stages;
-  final int rewards;
-  final int xp;
-  final int level;
+  final int unlocked, total, stars, stages, rewards, xp, level;
   final double levelProgress;
 
   @override
@@ -95,8 +85,8 @@ class _SummaryCard extends StatelessWidget {
     final progress = total == 0 ? 0.0 : unlocked / total;
     return Card(
       elevation: 0,
-      color: AppColors.teal,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      color: AppColors.brandEmerald,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -105,20 +95,18 @@ class _SummaryCard extends StatelessWidget {
               children: [
                 const CircleAvatar(
                   radius: 28,
-                  backgroundColor: AppColors.gold,
-                  child: Icon(Icons.emoji_events_rounded,
-                      color: Colors.white, size: 30),
+                  backgroundColor: AppColors.brandGold,
+                  child: Icon(Icons.insights_rounded,
+                      color: AppColors.brandEmerald, size: 30),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('رحلة أرقامي',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800)),
+                      const Text('رحلتك مع أرقامي',
+                          style: TextStyle(color: Colors.white,
+                              fontSize: 20, fontWeight: FontWeight.w900)),
                       const SizedBox(height: 4),
                       Text('$unlocked من $total إنجاز',
                           style: const TextStyle(color: Colors.white70)),
@@ -126,10 +114,8 @@ class _SummaryCard extends StatelessWidget {
                   ),
                 ),
                 Text('${(progress * 100).round()}%',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900)),
+                    style: const TextStyle(color: AppColors.brandGoldLight,
+                        fontSize: 22, fontWeight: FontWeight.w900)),
               ],
             ),
             const SizedBox(height: 16),
@@ -139,16 +125,18 @@ class _SummaryCard extends StatelessWidget {
                 value: progress,
                 minHeight: 10,
                 backgroundColor: Colors.white24,
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(AppColors.goldLight),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                    AppColors.brandGold),
               ),
             ),
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .12),
+                color: Colors.white.withValues(alpha: .10),
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                    color: AppColors.brandGold.withValues(alpha: .18)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,17 +144,14 @@ class _SummaryCard extends StatelessWidget {
                   Row(
                     children: [
                       const Icon(Icons.bolt_rounded,
-                          color: AppColors.goldLight, size: 24),
+                          color: AppColors.brandGoldLight, size: 24),
                       const SizedBox(width: 6),
                       Text('المستوى $level',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16)),
+                          style: const TextStyle(color: Colors.white,
+                              fontWeight: FontWeight.w900, fontSize: 16)),
                       const Spacer(),
                       Text('$xp XP',
-                          style: const TextStyle(
-                              color: Colors.white,
+                          style: const TextStyle(color: Colors.white,
                               fontWeight: FontWeight.w800)),
                     ],
                   ),
@@ -178,18 +163,13 @@ class _SummaryCard extends StatelessWidget {
                       minHeight: 8,
                       backgroundColor: Colors.white24,
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.goldLight,
-                      ),
+                          AppColors.brandGoldLight),
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(
-                    '${PlayerXp.xpToNextLevel(xp)} XP للمستوى التالي',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                    ),
-                  ),
+                  Text('${PlayerXp.xpToNextLevel(xp)} XP للمستوى التالي',
+                      style: const TextStyle(color: Colors.white70,
+                          fontSize: 11)),
                 ],
               ),
             ),
@@ -198,7 +178,7 @@ class _SummaryCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _Stat(icon: Icons.star_rounded, value: '$stars', label: 'نجمة'),
-                _Stat(icon: Icons.map_rounded, value: '$stages/7', label: 'مراحل'),
+                _Stat(icon: Icons.route_rounded, value: '$stages/7', label: 'مراحل'),
                 _Stat(icon: Icons.card_giftcard_rounded, value: '$rewards/7', label: 'جوائز'),
               ],
             ),
@@ -211,65 +191,47 @@ class _SummaryCard extends StatelessWidget {
 
 class _Stat extends StatelessWidget {
   const _Stat({required this.icon, required this.value, required this.label});
-
   final IconData icon;
-  final String value;
-  final String label;
+  final String value, label;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: AppColors.goldLight),
-        const SizedBox(height: 2),
-        Text(value,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w900)),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Column(
+    children: [
+      Icon(icon, color: AppColors.brandGoldLight),
+      const SizedBox(height: 2),
+      Text(value, style: const TextStyle(
+          color: Colors.white, fontWeight: FontWeight.w900)),
+      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+    ],
+  );
 }
 
 class _FilterBar extends StatelessWidget {
   const _FilterBar({required this.selected, required this.onChanged});
-
   final AchievementCategory? selected;
   final ValueChanged<AchievementCategory?> onChanged;
 
   @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      children: [
-        FilterChip(
-          label: const Text('الكل'),
-          selected: selected == null,
-          onSelected: (_) => onChanged(null),
-        ),
-        FilterChip(
-          label: const Text('التقدم'),
+  Widget build(BuildContext context) => Wrap(
+    spacing: 8,
+    children: [
+      FilterChip(label: const Text('الكل'), selected: selected == null,
+          onSelected: (_) => onChanged(null)),
+      FilterChip(label: const Text('التقدم'),
           selected: selected == AchievementCategory.progress,
-          onSelected: (_) => onChanged(AchievementCategory.progress),
-        ),
-        FilterChip(
-          label: const Text('النجوم'),
+          onSelected: (_) => onChanged(AchievementCategory.progress)),
+      FilterChip(label: const Text('النجوم'),
           selected: selected == AchievementCategory.stars,
-          onSelected: (_) => onChanged(AchievementCategory.stars),
-        ),
-        FilterChip(
-          label: const Text('المراحل'),
+          onSelected: (_) => onChanged(AchievementCategory.stars)),
+      FilterChip(label: const Text('المراحل'),
           selected: selected == AchievementCategory.stages,
-          onSelected: (_) => onChanged(AchievementCategory.stages),
-        ),
-      ],
-    );
-  }
+          onSelected: (_) => onChanged(AchievementCategory.stages)),
+    ],
+  );
 }
 
 class _AchievementCard extends StatelessWidget {
   const _AchievementCard({required this.achievement, required this.tracker});
-
   final AchievementDefinition achievement;
   final ProgressTracker tracker;
 
@@ -283,7 +245,7 @@ class _AchievementCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       elevation: isUnlocked ? 2 : 0,
-      color: isUnlocked ? AppColors.cardBackground : Colors.white70,
+      color: isUnlocked ? Colors.white : const Color(0xFFF3EEDF),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -292,13 +254,12 @@ class _AchievementCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 27,
-              backgroundColor:
-                  isUnlocked ? AppColors.gold : AppColors.locked.withAlpha(60),
-              child: Icon(
-                isUnlocked ? achievement.icon : Icons.lock_rounded,
-                color: isUnlocked ? Colors.white : AppColors.locked,
-                size: 27,
-              ),
+              backgroundColor: isUnlocked
+                  ? AppColors.brandGold
+                  : AppColors.locked.withAlpha(60),
+              child: Icon(isUnlocked ? achievement.icon : Icons.lock_rounded,
+                  color: isUnlocked ? AppColors.brandEmerald : AppColors.locked,
+                  size: 27),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -309,8 +270,9 @@ class _AchievementCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(achievement.titleAr,
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w800)),
+                            style: const TextStyle(fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.brandEmerald)),
                       ),
                       if (isUnlocked)
                         const Icon(Icons.check_circle_rounded,
@@ -322,19 +284,23 @@ class _AchievementCard extends StatelessWidget {
                       style: const TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 9),
                   if (!isUnlocked) ...[
-                    LinearProgressIndicator(value: ratio, minHeight: 7),
+                    LinearProgressIndicator(
+                      value: ratio,
+                      minHeight: 7,
+                      color: AppColors.brandEmeraldSoft,
+                      backgroundColor:
+                          AppColors.brandEmerald.withValues(alpha: .10),
+                    ),
                     const SizedBox(height: 4),
                     Text('$value / ${achievement.target}',
                         style: const TextStyle(
                             color: AppColors.textSecondary, fontSize: 12)),
                   ] else if (unlockedAt != null)
-                    Text(
-                      'تم فتحه في ${_formatDate(unlockedAt)}',
-                      style: const TextStyle(
-                          color: AppColors.completed,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600),
-                    ),
+                    Text('تم فتحه في ${_formatDate(unlockedAt)}',
+                        style: const TextStyle(
+                            color: AppColors.completed,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600)),
                 ],
               ),
             ),

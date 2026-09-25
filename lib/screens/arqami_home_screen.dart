@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/profile/learner_profile.dart';
 import '../core/theme/app_colors.dart';
-import '../core/theme/game_theme.dart';
+import '../widgets/shared/arqami_brand_mark.dart';
 import 'achievements_screen.dart';
 import 'units_map_screen.dart';
 import 'settings_screen.dart';
@@ -64,7 +64,7 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
               Text(
                 AgeBand.fromAge(selectedAge).labelAr,
                 style: const TextStyle(
-                  color: AppColors.primaryDark,
+                  color: AppColors.brandEmerald,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -78,7 +78,7 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
               ),
             FilledButton.icon(
               onPressed: () => Navigator.pop(context, selectedAge),
-              icon: const Icon(Icons.rocket_launch_rounded),
+              icon: const Icon(Icons.arrow_forward_rounded),
               label: const Text('هيا نبدأ'),
             ),
           ],
@@ -95,42 +95,28 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final age = LearnerProfile.age;
+
     return Scaffold(
-      backgroundColor: GameTheme.sky,
+      backgroundColor: AppColors.brandCream,
       appBar: AppBar(
         titleSpacing: 16,
-        title: Row(
+        title: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: AppColors.sunshine,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.accent.withValues(alpha: .25),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.auto_awesome_rounded,
-                color: AppColors.textPrimary,
-                size: 23,
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Column(
+            ArqamiBrandMark(size: 44, compact: true),
+            SizedBox(width: 10),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('أرقامي'),
                 Text(
-                  'عالم الأرقام 🎮',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textSecondary),
+                  'نتعلم خطوة بخطوة',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.brandEmeraldSoft,
+                  ),
                 ),
               ],
             ),
@@ -156,16 +142,29 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
                   decoration: BoxDecoration(
-                    color: GameTheme.paper,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: .14)),
+                    border: Border.all(
+                      color: AppColors.brandEmerald.withValues(alpha: .16),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.face_rounded, size: 18, color: AppColors.primaryDark),
+                      const Icon(
+                        Icons.face_rounded,
+                        size: 18,
+                        color: AppColors.brandEmerald,
+                      ),
                       const SizedBox(width: 5),
-                      Text('$age سنة', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+                      Text(
+                        '$age سنة',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.brandEmerald,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -183,14 +182,14 @@ class _ArqamiHomeScreenState extends State<ArqamiHomeScreen> {
             onDestinationSelected: (value) => setState(() => _index = value),
             destinations: const [
               NavigationDestination(
-                icon: Icon(Icons.map_outlined),
-                selectedIcon: Icon(Icons.map_rounded),
-                label: 'الرحلة',
+                icon: Icon(Icons.route_outlined),
+                selectedIcon: Icon(Icons.route_rounded),
+                label: 'رحلتي',
               ),
               NavigationDestination(
-                icon: Icon(Icons.emoji_events_outlined),
-                selectedIcon: Icon(Icons.emoji_events_rounded),
-                label: 'جوائزي',
+                icon: Icon(Icons.insights_outlined),
+                selectedIcon: Icon(Icons.insights_rounded),
+                label: 'تقدمي',
               ),
             ],
           ),
