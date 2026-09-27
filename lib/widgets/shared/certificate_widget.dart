@@ -199,7 +199,7 @@ class _ZelligeBorderPainter extends CustomPainter {
       final x = startX + (i * _tileSize);
 
       final color =
-          i.isEven ? AppColors.coral : AppColors.brandEmeraldLight;
+          i.isEven ? AppColors.coral : AppColors.brandEmeraldSoft;
 
       final paint = Paint()..color = color;
 
