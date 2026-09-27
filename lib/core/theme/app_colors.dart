@@ -51,13 +51,15 @@ class AppColors {
   static const Color textSecondary = Color(0xFF63738A);
   static const Color textMuted = Color(0xFF91A0B2);
 
-  // توافق اسمي محدود مع الشاشات القديمة.
-  static const Color teal = primary;
-  static const Color tealDark = primaryDark;
-  static const Color tealLight = Color(0xFF7DD9FF);
-  static const Color tealSoft = Color(0xFFDFF4FF);
-  static const Color gold = accent;
-  static const Color goldLight = sunshine;
+  // توافق اسمي مع الشاشات التي لم تُرحّل بعد إلى GameTheme.
+  // هذه الأسماء تمثل طبقة العلامة، لا ألوان العوالم.
+  // ألوان العالم/النشاط تبقى في GameTheme.
+  static const Color teal = brandEmerald;
+  static const Color tealDark = brandEmeraldSoft;
+  static const Color tealLight = Color(0xFF4F8B73);
+  static const Color tealSoft = Color(0xFFE4F1EC);
+  static const Color gold = brandGold;
+  static const Color goldLight = brandGoldLight;
   static const Color goldSoft = Color(0xFFFFF3CF);
   static const Color terracotta = coral;
   static const Color terracottaSoft = Color(0xFFFFE8E4);
