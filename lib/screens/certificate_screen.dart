@@ -110,7 +110,7 @@ class _CertificateScreenState extends State<CertificateScreen> {
                         : const Icon(Icons.share_rounded),
                     label: Text(_isSharing ? 'جاري التحضير...' : 'شارك الشهادة'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.teal,
+                      backgroundColor: AppColors.brandEmerald,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
