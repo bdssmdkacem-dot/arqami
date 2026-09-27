@@ -114,6 +114,16 @@ void main() {
     expect(tracker.getClaimedStageRewards(), contains(1));
   });
 
+  test('claimed stage reward adds its advertised stars to total stars', () async {
+    for (final unit in UnitsData.units.take(13)) {
+      await tracker.markUnitComplete(unit.id, stars: 1);
+    }
+
+    expect(tracker.getTotalStars(), 13);
+    expect(await tracker.claimStageReward(1), isTrue);
+    expect(tracker.getTotalStars(), 16);
+  });
+
   test('claimed stage reward remains persisted in Hive', () async {
     for (final unit in UnitsData.units.take(13)) {
       await tracker.markUnitComplete(unit.id, stars: 1);
