@@ -102,6 +102,15 @@ void main() {
     expect(tracker.getStageRewardStatus(1), StageRewardStatus.available);
   });
 
+  test('completing the final unit of a stage unlocks the next stage entry', () async {
+    for (final unit in UnitsData.units.take(13)) {
+      await tracker.markUnitComplete(unit.id, stars: 1);
+    }
+
+    expect(tracker.isUnitUnlocked('unit_14'), isTrue);
+    expect(tracker.getStageRewardStatus(1), StageRewardStatus.available);
+  });
+
   test('stage reward can be claimed exactly once and unlocks its achievement', () async {
     for (final unit in UnitsData.units.take(13)) {
       await tracker.markUnitComplete(unit.id, stars: 3);
