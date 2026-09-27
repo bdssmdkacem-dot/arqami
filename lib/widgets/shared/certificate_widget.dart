@@ -60,7 +60,7 @@ class CertificateWidget extends StatelessWidget {
                 const Icon(
                   Icons.emoji_events_rounded,
                   size: 72,
-                  color: AppColors.gold,
+                  color: AppColors.brandGold,
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -68,7 +68,7 @@ class CertificateWidget extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.teal,
+                    color: AppColors.brandEmerald,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -77,7 +77,7 @@ class CertificateWidget extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.terracotta,
+                    color: AppColors.coral,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -109,7 +109,7 @@ class CertificateWidget extends StatelessWidget {
                       index < totalStars
                           ? Icons.star_rounded
                           : Icons.star_border_rounded,
-                      color: AppColors.gold,
+                      color: AppColors.brandGold,
                       size: 18,
                     ),
                   ),
@@ -149,13 +149,13 @@ class _ZelligeBorderPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // خط حدودي خارجي.
     final outerBorderPaint = Paint()
-      ..color = AppColors.teal
+      ..color = AppColors.brandEmerald
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
 
     // خط حدودي داخلي.
     final innerBorderPaint = Paint()
-      ..color = AppColors.gold
+      ..color = AppColors.brandGold
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -199,7 +199,7 @@ class _ZelligeBorderPainter extends CustomPainter {
       final x = startX + (i * _tileSize);
 
       final color =
-          i.isEven ? AppColors.terracotta : AppColors.tealLight;
+          i.isEven ? AppColors.coral : AppColors.brandEmeraldLight;
 
       final paint = Paint()..color = color;
 
