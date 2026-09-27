@@ -101,7 +101,12 @@ class ProgressTracker {
 
   int getTotalStars() {
     _ensureInitialized();
-    return _box.values.fold<int>(0, (sum, progress) => sum + progress.stars);
+    final unitStars =
+        _box.values.fold<int>(0, (sum, progress) => sum + progress.stars);
+    final rewardStars = StageRewards.all
+        .where((reward) => isStageRewardClaimed(reward.stage))
+        .fold<int>(0, (sum, reward) => sum + reward.stars);
+    return unitStars + rewardStars;
   }
 
   int getCompletedStages() {
