@@ -15,7 +15,7 @@ class QuantityRow extends StatelessWidget {
     super.key,
     required this.count,
     this.icon = Icons.circle,
-    this.color = AppColors.gold,
+    this.color = AppColors.brandGold,
     this.iconSize = 14,
   });
 
