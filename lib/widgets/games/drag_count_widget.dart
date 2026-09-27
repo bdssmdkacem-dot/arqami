@@ -18,7 +18,7 @@ class DragCountWidget extends StatefulWidget {
     required this.targetCount,
     required this.onComplete,
     this.itemIcon = Icons.star_rounded,
-    this.itemColor = AppColors.gold,
+    this.itemColor = AppColors.brandGold,
     this.onItemDropped,
     this.onWrongDigitSelected,
   }) : assert(targetCount >= 0 && targetCount <= 10, 'targetCount يجب أن يكون بين 0 و 10');
