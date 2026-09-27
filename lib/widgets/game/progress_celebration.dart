@@ -40,7 +40,7 @@ class ProgressCelebration extends StatelessWidget {
                     ? Icons.bolt_rounded
                     : Icons.workspace_premium_rounded,
                 size: 78,
-                color: AppColors.gold,
+                color: AppColors.brandGold,
               ),
             ),
             const SizedBox(height: 10),
@@ -71,12 +71,12 @@ class ProgressCelebration extends StatelessWidget {
                           vertical: 9,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.gold.withValues(alpha: .10),
+                          color: AppColors.brandGold.withValues(alpha: .10),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Row(
                           children: [
-                            Icon(achievement.icon, color: AppColors.gold),
+                            Icon(achievement.icon, color: AppColors.brandGold),
                             const SizedBox(width: 9),
                             Expanded(
                               child: Text(
@@ -97,7 +97,7 @@ class ProgressCelebration extends StatelessWidget {
               Text(
                 '+$xpEarned XP',
                 style: const TextStyle(
-                  color: AppColors.gold,
+                  color: AppColors.brandGold,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                 ),
