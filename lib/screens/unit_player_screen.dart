@@ -115,6 +115,9 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
     return Scaffold(
       backgroundColor: GameTheme.sky,
       appBar: AppBar(
+        backgroundColor: GameTheme.sky,
+        foregroundColor: GameTheme.ink,
+        surfaceTintColor: Colors.transparent,
         title: Text(widget.unit.titleAr),
         centerTitle: true,
         leading: IconButton(
