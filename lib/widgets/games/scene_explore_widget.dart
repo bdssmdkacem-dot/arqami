@@ -202,7 +202,7 @@ class SceneExploreWidgetState extends State<SceneExploreWidget> {
             color: AppColors.textPrimary,
             margin: const EdgeInsets.symmetric(horizontal: 6),
           ),
-          const Icon(Icons.flag_rounded, color: AppColors.teal, size: 28),
+          const Icon(Icons.flag_rounded, color: AppColors.brandEmerald, size: 28),
         ],
       ),
     );
