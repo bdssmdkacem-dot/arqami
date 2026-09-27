@@ -144,7 +144,7 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
             _GroupCard(
               count: widget.leftCount,
               icon: widget.itemIcon,
-              color: AppColors.teal,
+              color: AppColors.brandEmerald,
               isWrong: _wrongLeft,
               isCorrectAndCompleted: _completed && _leftIsCorrect,
               onTap: () => _handleTap(true),
@@ -155,7 +155,7 @@ class ComparisonWidgetState extends State<ComparisonWidget> {
             _GroupCard(
               count: widget.rightCount,
               icon: widget.itemIcon,
-              color: AppColors.terracotta,
+              color: AppColors.incorrect,
               isWrong: _wrongRight,
               isCorrectAndCompleted: _completed &&
                   (equalQuestion ? _leftIsCorrect : !_leftIsCorrect),
@@ -195,9 +195,9 @@ class _GroupCard extends StatelessWidget {
     final Color borderColor;
 
     if (isWrong) {
-      borderColor = const Color(0xFFE57373);
+      borderColor = AppColors.incorrect;
     } else if (isCorrectAndCompleted) {
-      borderColor = const Color(0xFF4CAF50);
+      borderColor = AppColors.correct;
     } else {
       borderColor = Colors.white;
     }
