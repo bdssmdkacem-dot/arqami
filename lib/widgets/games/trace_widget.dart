@@ -281,7 +281,7 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
   Color get _statusColor {
     switch (_status) {
       case _TraceStatus.needsRetry:
-        return AppColors.terracotta;
+        return AppColors.incorrect;
       case _TraceStatus.complete:
         return GameTheme.success;
       case _TraceStatus.idle:
