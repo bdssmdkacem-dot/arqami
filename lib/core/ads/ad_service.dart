@@ -38,18 +38,18 @@ class AdService {
   Future<void> init() async {
     if (_initialized) return;
 
-    await MobileAds.instance.initialize();
-
-    // معاملة إلزامية للأطفال — كتخبر Google تعامل مع كل الطلبات
-    // الإعلانية كموجّهة للأطفال، وتمنع الإعلانات الشخصية والمحتوى
-    // الغير مناسب
+    // يجب تطبيق إعدادات الاستهداف قبل تهيئة Mobile Ads حتى تنطبق
+    // على جميع طلبات الإعلانات اللاحقة.
+    // التطبيق موجّه للأطفال، لذلك نستخدم child-directed + G.
+    // لا نضبط TFUA بالتوازي مع TFCD؛ Google تنص على عدم تفعيلهما معًا.
     await MobileAds.instance.updateRequestConfiguration(
       RequestConfiguration(
         tagForChildDirectedTreatment: TagForChildDirectedTreatment.yes,
-        tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.yes,
         maxAdContentRating: MaxAdContentRating.g,
       ),
     );
+
+    await MobileAds.instance.initialize();
 
     _initialized = true;
     _loadInterstitial();
