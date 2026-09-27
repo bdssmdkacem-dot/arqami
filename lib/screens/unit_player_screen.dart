@@ -238,7 +238,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
-                        color: AppColors.goldSoft,
+                        color: AppColors.brandGold.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
@@ -256,7 +256,7 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: AppColors.tealSoft,
+                        color: AppColors.surfaceSoft,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
@@ -276,8 +276,8 @@ class _UnitPlayerScreenState extends State<UnitPlayerScreen> {
                           icon: const Icon(Icons.workspace_premium_rounded),
                           label: const Text('احصل على شهادتك'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.gold,
-                            foregroundColor: AppColors.textPrimary,
+                            backgroundColor: AppColors.brandGold,
+                            foregroundColor: AppColors.brandEmerald,
                           ),
                         ),
                       ),
@@ -505,7 +505,7 @@ class _PlayerHud extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.teal.withValues(alpha: .12)),
+        border: Border.all(color: AppColors.brandEmerald.withValues(alpha: .12)),
         boxShadow: const [BoxShadow(blurRadius: 8, offset: Offset(0, 3), color: Color(0x16000000))],
       ),
       child: Column(
