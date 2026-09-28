@@ -313,17 +313,14 @@ class TraceWidgetState extends State<TraceWidget> with SingleTickerProviderState
                   children: [
                     Positioned.fill(child: CustomPaint(painter: _GardenBackgroundPainter(number: widget.number))),
                     Positioned.fill(
-                      child: AnimatedBuilder(
-                        animation: _guideAnimation,
-                        builder: (context, _) => CustomPaint(
-                          painter: _NumberRoadPainter(
-                            numberPath: _numberPath,
-                            guideColor: widget.guideColor,
-                            startColor: widget.startPointColor,
-                            animationValue: _guideAnimation.value,
-                            completed: _status == _TraceStatus.complete,
-                            celebrationValue: _celebrationAnimation.value,
-                          ),
+                      child: CustomPaint(
+                        painter: _NumberRoadPainter(
+                          numberPath: _numberPath,
+                          guideColor: widget.guideColor,
+                          startColor: widget.startPointColor,
+                          animation: _guideAnimation,
+                          completed: _status == _TraceStatus.complete,
+                          celebrationValue: _celebrationAnimation.value,
                         ),
                       ),
                     ),
@@ -495,16 +492,30 @@ class _NumberRoadPainter extends CustomPainter {
   final NumberPath numberPath;
   final Color guideColor;
   final Color startColor;
-  final double animationValue;
+  final Animation<double> animation;
   final bool completed;
   final double celebrationValue;
 
-  const _NumberRoadPainter({required this.numberPath, required this.guideColor, required this.startColor, required this.animationValue, required this.completed, required this.celebrationValue});
+  Path? _cachedGuidePath;
+  List<ui.PathMetric>? _cachedMetrics;
+  Size? _cachedSize;
+  double _cachedTotalLength = 0;
+
+  _NumberRoadPainter({
+    required this.numberPath,
+    required this.guideColor,
+    required this.startColor,
+    required this.animation,
+    required this.completed,
+    required this.celebrationValue,
+  }) : super(repaint: animation);
 
   @override
   void paint(Canvas canvas, Size size) {
     if (numberPath.points.isEmpty) return;
-    final guidePath = numberPath.buildGuidePath(size);
+
+    final guidePath = _guidePathFor(size);
+    final metrics = _metricsFor(size, guidePath);
 
     final glow = Paint()
       ..color = completed ? GameTheme.success.withValues(alpha: .12) : guideColor.withValues(alpha: .10)
@@ -542,15 +553,40 @@ class _NumberRoadPainter extends CustomPainter {
       }
     }
 
-    if (!completed) _paintMovingArrow(canvas, size, guidePath);
+    if (!completed) _paintMovingArrow(canvas, size, metrics);
   }
 
-  void _paintMovingArrow(Canvas canvas, Size size, Path path) {
-    final metrics = path.computeMetrics().toList(growable: false);
+  Path _guidePathFor(Size size) {
+    if (_cachedGuidePath == null || _cachedSize != size) {
+      _cachedGuidePath = numberPath.buildGuidePath(size);
+      _cachedSize = size;
+      _cachedMetrics = null;
+      _cachedTotalLength = 0;
+    }
+    return _cachedGuidePath!;
+  }
+
+  List<ui.PathMetric> _metricsFor(Size size, Path path) {
+    if (_cachedMetrics == null || _cachedSize != size) {
+      _cachedMetrics = path.computeMetrics().toList(growable: false);
+      _cachedSize = size;
+      _cachedTotalLength = _cachedMetrics!.fold<double>(
+        0,
+        (sum, metric) => sum + metric.length,
+      );
+    }
+    return _cachedMetrics!;
+  }
+
+  void _paintMovingArrow(
+    Canvas canvas,
+    Size size,
+    List<ui.PathMetric> metrics,
+  ) {
     if (metrics.isEmpty) return;
-    final total = metrics.fold<double>(0, (sum, metric) => sum + metric.length);
+    final total = _cachedTotalLength;
     if (total <= 0) return;
-    var distance = total * animationValue;
+    var distance = total * animation.value;
     ui.PathMetric? activeMetric;
     for (final metric in metrics) {
       if (distance <= metric.length) {
@@ -583,7 +619,6 @@ class _NumberRoadPainter extends CustomPainter {
     return oldDelegate.numberPath.digit != numberPath.digit ||
         oldDelegate.guideColor != guideColor ||
         oldDelegate.startColor != startColor ||
-        oldDelegate.animationValue != animationValue ||
         oldDelegate.completed != completed ||
         oldDelegate.celebrationValue != celebrationValue;
   }
