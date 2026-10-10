@@ -42,8 +42,14 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter version
-        run: flutter --version
+      - name: Install Blender for original 3D asset production
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y blender
+          blender --version
+
+      - name: Generate original Blender-rendered game assets
+        run: blender --background --python tool/generate_blender_assets.py
 
       - name: Prepare selected CC0 game assets
         shell: bash
