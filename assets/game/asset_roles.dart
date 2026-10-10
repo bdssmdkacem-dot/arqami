@@ -59,7 +59,7 @@ const arqamiGameAssetSet = GameAssetSet(
   reward: 'assets/game/rewards/reward_badge.png',
   unlockEffect: 'assets/game/effects/unlock.png',
   successEffect: 'assets/game/effects/success.png',
-  tapSound: 'assets/game/sounds/tap.ogg',
-  unlockSound: 'assets/game/sounds/unlock.ogg',
-  successSound: 'assets/game/sounds/success.ogg',
+  tapSound: 'assets/game/sounds/tap.wav',
+  unlockSound: 'assets/game/sounds/success.wav',
+  successSound: 'assets/game/sounds/success.wav',
 );
