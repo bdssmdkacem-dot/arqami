@@ -589,42 +589,6 @@ class _NumberRoadPainter extends CustomPainter {
     canvas.restore();
   }
 
-  // Kept for compatibility with older painter revisions; no continuous animation is used.
-  void _paintMovingArrow(
-    Canvas canvas,
-    Size size,
-    List<ui.PathMetric> metrics,
-  ) {
-    if (metrics.isEmpty) return;
-    final total = _cachedTotalLength;
-    if (total <= 0) return;
-    var distance = 0.0;
-    ui.PathMetric? activeMetric;
-    for (final metric in metrics) {
-      if (distance <= metric.length) {
-        activeMetric = metric;
-        break;
-      }
-      distance -= metric.length;
-    }
-    activeMetric ??= metrics.last;
-    final tangent = activeMetric.getTangentForOffset(distance.clamp(0, activeMetric.length));
-    if (tangent == null) return;
-
-    canvas.save();
-    canvas.translate(tangent.position.dx, tangent.position.dy);
-    canvas.rotate(tangent.angle);
-    final arrow = Paint()..color = GameTheme.mango;
-    final pathArrow = Path()
-      ..moveTo(12, 0)
-      ..lineTo(-8, -7)
-      ..lineTo(-4, 0)
-      ..lineTo(-8, 7)
-      ..close();
-    canvas.drawShadow(pathArrow, const Color(0x33000000), 4, false);
-    canvas.drawPath(pathArrow, arrow);
-    canvas.restore();
-  }
 
   @override
   bool shouldRepaint(covariant _NumberRoadPainter oldDelegate) {
