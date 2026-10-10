@@ -51,9 +51,20 @@ jobs:
       - name: Generate original Blender-rendered game assets
         run: blender --background --python tool/generate_blender_assets.py
 
-      - name: Prepare selected CC0 game assets
+      - name: Validate Blender asset outputs
         shell: bash
-        run: bash tool/prepare_game_assets.sh
+        run: |
+          set -euo pipefail
+          test -s assets/game/backgrounds/world_map.png
+          test -s assets/game/characters/companion.png
+          test -s assets/game/ui/level_node.png
+          test -s assets/game/ui/level_node_completed.png
+          test -s assets/game/ui/level_node_locked.png
+          test -s assets/game/rewards/reward_badge.png
+          test -s assets/game/rewards/stars.png
+          test -s assets/game/effects/success.png
+          test -s assets/game/effects/unlock.png
+          find assets/game -maxdepth 3 -type f -name '*.png' -printf '%p %s bytes\\n' | sort
 
       - name: Upload Blender visual review assets
         uses: actions/upload-artifact@v4
@@ -71,6 +82,10 @@ jobs:
             assets/game/effects/unlock.png
           if-no-files-found: error
           retention-days: 14
+
+      - name: Prepare selected CC0 game assets
+        shell: bash
+        run: bash tool/prepare_game_assets.sh
 
       - name: Get dependencies
         run: flutter pub get
