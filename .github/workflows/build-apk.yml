@@ -45,7 +45,7 @@ jobs:
       - name: Install Blender for original 3D asset production
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y blender
+          sudo apt-get install --no-install-recommends -y blender libegl1 libgl1 libxrender1 libxi6 libxfixes3 libxkbcommon0 libsm6
           blender --version
 
       - name: Generate original Blender-rendered game assets
