@@ -92,7 +92,7 @@ def setup_camera(target, ortho=8.5, resolution=512):
     cam.data.ortho_scale = ortho
     bpy.context.scene.camera = cam
     scene = bpy.context.scene
-    scene.render.engine = "BLENDER_EEVEE_NEXT"
+    # Ubuntu apt repositories may provide Blender 3.x, where EEVEE_NEXT is unavailable.\n    available_engines = {item.identifier for item in scene.render.bl_rna.properties["engine"].enum_items}\n    scene.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in available_engines else "BLENDER_EEVEE"
     scene.render.resolution_x = resolution
     scene.render.resolution_y = resolution
     scene.render.resolution_percentage = 100
@@ -100,7 +100,7 @@ def setup_camera(target, ortho=8.5, resolution=512):
     scene.render.image_settings.color_mode = "RGBA"
     scene.render.film_transparent = True
     scene.world.color = (0.12, 0.12, 0.12)
-    scene.view_settings.view_transform = "AgX"
+    # AgX is available in newer Blender releases; use Filmic on older runners.\n    available_transforms = {item.identifier for item in scene.view_settings.bl_rna.properties["view_transform"].enum_items}\n    scene.view_settings.view_transform = "AgX" if "AgX" in available_transforms else "Filmic"
     scene.render.image_settings.color_depth = "8"
     for light in list(bpy.data.objects):
         if light.type == "LIGHT":
