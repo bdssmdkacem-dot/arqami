@@ -178,9 +178,29 @@ class _JourneyWorldPainter extends CustomPainter {
         textDirection: TextDirection.rtl,
         textAlign: TextAlign.center,
       )..layout(maxWidth: math.min(width * .40, 170));
+      final labelRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          center.dx - label.width / 2 - 8,
+          center.dy + 27,
+          label.width + 16,
+          label.height + 8,
+        ),
+        const Radius.circular(12),
+      );
+      canvas.drawRRect(
+        labelRect,
+        Paint()..color = GameTheme.paper.withValues(alpha: .84),
+      );
+      canvas.drawRRect(
+        labelRect,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = color.withValues(alpha: .24),
+      );
       label.paint(
         canvas,
-        Offset(center.dx - label.width / 2, center.dy + 30),
+        Offset(center.dx - label.width / 2, center.dy + 31),
       );
     }
   }
