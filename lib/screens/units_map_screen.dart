@@ -70,8 +70,9 @@ class _PathPainter extends CustomPainter{
   canvas.drawPath(path,Paint()..color=Colors.white.withValues(alpha:.82)..style=PaintingStyle.stroke..strokeWidth=12..strokeCap=StrokeCap.round);
   canvas.drawPath(path,Paint()..color=routeColor..style=PaintingStyle.stroke..strokeWidth=6..strokeCap=StrokeCap.round);
   // Place small trail markers on the curve itself, rather than on a straight-line approximation.
+  final metric=path.computeMetrics().first;
   for(var i=1;i<7;i++){
-   final t=i/7;final p=path.computeMetrics().first.getTangentForOffset(path.computeMetrics().first.length*t)?.position;
+   final t=i/7;final p=metric.getTangentForOffset(metric.length*t)?.position;
    if(p!=null)canvas.drawCircle(p,2.5,Paint()..color=active?Colors.white.withValues(alpha:.95):GameTheme.paper.withValues(alpha:.82));
   }
  }
