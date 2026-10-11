@@ -135,36 +135,107 @@ def tree(x, y, size=1.0, variant=0):
        MAT["grass_light"] if variant % 2 else MAT["grass"])
     cube("Tree trunk", (x, y, 0.25*size), (0.20*size, 0.22*size, 0.6*size), MAT["orange"], 0.04)
 
-# 1. Rich, toy-diorama world map with rolling islands, rivers, trees and landmarks.
+# 1. Premium educational world atlas: seven visually distinct biomes on one continuous route.
+# The map is a vertical progression diorama: every region has its own terrain, architecture,
+# vegetation and palette while the gold route visibly connects the worlds.
 clear_scene()
-cube("Floating meadow base", (0, 0, -0.48), (11.5, 8.8, 0.8), MAT["grass"], 0.48)
-# Layered rolling hills, with silhouettes visible at the top and edges.
-for x, y, sx, sy, sz, mat in [
-    (-3.8, 2.7, 2.4, 1.7, 0.7, MAT["grass_light"]),
-    (0.0, 3.0, 2.8, 1.7, 0.9, MAT["grass"]),
-    (3.7, 2.7, 2.3, 1.7, 0.65, MAT["grass_light"]),
-    (-4.2, -2.2, 1.7, 1.3, 0.5, MAT["grass_light"]),
-    (4.2, -2.5, 1.8, 1.5, 0.6, MAT["grass"]),
-]:
-    uv("Rolling landscape", (x,y,0.12), (sx,sy,sz), mat)
-# Winding turquoise river and stepping-stone route.
-for i, (x,y) in enumerate([(-4.3,-2.5),(-3.1,-1.5),(-1.9,-0.7),(-0.5,0.0),(0.8,0.7),(2.1,1.3),(3.5,2.0),(4.2,2.7)]):
-    uv("River bend", (x,y,0.18), (0.95,0.34,0.12), MAT["water"])
-    uv("Golden stepping stone", (x,y,0.38), (0.23,0.23,0.09), MAT["gold"], 20, 12)
-for x,y,s,v in [(-4.3,1.5,.8,0),(-3.4,2.6,.7,1),(4.4,.9,.8,1),(3.4,-1.4,.7,0),(-4.4,-1.2,.55,1),(1.8,2.7,.6,0)]:
-    tree(x,y,s,v)
-# Distinct landmarks: number tower, arch, and tiny castle.
-cube("Number tower base", (-2.9, 0.5, 0.65), (1.1, 1.0, 1.25), MAT["coral"], 0.15)
-cone("Tower roof", (-2.9, 0.5, 1.55), 0.82, 0.85, MAT["gold"])
-cube("Little castle", (2.9, -0.25, 0.55), (1.55, 1.1, 1.0), MAT["cream"], 0.12)
-for x in (2.35, 2.9, 3.45):
-    cube("Castle merlon", (x, -0.25, 1.18), (0.34, 0.34, 0.38), MAT["coral"], 0.06)
-for x in (-3.8, 3.9):
-    uv("Flower center", (x, -3.0, 0.42), 0.16, MAT["gold"], 20, 12)
-    for a in range(5):
-        ang = a*math.tau/5
-        uv("Flower petal", (x+math.cos(ang)*0.24, -3.0+math.sin(ang)*0.24, 0.4), (0.15,0.15,0.08), MAT["pink"], 16, 10)
-render(os.path.join(ASSETS, "backgrounds", "world_map.png"), (0,0,0.1), 13.4, 768)
+cube("Atlas foundation", (0, 0, -0.55), (11.5, 8.8, 0.82), MAT["grass"], 0.42)
+
+# Seven region palettes and landmark motifs. All landmarks are geometry, not flat decals.
+regions = [
+    (-4.0, 2.55, MAT["blue"], MAT["cream"], "counting"),
+    (-2.7, 1.70, MAT["grass_light"], MAT["orange"], "tens"),
+    (-1.35, 0.85, MAT["cream"], MAT["coral"], "city"),
+    (0.0, 0.0, MAT["water"], MAT["gold"], "addition"),
+    (1.35, -0.85, MAT["purple"], MAT["pink"], "multiplication"),
+    (2.7, -1.70, MAT["blue"], MAT["cream"], "division"),
+    (4.0, -2.55, MAT["purple"], MAT["gold"], "galaxy"),
+]
+for idx, (cx, cy, ground, accent, kind) in enumerate(regions):
+    # Each world gets a raised, beveled terrain platform with a contrasting rim.
+    bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=1.34, depth=0.34, location=(cx, cy, -0.02))
+    platform = bpy.context.object
+    platform.name = "World %02d • raised terrain" % (idx + 1)
+    platform.scale = (1.0, 0.72, 1.0)
+    platform.data.materials.append(ground)
+    bevel = platform.modifiers.new("Sculpted island edge", "BEVEL")
+    bevel.width = 0.14
+    bevel.segments = 4
+    platform.modifiers.new("Island normals", "WEIGHTED_NORMAL")
+    # Layered hills give each biome a readable silhouette.
+    for j in range(3):
+        hx = cx + (j - 1) * 0.48
+        hy = cy + (0.23 if j % 2 else -0.20)
+        uv("World %02d • rolling hill" % (idx + 1), (hx, hy, 0.24),
+           (0.52, 0.38, 0.22 + 0.06 * (j % 2)), MAT["grass_light"] if idx % 2 == 0 else ground, 24, 14)
+    if kind == "counting":
+        # Number garden: colorful numbered-looking towers and stepping stones.
+        for j, h in enumerate((0.42, 0.68, 0.94, 0.56)):
+            x = cx - 0.62 + j * 0.40
+            cube("Counting tower", (x, cy + 0.05, 0.35 + h / 2), (0.25, 0.28, h), [MAT["coral"], MAT["gold"], MAT["blue"], MAT["pink"]][j], 0.07)
+            uv("Tower cap", (x, cy + 0.05, 0.39 + h), 0.13, MAT["cream"], 16, 10)
+    elif kind == "tens":
+        # Ten-pillared valley gate.
+        for j in range(5):
+            x = cx - 0.68 + j * 0.34
+            cube("Tens valley pillar", (x, cy, 0.45), (0.20, 0.28, 0.78), MAT["orange"] if j % 2 else MAT["cream"], 0.045)
+        cube("Tens gate lintel", (cx, cy, 0.88), (1.65, 0.25, 0.20), MAT["gold"], 0.06)
+    elif kind == "city":
+        # Distinct skyline: stepped buildings, windows and a central clock tower.
+        for j, (dx, h) in enumerate(((-0.62, .60), (-0.22, .90), (.22, .70), (.62, 1.10))):
+            cube("Place-value city building", (cx + dx, cy, 0.30 + h / 2), (0.32, 0.34, h), MAT["coral"] if j % 2 else MAT["blue"], 0.045)
+            for z in range(2):
+                cube("Glowing city window", (cx + dx, cy - 0.18, 0.40 + z * 0.22), (0.09, 0.035, 0.10), MAT["gold"], 0.015)
+    elif kind == "addition":
+        # Arithmetic island with a stone arch and paired columns.
+        for dx in (-0.48, 0.48):
+            cube("Addition arch pier", (cx + dx, cy, 0.56), (0.20, 0.24, 0.88), MAT["cream"], 0.06)
+        cube("Addition arch crown", (cx, cy, 1.00), (1.16, 0.24, 0.20), MAT["gold"], 0.06)
+        uv("Addition jewel", (cx, cy - 0.18, 1.12), 0.20, MAT["coral"], 24, 16)
+    elif kind == "multiplication":
+        # Multiplication mountain with a stepped observatory.
+        cone("Multiplication peak", (cx, cy, 0.60), 0.90, 1.10, MAT["pink"])
+        cube("Mountain observatory", (cx, cy - 0.15, 0.86), (0.58, 0.48, 0.50), MAT["cream"], 0.08)
+        cone("Observatory roof", (cx, cy - 0.15, 1.30), 0.43, 0.36, MAT["gold"])
+    elif kind == "division":
+        # Division aqueduct and three separated pools.
+        for j in range(3):
+            uv("Division pool", (cx - 0.52 + j * 0.52, cy - 0.22, 0.31), (0.23, 0.32, 0.08), MAT["water"], 24, 12)
+        cube("Division aqueduct", (cx, cy + 0.28, 0.48), (1.55, 0.18, 0.18), MAT["cream"], 0.06)
+        for j in range(4):
+            cube("Aqueduct pier", (cx - 0.57 + j * 0.38, cy + 0.28, 0.22), (0.10, 0.20, 0.48), MAT["gold"], 0.025)
+    else:
+        # Galaxy biome: ringed planet, crystals and a luminous constellation.
+        uv("Fraction galaxy planet", (cx, cy, 0.64), (0.40, 0.40, 0.38), MAT["pink"], 32, 20)
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.63, minor_radius=0.055, major_segments=48, minor_segments=12, location=(cx, cy, 0.65), rotation=(0.18, 0.22, 0.25))
+        bpy.context.object.name = "Orbit ring"
+        bpy.context.object.data.materials.append(MAT["gold"])
+        for j in range(4):
+            cone("Crystal star", (cx - 0.75 + j * 0.48, cy + 0.46, 0.50), 0.16, 0.42, MAT["cream"], 6)
+    # Tiny trees/lamps create scale and a finished diorama feel.
+    for side in (-1, 1):
+        uv("World lantern", (cx + side * 0.88, cy - 0.18, 0.40), 0.12, accent, 20, 12)
+        cube("Lantern stem", (cx + side * 0.88, cy - 0.18, 0.20), (0.055, 0.055, 0.28), MAT["ink"], 0.015)
+
+# A continuous raised gold rail-road connects the seven themed islands.
+route_points = [(-4.3, 2.50), (-3.65, 2.15), (-3.0, 1.78), (-2.35, 1.42),
+                (-1.70, 1.05), (-1.05, 0.70), (-0.35, 0.22), (0.35, -0.22),
+                (1.05, -0.70), (1.70, -1.05), (2.35, -1.42), (3.0, -1.78),
+                (3.65, -2.15), (4.3, -2.50)]
+for i, (x, y) in enumerate(route_points):
+    uv("Golden route stepping stone %02d" % i, (x, y, 0.31), (0.15, 0.15, 0.07), MAT["gold"], 20, 12)
+    if i in (1, 3, 5, 7, 9, 11, 13):
+        uv("Route checkpoint jewel", (x, y, 0.40), (0.09, 0.09, 0.05), MAT["cream"], 16, 10)
+
+# Decorative waterfalls, crystal rocks, and clouds frame the playable atlas.
+for x, y, mat in [(-4.65, -1.2, MAT["water"]), (-3.8, -3.2, MAT["purple"]),
+                  (-0.3, 3.25, MAT["gold"]), (3.9, 1.25, MAT["pink"])]:
+    cone("Biome crystal", (x, y, 0.34), 0.25, 0.65, mat, 6)
+for x, y, s in [(-4.7, 1.4, .58), (-3.6, 3.1, .48), (4.6, -1.0, .58),
+                (3.6, -3.1, .50), (-0.2, 3.45, .40)]:
+    tree(x, y, s, int(abs(x * 2)) % 2)
+
+render(os.path.join(ASSETS, "backgrounds", "world_map.png"), (0,0,0.2), 13.4, 1024)
 
 # 2. Original 3D companion mascot: friendly little owl-like number guide.
 clear_scene()
