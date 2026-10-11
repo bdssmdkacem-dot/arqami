@@ -10,7 +10,7 @@ import '../models/unit_model.dart';
 import '../models/units_data.dart';
 import '../core/profile/learner_profile.dart';
 import '../widgets/game/journey_world_decoration.dart';
-import '../../assets/game/asset_roles.dart';
+import '../game/asset_roles.dart';
 import '../widgets/shared/banner_ad_widget.dart';
 import '../widgets/shared/arqami_brand_mark.dart';
 import '../widgets/shared/game_celebration.dart';
