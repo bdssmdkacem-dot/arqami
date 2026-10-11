@@ -491,7 +491,6 @@ class _NumberRoadPainter extends CustomPainter {
   Path? _cachedGuidePath;
   List<ui.PathMetric>? _cachedMetrics;
   Size? _cachedSize;
-  double _cachedTotalLength = 0;
 
   _NumberRoadPainter({
     required this.numberPath,
@@ -551,7 +550,6 @@ class _NumberRoadPainter extends CustomPainter {
       _cachedGuidePath = numberPath.buildGuidePath(size);
       _cachedSize = size;
       _cachedMetrics = null;
-      _cachedTotalLength = 0;
     }
     return _cachedGuidePath!;
   }
@@ -560,10 +558,6 @@ class _NumberRoadPainter extends CustomPainter {
     if (_cachedMetrics == null || _cachedSize != size) {
       _cachedMetrics = path.computeMetrics().toList(growable: false);
       _cachedSize = size;
-      _cachedTotalLength = _cachedMetrics!.fold<double>(
-        0,
-        (sum, metric) => sum + metric.length,
-      );
     }
     return _cachedMetrics!;
   }
