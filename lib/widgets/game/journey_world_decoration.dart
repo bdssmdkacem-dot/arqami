@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/theme/game_theme.dart';
+import '../../game/asset_roles.dart';
 
 /// عالم رحلة أرقامي: خلفية مرحة وحية، مرسومة محلياً حتى تبقى خفيفة.
 /// الحركة زخرفية فقط ولا تتدخل في المسار أو منطق فتح الوحدات.
@@ -29,12 +30,29 @@ class _JourneyWorldDecorationState extends State<JourneyWorldDecoration>
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) => CustomPaint(
-          painter: _JourneyWorldPainter(_controller.value),
-          child: const SizedBox.expand(),
-        ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Use the actual Blender-rendered world as the map's visual foundation.
+          // Keep it subtle so level labels and touch targets remain easy to read.
+          Opacity(
+            opacity: .22,
+            child: Image.asset(
+              arqamiGameAssetSet.background,
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+              errorBuilder: (context, error, stackTrace) =>
+                  const ColoredBox(color: GameTheme.sky),
+            ),
+          ),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) => CustomPaint(
+              painter: _JourneyWorldPainter(_controller.value),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -50,7 +68,7 @@ class _JourneyWorldPainter extends CustomPainter {
     final width = size.width;
     final height = size.height;
 
-    canvas.drawRect(Offset.zero & size, Paint()..color = GameTheme.sky);
+    // The Blender-rendered map image sits behind this translucent scenery layer.
 
     final zones = <Color>[
       GameTheme.ocean,
