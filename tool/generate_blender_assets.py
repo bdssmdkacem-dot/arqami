@@ -139,7 +139,7 @@ def tree(x, y, size=1.0, variant=0):
 # The map is a vertical progression diorama: every region has its own terrain, architecture,
 # vegetation and palette while the gold route visibly connects the worlds.
 clear_scene()
-cube("Atlas foundation", (0, 0, -0.55), (11.5, 8.8, 0.82), MAT["grass"], 0.42)
+cube("Atlas foundation", (0, 0, -0.55), (10.2, 7.8, 0.82), MAT["grass"], 0.42)
 
 # Seven region palettes and landmark motifs. All landmarks are geometry, not flat decals.
 regions = [
@@ -156,7 +156,7 @@ for idx, (cx, cy, ground, accent, kind) in enumerate(regions):
     bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=1.34, depth=0.34, location=(cx, cy, -0.02))
     platform = bpy.context.object
     platform.name = "World %02d • raised terrain" % (idx + 1)
-    platform.scale = (1.0, 0.72, 1.0)
+    platform.scale = (1.12, 0.82, 1.0)
     platform.data.materials.append(ground)
     bevel = platform.modifiers.new("Sculpted island edge", "BEVEL")
     bevel.width = 0.14
@@ -222,10 +222,25 @@ route_points = [(-4.3, 2.50), (-3.65, 2.15), (-3.0, 1.78), (-2.35, 1.42),
                 (-1.70, 1.05), (-1.05, 0.70), (-0.35, 0.22), (0.35, -0.22),
                 (1.05, -0.70), (1.70, -1.05), (2.35, -1.42), (3.0, -1.78),
                 (3.65, -2.15), (4.3, -2.50)]
+# A continuous beveled spline sits under the stepping stones, so the journey reads as one road.
+road_curve = bpy.data.curves.new("Continuous golden journey road", "CURVE")
+road_curve.dimensions = "3D"
+road_curve.resolution_u = 24
+road_curve.bevel_depth = 0.075
+road_curve.bevel_resolution = 4
+road_spline = road_curve.splines.new("BEZIER")
+road_spline.bezier_points.add(len(route_points) - 1)
+for point, (x, y) in zip(road_spline.bezier_points, route_points):
+    point.co = (x, y, 0.27)
+    point.handle_left_type = "AUTO"
+    point.handle_right_type = "AUTO"
+road_obj = bpy.data.objects.new("Continuous golden journey road", road_curve)
+bpy.context.collection.objects.link(road_obj)
+road_obj.data.materials.append(MAT["gold"])
 for i, (x, y) in enumerate(route_points):
-    uv("Golden route stepping stone %02d" % i, (x, y, 0.31), (0.15, 0.15, 0.07), MAT["gold"], 20, 12)
+    uv("Golden route stepping stone %02d" % i, (x, y, 0.35), (0.16, 0.16, 0.08), MAT["gold"], 20, 12)
     if i in (1, 3, 5, 7, 9, 11, 13):
-        uv("Route checkpoint jewel", (x, y, 0.40), (0.09, 0.09, 0.05), MAT["cream"], 16, 10)
+        uv("Route checkpoint jewel", (x, y, 0.45), (0.10, 0.10, 0.06), MAT["cream"], 16, 10)
 
 # Decorative waterfalls, crystal rocks, and clouds frame the playable atlas.
 for x, y, mat in [(-4.65, -1.2, MAT["water"]), (-3.8, -3.2, MAT["purple"]),
@@ -235,7 +250,7 @@ for x, y, s in [(-4.7, 1.4, .58), (-3.6, 3.1, .48), (4.6, -1.0, .58),
                 (3.6, -3.1, .50), (-0.2, 3.45, .40)]:
     tree(x, y, s, int(abs(x * 2)) % 2)
 
-render(os.path.join(ASSETS, "backgrounds", "world_map.png"), (0,0,0.2), 13.4, 1024)
+render(os.path.join(ASSETS, "backgrounds", "world_map.png"), (0,0,0.2), 11.8, 1024)
 
 # 2. Original 3D companion mascot: friendly little owl-like number guide.
 clear_scene()
