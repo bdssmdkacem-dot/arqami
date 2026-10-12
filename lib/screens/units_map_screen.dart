@@ -18,7 +18,7 @@ import 'certificate_screen.dart';
 import 'unit_player_screen.dart';
 
 bool _isStageEnd(int order) => const {13, 20, 30, 38, 44, 46, 52}.contains(order);
-bool _isStageStart(int order) => const {14, 21, 31, 39, 45, 47}.contains(order);
+bool _isStageStart(int order) => const {1, 14, 21, 31, 39, 45, 47}.contains(order);
 int _stageNumberForOrder(int order) {
   if (order <= 13) return 1;
   if (order <= 20) return 2;
