@@ -36,7 +36,7 @@ class _JourneyWorldDecorationState extends State<JourneyWorldDecoration>
           // Use the actual Blender-rendered world as the map's visual foundation.
           // Keep it subtle so level labels and touch targets remain easy to read.
           Opacity(
-            opacity: .30,
+            opacity: .72,
             child: Image.asset(
               arqamiGameAssetSet.background,
               fit: BoxFit.cover,
