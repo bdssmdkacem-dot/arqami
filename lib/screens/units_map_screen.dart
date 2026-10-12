@@ -28,11 +28,12 @@ int _stageNumberForOrder(int order) {
   if (order <= 46) return 6;
   return 7;
 }
+// Keep visual world boundaries identical to StageRewards and the curriculum map.
 _WorldInfo _worldFor(int order) {
   if (order <= 13) return const _WorldInfo('عالم الأعداد', GameTheme.ocean, GameTheme.mint, Icons.looks_one_rounded);
   if (order <= 20) return const _WorldInfo('وادي العشرات', GameTheme.mint, GameTheme.ocean, Icons.grid_3x3_rounded);
-  if (order <= 34) return const _WorldInfo('مدينة المئات والآلاف', GameTheme.sunshine, GameTheme.mango, Icons.location_city_rounded);
-  if (order <= 40) return const _WorldInfo('جزيرة الجمع والطرح', GameTheme.mango, GameTheme.coral, Icons.add_rounded);
+  if (order <= 30) return const _WorldInfo('مدينة المئات والآلاف', GameTheme.sunshine, GameTheme.mango, Icons.location_city_rounded);
+  if (order <= 38) return const _WorldInfo('جزيرة الجمع والطرح', GameTheme.mango, GameTheme.coral, Icons.add_rounded);
   if (order <= 44) return const _WorldInfo('كوكب الضرب', GameTheme.coral, GameTheme.berry, Icons.close_rounded);
   if (order <= 46) return const _WorldInfo('كوكب القسمة', GameTheme.violet, GameTheme.berry, Icons.percent_rounded);
   return const _WorldInfo('مجرة الكسور والجبر', GameTheme.berry, GameTheme.violet, Icons.functions_rounded);
