@@ -70,25 +70,9 @@ class _JourneyWorldPainter extends CustomPainter {
 
     // The Blender-rendered map image sits behind this translucent scenery layer.
 
-    final zones = <Color>[
-      GameTheme.ocean,
-      GameTheme.mint,
-      GameTheme.sunshine,
-      GameTheme.mango,
-      GameTheme.coral,
-      GameTheme.violet,
-      GameTheme.berry,
-    ];
-    final zoneHeight = math.max(180.0, height / 7);
-    for (var i = 0; i < zones.length; i++) {
-      final top = i * zoneHeight;
-      canvas.drawRect(
-        Rect.fromLTWH(0, top, width, zoneHeight + 2),
-        Paint()..color = zones[i].withValues(alpha: i.isEven ? .075 : .055),
-      );
-    }
-
-    _drawWorldLandmarks(canvas, width, zoneHeight);
+    // Stage labels belong to the scrolling map nodes, not this viewport-fixed
+    // decoration layer. Keeping them here made later worlds drift off-screen
+    // and detached their labels from the corresponding interactive stations.
 
     final sunCenter = Offset(width * .84, 58);
     canvas.drawCircle(
@@ -123,137 +107,6 @@ class _JourneyWorldPainter extends CustomPainter {
 
     _drawFlowers(canvas, width, height);
     _drawSparkles(canvas, width, height);
-  }
-
-  void _drawWorldLandmarks(Canvas canvas, double width, double zoneHeight) {
-    const worlds = <String>[
-      'عالم الأعداد',
-      'وادي العشرات',
-      'مدينة المئات والآلاف',
-      'جزيرة الجمع والطرح',
-      'كوكب الضرب',
-      'كوكب القسمة',
-      'مجرة الكسور والجبر',
-    ];
-    final colors = <Color>[
-      GameTheme.ocean,
-      GameTheme.mint,
-      GameTheme.sunshine,
-      GameTheme.mango,
-      GameTheme.coral,
-      GameTheme.violet,
-      GameTheme.berry,
-    ];
-
-    for (var i = 0; i < worlds.length; i++) {
-      final center = Offset(
-        i.isEven ? width * .27 : width * .73,
-        zoneHeight * i + zoneHeight * .30,
-      );
-      final color = colors[i];
-      final pulse = .92 + math.sin(progress * math.pi * 2 + i) * .035;
-
-      canvas.drawCircle(
-        center,
-        34 * pulse,
-        Paint()..color = color.withValues(alpha: .12),
-      );
-      canvas.drawCircle(
-        center,
-        24 * pulse,
-        Paint()..color = color.withValues(alpha: .20),
-      );
-
-      _drawWorldEmblem(canvas, center, color, i, pulse);
-
-      final label = TextPainter(
-        text: TextSpan(
-          text: worlds[i],
-          style: TextStyle(
-            color: GameTheme.ink.withValues(alpha: .72),
-            fontSize: math.min(15, width * .038),
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        textDirection: TextDirection.rtl,
-        textAlign: TextAlign.center,
-      )..layout(maxWidth: math.min(width * .40, 170));
-      final labelRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(
-          center.dx - label.width / 2 - 8,
-          center.dy + 27,
-          label.width + 16,
-          label.height + 8,
-        ),
-        const Radius.circular(12),
-      );
-      canvas.drawRRect(
-        labelRect,
-        Paint()..color = GameTheme.paper.withValues(alpha: .84),
-      );
-      canvas.drawRRect(
-        labelRect,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1
-          ..color = color.withValues(alpha: .24),
-      );
-      label.paint(
-        canvas,
-        Offset(center.dx - label.width / 2, center.dy + 31),
-      );
-    }
-  }
-
-  void _drawWorldEmblem(
-    Canvas canvas,
-    Offset center,
-    Color color,
-    int index,
-    double pulse,
-  ) {
-    final radius = 18 * pulse;
-    final fill = Paint()..color = color.withValues(alpha: .92);
-    final inner = Paint()..color = GameTheme.paper.withValues(alpha: .96);
-
-    canvas.drawCircle(center, radius, fill);
-    canvas.drawCircle(center, radius * .73, inner);
-
-    final symbol = switch (index) {
-      0 => '١٢٣',
-      1 => '١٠',
-      2 => '١٠٠',
-      3 => '+−',
-      4 => '×',
-      5 => '÷',
-      _ => '=',
-    };
-
-    final painter = TextPainter(
-      text: TextSpan(
-        text: symbol,
-        style: TextStyle(
-          color: color,
-          fontSize: index == 0 ? 12 : 14,
-          fontWeight: FontWeight.w900,
-          height: 1,
-        ),
-      ),
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.center,
-    )..layout();
-
-    painter.paint(
-      canvas,
-      center - Offset(painter.width / 2, painter.height / 2),
-    );
-
-    final start = center + Offset(-radius * .68, radius * .70);
-    canvas.drawCircle(
-      start,
-      3.5,
-      Paint()..color = GameTheme.sunshine,
-    );
   }
 
   void _drawCloud(Canvas canvas, Offset center, double scale) {
