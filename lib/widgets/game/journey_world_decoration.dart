@@ -39,7 +39,7 @@ class _JourneyWorldDecorationState extends State<JourneyWorldDecoration>
             opacity: .72,
             child: Image.asset(
               arqamiGameAssetSet.background,
-              fit: BoxFit.cover,
+              fit: BoxFit.fitWidth,
               alignment: Alignment.topCenter,
               errorBuilder: (context, error, stackTrace) =>
                   const ColoredBox(color: GameTheme.sky),
