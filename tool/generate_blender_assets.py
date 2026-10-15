@@ -140,7 +140,7 @@ def tree(x, y, size=1.0, variant=0):
 # vegetation and palette while the gold route visibly connects the worlds.
 clear_scene()
 # Keep the atlas edge restrained: the seven biome platforms and gold route should lead the composition.
-cube("Atlas foundation", (0, 0, -0.55), (8.8, 6.4, 0.42), MAT["grass"], 0.22)
+# Floating-world composition: omit the oversized continuous slab so each biome reads as its own island.
 
 # Seven region palettes and landmark motifs. All landmarks are geometry, not flat decals.
 regions = [
