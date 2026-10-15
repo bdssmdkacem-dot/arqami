@@ -139,7 +139,8 @@ def tree(x, y, size=1.0, variant=0):
 # The map is a vertical progression diorama: every region has its own terrain, architecture,
 # vegetation and palette while the gold route visibly connects the worlds.
 clear_scene()
-# Keep the atlas edge restrained: the seven biome platforms and gold route should lead the composition.\ncube("Atlas foundation", (0, 0, -0.55), (9.8, 7.4, 0.62), MAT["grass"], 0.30)
+# Keep the atlas edge restrained: the seven biome platforms and gold route should lead the composition.
+cube("Atlas foundation", (0, 0, -0.55), (9.8, 7.4, 0.62), MAT["grass"], 0.30)
 
 # Seven region palettes and landmark motifs. All landmarks are geometry, not flat decals.
 regions = [
