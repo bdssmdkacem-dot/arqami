@@ -243,13 +243,8 @@ for i, (x, y) in enumerate(route_points):
     if i in (1, 3, 5, 7, 9, 11, 13):
         uv("Route checkpoint jewel", (x, y, 0.45), (0.10, 0.10, 0.06), MAT["cream"], 16, 10)
 
-# Decorative waterfalls, crystal rocks, and clouds frame the playable atlas.
-for x, y, mat in [(-4.65, -1.2, MAT["water"]), (-3.8, -3.2, MAT["purple"]),
-                  (-0.3, 3.25, MAT["gold"]), (3.9, 1.25, MAT["pink"])]:
-    cone("Biome crystal", (x, y, 0.34), 0.25, 0.65, mat, 6)
-for x, y, s in [(-4.7, 1.4, .58), (-3.6, 3.1, .48), (4.6, -1.0, .58),
-                (3.6, -3.1, .50), (-0.2, 3.45, .40)]:
-    tree(x, y, s, int(abs(x * 2)) % 2)
+# Avoid detached frame decorations: each world should read as a self-contained island.
+# Island landmarks, lanterns, crystals, and vegetation remain placed on the terrain above.
 
 render(os.path.join(ASSETS, "backgrounds", "world_map.png"), (0,0,0.2), 11.8, 1024)
 
