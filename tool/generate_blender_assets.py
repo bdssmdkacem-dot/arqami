@@ -246,7 +246,7 @@ for i, (x, y) in enumerate(route_points):
 # Avoid detached frame decorations: each world should read as a self-contained island.
 # Island landmarks, lanterns, crystals, and vegetation remain placed on the terrain above.
 
-render(os.path.join(ASSETS, "backgrounds", "world_map.png"), (0,0,0.2), 11.8, 1024)
+render(os.path.join(ASSETS, "backgrounds", "world_map.png"), (0,0,0.2), 10.4, 1024)
 
 # 2. Original 3D companion mascot: friendly little owl-like number guide.
 clear_scene()
