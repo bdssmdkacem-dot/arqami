@@ -157,7 +157,14 @@ for idx, (cx, cy, ground, accent, kind) in enumerate(regions):
     bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=1.34, depth=0.34, location=(cx, cy, -0.02))
     platform = bpy.context.object
     platform.name = "World %02d • raised terrain" % (idx + 1)
-    platform.scale = (1.12, 0.82, 1.0)
+    # Vary each island silhouette so the atlas reads as seven distinct destinations.
+    island_shapes = (
+        (1.10, 0.78, 1.0), (0.98, 0.88, 1.0), (1.16, 0.72, 1.0),
+        (1.04, 0.86, 1.0), (0.94, 0.94, 1.0), (1.18, 0.70, 1.0),
+        (1.02, 0.82, 1.0),
+    )
+    platform.scale = island_shapes[idx]
+    platform.rotation_euler.z = math.radians((-8, 12, -15, 5, 18, -10, 9)[idx])
     platform.data.materials.append(ground)
     bevel = platform.modifiers.new("Sculpted island edge", "BEVEL")
     bevel.width = 0.14
