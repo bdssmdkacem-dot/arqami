@@ -154,7 +154,7 @@ regions = [
 ]
 for idx, (cx, cy, ground, accent, kind) in enumerate(regions):
     # Each world gets a raised, beveled terrain platform with a contrasting rim.
-    bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=1.34, depth=0.34, location=(cx, cy, -0.02))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=1.12, depth=0.34, location=(cx, cy, -0.02))
     platform = bpy.context.object
     platform.name = "World %02d • raised terrain" % (idx + 1)
     # Vary each island silhouette so the atlas reads as seven distinct destinations.
