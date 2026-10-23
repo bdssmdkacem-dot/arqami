@@ -55,8 +55,8 @@ class _FirstStageScreenState extends State<FirstStageScreen> {
     }
     final xs = _stroke.map((p) => p.dx).toList();
     final ys = _stroke.map((p) => p.dy).toList();
-    final width = xs.reduce(math.max) - xs.reduce(math.min);
-    final height = ys.reduce(math.max) - ys.reduce(math.min);
+    final width = xs.reduce((a, b) => math.max(a, b).toDouble()) - xs.reduce((a, b) => math.min(a, b).toDouble());
+    final height = ys.reduce((a, b) => math.max(a, b).toDouble()) - ys.reduce((a, b) => math.min(a, b).toDouble());
     final closes = (_stroke.first - _stroke.last).distance < size.shortestSide * .28;
     final oval = width > size.width * .18 &&
         height > size.height * .18 &&
@@ -380,7 +380,7 @@ class _ZeroTracePainter extends CustomPainter {
     final guide = Paint()..color = GameTheme.ocean.withValues(alpha: .16)..style = PaintingStyle.stroke..strokeWidth = 18;
     final rect = Rect.fromCenter(center: Offset(size.width / 2, size.height / 2), width: size.width * .48, height: size.height * .68);
     canvas.drawOval(rect, guide);
-    final pathPaint = Paint()..color = accepted ? Colors.green : GameTheme.coral..style = PaintingStyle.stroke..strokeWidth = 12..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round;
+    final pathPaint = Paint()..color = (accepted ? Colors.green : GameTheme.coral)..style = PaintingStyle.stroke..strokeWidth = 12..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round;
     for (var i = 1; i < points.length; i++) {
       canvas.drawLine(points[i - 1], points[i], pathPaint);
     }
